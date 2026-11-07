@@ -1,8 +1,8 @@
 id,amc,section,subsection,listing,name,isin,bucket,note
 cash_nca,,,,,net receivable|net current asset|^(rep|trp)\d*_\d|other current asset|margin amount|cash (&|and) cash eq|^cash( margin\b.*)?$|tri-?party|treps|reverse repo|corporate bond repo|^repo\b,,cash_like,Cash and repo lines are reported under whatever section precedes them (Motilal prints them after the last section)
 commodity_heading,,,^(gold|silver)$,,,,commodities,Physical gold/silver bars sit under a bare heading
-commodity_section,,^(gold|silver|commodities)$,,,,,commodities,Gold/silver as a top-level section (ICICI, SBI, ABSL)
-commodity_listing,,,,^(gold|silver)$,,,commodities,
+commodity_section,,^(gold|silver|commodities)\b,,,,,commodities,Gold/silver as a top-level section (ICICI, SBI, ABSL)
+commodity_listing,,,,^(\(?\w\)\s*)?(gold|silver)$,,,commodities,
 commodity_name,,,,,^(gold|silver) (\d|bullion),,commodities,Bars with no heading (Wealth Company)
 fund_unit_isin,,,,,,^INF,fund_unit,INF ISINs are MF/ETF units; resolved by fund-of-funds look-through in compute
 fund_unit_heading,,,exchange traded fund|mutual fund unit,,,,fund_unit,
