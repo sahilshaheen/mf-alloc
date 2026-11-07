@@ -1,3 +1,4 @@
-from . import motilal, nippon, uti, wealth
+from . import amfi, motilal, nippon, uti, wealth
 
-AMCS = {m.AMC: m for m in (uti, motilal, nippon, wealth)}
+# Portfolio sources plus reference inputs; `fetch all` pulls everything.
+AMCS = {m.AMC: m for m in (uti, motilal, nippon, wealth, amfi)}
