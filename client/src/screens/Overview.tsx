@@ -110,6 +110,13 @@ export function Overview() {
           <span>{t('overview.labelsSay')}</span>
           <span className="num">{t('overview.labelledEquity', { pct: formatPercent(model.labelledEquityShare) })}</span>
         </div>
+        <ul className="label-key">
+          {labelSegments.map((group) => (
+            <li key={group}>
+              {t(`label.${group}`)} <b className="num">{formatPercent(portfolio.labelled[group] / portfolio.total)}</b>
+            </li>
+          ))}
+        </ul>
         <div className="sheet" aria-hidden="true">
           {labelSegments.map((group) => {
             const share = portfolio.labelled[group] / portfolio.total
