@@ -32,7 +32,7 @@ export function DataMethod() {
       <section>
         <h2 className="serif">{t('dm.limitsTitle')}</h2>
         <ul>
-          {(['dm.limit1', 'dm.limit2', 'dm.limit3', 'dm.limit4'] as const).map((key) => (
+          {(['dm.limit1', 'dm.limit2', 'dm.limit3', 'dm.limit4', 'dm.limit5'] as const).map((key) => (
             <li key={key}>{t(key)}</li>
           ))}
         </ul>

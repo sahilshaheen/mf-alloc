@@ -8,9 +8,9 @@ decision changes.
 
 Built: i18n (en, hi, ml), shell and header, statement parser (CAMS Summary), bundle loader and ISIN join,
 Welcome (upload and password), Overview, Data and method (short, with cited sources), Funds (table, search,
-fund detail panel at `/funds/:isin`), Privacy. Asset classes is a placeholder.
+fund detail panel at `/funds/:isin`), Privacy, Breakdowns (`/breakdowns/:bucket`).
 
-Next, in order: Asset classes, then the rest of the
+Next, in order: bring the Breakdowns detail (market cap, sector) into the Funds page and panel, then the rest of the
 Welcome design, mobile polish of the new screens, dark-mode toggle, PWA, export.
 
 Run: see the root README. Check a change in a browser at 390, 768, 1024 and 1440 px, in English and
@@ -109,6 +109,16 @@ device" (not built), a reproducible-build hash, and discarding folio numbers (th
 The live request list reads `performance.getEntriesByType('resource')`; sizes are body sizes, and request
 bodies cannot be shown, so the page does not claim to show them. Re-check these claims whenever storage, a
 service worker (PWA), analytics or any new network call is added.
+
+**Breakdowns** (renamed from "Asset classes": the page holds more than asset classes). One tab per asset class at
+`/breakdowns/:bucket`, following the Net/Gross toggle. Domestic equity adds market cap (large, mid, small, size not
+known) and sector (top 10, expandable); clicking a group lists the funds behind it. Every tab lists the funds
+behind that asset class. Market cap and sector are **gross only**: the bundle's cap and sector weights sum
+exactly to each scheme's gross domestic equity, so they do not follow the toggle and the page says so
+(scaling them to net would assume hedges are spread evenly, which is a guess). Sector names are shown as the
+data has them, in English. Not available because the pipeline does not collect it yet: debt quality, issuer type,
+maturity, foreign equity by country (shown as "no further breakdown yet", and listed on Data and method).
+Fund names here are not links yet (contributors carry no ISIN).
 
 **Layout.** Compact header below 1180px (nav scrolls, language switch on its own row on phones); content
 column is 960px. Controls must grow with their text and never use fixed heights that long Malayalam or

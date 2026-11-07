@@ -7,7 +7,7 @@ import './Header.css'
 
 const links: { to: string; label: TranslationKey }[] = [
   { to: '/', label: 'nav.overview' },
-  { to: '/asset-classes', label: 'nav.assetClasses' },
+  { to: '/breakdowns', label: 'nav.breakdowns' },
   { to: '/funds', label: 'nav.funds' },
   { to: '/data-and-method', label: 'nav.dataMethod' },
   { to: '/privacy', label: 'nav.privacy' },
