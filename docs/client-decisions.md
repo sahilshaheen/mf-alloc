@@ -7,10 +7,10 @@ decision changes.
 ## Where things stand
 
 Built: i18n (en, hi, ml), shell and header, statement parser (CAMS Summary), bundle loader and ISIN join,
-Welcome (upload and password), Overview, Data and method (short, with cited sources). Funds, Asset classes
-and Privacy are placeholders.
+Welcome (upload and password), Overview, Data and method (short, with cited sources), Funds (table, search,
+fund detail panel at `/funds/:isin`). Asset classes and Privacy are placeholders.
 
-Next, in order: Funds table and fund drawer, Privacy, Asset classes, then the rest of the
+Next, in order: Privacy, Asset classes, then the rest of the
 Welcome design, mobile polish of the new screens, dark-mode toggle, PWA, export.
 
 Run: see the root README. Check a change in a browser at 390, 768, 1024 and 1440 px, in English and
@@ -85,6 +85,17 @@ The pipeline's per-holding labels are called asset-class buckets, so the two do 
 **Data and method.** Short on purpose: what each level is, known limits, and numbered sources with links. Detail
 lives in the code, which readers can audit and dispute. Every claim on it must have a source in the list or be
 checkable in the repository. Add a source whenever a new rule is added.
+
+**Funds.** Rows are merged by ISIN (several folios of one fund become one row), sorted by value. The Net/Gross
+choice lives in the portfolio context, so Overview and Funds share it. The design's "category says vs
+look-through says" bar is replaced by the SEBI category line and its stated equity minimum (or "SEBI states no
+minimum"), then the look-through bar and a gross-versus-net table by asset class. The bundle has no per-holding
+data, so the calculation shows only what the gross and net vectors support. Flags: hedged (gross equity
+exceeds net by more than 0.5% of the fund), partial look-through (`unresolved_fund_units`), not in our data,
+and holdings more than two months older than the statement date.
+Deferred from the design: row selection with an aggregate bar, Category/AMC/Group filters, Columns and density
+controls, the holdings-as-of column, CSV export, AMC display names (the bundle holds only AMC codes), and the
+mobile card layout (phones show name, ISIN, value and flags only).
 
 **Layout.** Compact header below 1180px (nav scrolls, language switch on its own row on phones); content
 column is 960px. Controls must grow with their text and never use fixed heights that long Malayalam or

@@ -57,3 +57,8 @@ a {
     transition-duration: 0.01ms !important;
   }
 }
+
+.visually-hidden {
+  position: absolute;
+  left: -9999px;
+}

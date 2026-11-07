@@ -9,7 +9,7 @@ Your statement is parsed in the browser and never leaves your device. The only s
 | Component | State |
 |---|---|
 | `pipeline/` fetch, adapt, classify, compute, publish | Working. 13 AMCs, about 77% of industry AUM (Sep 2026 disclosures); bundle is 1,148 schemes, about 165 KB gzipped |
-| `client/` web app | In progress. Reads a CAMS/KFintech Consolidated Account Summary in the browser, joins it to the bundle, and renders Overview and Data and method (English, Hindi, Malayalam; Hindi and Malayalam are drafts awaiting native review). Funds, Asset classes, Privacy and the PWA shell are still placeholders. Status and design decisions: [docs/client-decisions.md](docs/client-decisions.md) |
+| `client/` web app | In progress. Reads a CAMS/KFintech Consolidated Account Summary in the browser, joins it to the bundle, and renders Overview, Funds and Data and method (English, Hindi, Malayalam; Hindi and Malayalam are drafts awaiting native review). Asset classes, Privacy and the PWA shell are still placeholders. Status and design decisions: [docs/client-decisions.md](docs/client-decisions.md) |
 
 ## How it works
 
@@ -76,7 +76,7 @@ pipeline/            Python 3.13, managed with uv
     sources.py       manifest, `status` and `register` commands
   tests/
   data/              raw/ and staged/ are git-ignored
-client/              Vite + React + TypeScript app (Overview and Data and method built; PWA pending)
+client/              Vite + React + TypeScript app (Overview, Funds and Data and method built; PWA pending)
 docs/design-spec.md  UI/UX design spec
 docs/client-decisions.md  client status and design decisions, updated as they change
 ```

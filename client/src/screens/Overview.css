@@ -30,21 +30,6 @@
   color: var(--ink2);
 }
 
-.overview .segmented button {
-  font-size: 14px;
-}
-
-.overview .segmented button span {
-  color: var(--ink3);
-  font-weight: 400;
-}
-
-.overview .segmented button[aria-checked='true'] {
-  background: var(--sheet);
-  box-shadow: var(--shadow);
-  font-weight: 600;
-}
-
 .overview__headline {
   margin: 0;
   max-width: 19ch;
@@ -77,7 +62,7 @@
   color: var(--ink2);
 }
 
-.overview__view {
+.overview .view-toggle {
   margin-bottom: 24px;
 }
 
@@ -259,15 +244,8 @@ ul.legend {
     margin-bottom: 32px;
   }
 
-  .overview .segmented {
+  .overview .view-toggle {
     width: 100%;
-  }
-
-  .overview .segmented button {
-    flex: 1 1 0;
-    height: auto;
-    min-height: 38px;
-    padding: 6px 8px;
   }
 
   .overview__headline {

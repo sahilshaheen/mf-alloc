@@ -1,50 +1,37 @@
 import { useEffect, useState } from 'react'
 import { Navigate } from 'react-router'
 import { formatDate, formatInr, formatPercent } from '../format'
+import { ViewToggle } from '../components/ViewToggle'
 import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
 import { LABEL_GROUPS, type LabelGroup } from '../portfolio/fundCategory'
-import { overviewModel, topContributors, type ExposureView } from '../portfolio/overviewModel'
+import { overviewModel, topContributors } from '../portfolio/overviewModel'
 import { BUCKETS, type Bucket } from '../portfolio/types'
 import { usePortfolio } from '../portfolio/usePortfolio'
+import { bucketFill, WHITE_TEXT_BUCKETS } from './bucketStyle'
 import './Overview.css'
 
 const SHOWN_BUCKETS = BUCKETS.filter((bucket) => bucket !== 'fund_unit')
-const WHITE_TEXT_BUCKETS: ReadonlySet<Bucket> = new Set(['equity_domestic', 'equity_foreign'])
-const BUCKET_COLOUR: Record<Bucket, string> = {
-  equity_domestic: 'var(--eq)',
-  debt: 'var(--debt)',
-  cash_like: 'var(--cash)',
-  commodities: 'var(--gold)',
-  real_assets: 'var(--real)',
-  equity_foreign: 'var(--fx)',
-  other: 'var(--other)',
-  fund_unit: 'var(--other)',
-}
 // Greys, so that the colours stay reserved for asset classes in Level 2.
 const CATEGORY_SHADE: Record<LabelGroup, number> = { equity: 80, hybrid: 56, debt: 36, other: 22, notMatched: 10 }
 const MIN_SHARE_FOR_BAR_LABEL = 0.08
-
-const fill = (bucket: Bucket): string =>
-  bucket === 'other' ? `repeating-linear-gradient(-45deg, rgba(0,0,0,.22) 0 1.5px, transparent 1.5px 5px), ${BUCKET_COLOUR[bucket]}` : BUCKET_COLOUR[bucket]
 
 const categoryFill = (group: LabelGroup): string => `color-mix(in srgb, var(--ink) ${CATEGORY_SHADE[group]}%, transparent)`
 
 export function Overview() {
   const { t, language } = useI18n()
-  const { portfolio, statementDate, bundle } = usePortfolio()
-  const [view, setView] = useState<ExposureView>('net')
+  const { portfolio, statementDate, bundle, view, setView } = usePortfolio()
   const [focus, setFocus] = useState<Bucket>('equity_domestic')
 
   useEffect(() => {
     const toggle = (event: KeyboardEvent) => {
       if (event.key.toLowerCase() !== 'n' || event.metaKey || event.ctrlKey || event.altKey) return
       if (event.target instanceof HTMLElement && ['INPUT', 'TEXTAREA', 'SELECT'].includes(event.target.tagName)) return
-      setView((current) => (current === 'net' ? 'gross' : 'net'))
+      setView(view === 'net' ? 'gross' : 'net')
     }
     window.addEventListener('keydown', toggle)
     return () => window.removeEventListener('keydown', toggle)
-  }, [])
+  }, [view, setView])
 
   if (!portfolio || !bundle || !statementDate) return <Navigate to="/welcome" replace />
 
@@ -108,13 +95,7 @@ export function Overview() {
           {t('overview.level2Title')}
         </h2>
         <p className="overview__intro">{t('overview.level2Intro')}</p>
-        <div role="radiogroup" aria-label={t('overview.view')} className="segmented overview__view">
-          {(['net', 'gross'] as const).map((choice) => (
-            <button key={choice} type="button" role="radio" aria-checked={view === choice} onClick={() => setView(choice)}>
-              {t(`overview.${choice}`)} <span>{t(`overview.${choice}Hint`)}</span>
-            </button>
-          ))}
-        </div>
+        <ViewToggle />
 
         <figure className="overview__figure" aria-label={t('overview.fundsHold')}>
           <div className="overview__caption-row">
@@ -128,7 +109,7 @@ export function Overview() {
                 className="strata__segment"
                 style={{
                   flex: `${segment.value} 1 0`,
-                  background: fill(segment.bucket),
+                  background: bucketFill(segment.bucket),
                   color: WHITE_TEXT_BUCKETS.has(segment.bucket) ? '#ffffff' : '#1b2422',
                   opacity: focus === segment.bucket ? 1 : 0.42,
                   borderRadius: index === 0 ? '10px 0 0 10px' : index === model.segments.length - 1 ? '0 10px 10px 0' : 0,
@@ -164,7 +145,7 @@ export function Overview() {
                 onFocus={() => setFocus(bucket)}
                 onMouseEnter={() => setFocus(bucket)}
               >
-                <span className="legend__swatch" style={{ background: fill(bucket) }} />
+                <span className="legend__swatch" style={{ background: bucketFill(bucket) }} />
                 <span>
                   {bucketName(bucket)}
                   <span className="legend__note">
