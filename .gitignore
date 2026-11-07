@@ -1,0 +1,6 @@
+.DS_Store
+# Real statements / raw AMC downloads must never be committed
+*.pdf
+pipeline/data/raw/
+pipeline/data/out/
+.env
