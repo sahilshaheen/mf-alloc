@@ -16,6 +16,7 @@ export interface BundleScheme {
   amc: string
   as_of: string
   name: string
+  category: string | null
   net: Vector
   gross: Vector
   cap: Record<string, number>
