@@ -28,8 +28,15 @@ from ..schema import FuturePosition, Holding, Issue, Scheme
 from .common import LayoutError, clean, finish_block, num
 
 _ISIN = re.compile(r"^[A-Z]{2}[A-Z0-9]{9}\d$")
-_AS_ON = re.compile(r"as\s+on\s*:?\s*([A-Za-z]+)\s+(\d{1,2})\s*,?\s*(\d{4})", re.IGNORECASE)
-_AS_ON_NUM = re.compile(r"as\s+on\s*:?\s*(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})", re.IGNORECASE)
+_AS_ON = re.compile(
+    r"as\s+on\s*:?\s*([A-Za-z]+)\s+(\d{1,2})\s*,?\s*(\d{4})", re.IGNORECASE
+)
+_AS_ON_NUM = re.compile(
+    r"as\s+on\s*:?\s*(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})", re.IGNORECASE
+)
+_AS_ON_DMY = re.compile(
+    r"as\s+on\s*:?\s*(\d{1,2})[-\s]([A-Za-z]{3,9})[-\s,]+(\d{4})", re.IGNORECASE
+)
 _GRAND = re.compile(r"^(grand total|total net assets|net assets)\b", re.IGNORECASE)
 _CASH = re.compile(
     r"treps|tri-?party|repo\b|net (current|receivable)|receivable|cash\b|margin amount|collateral|^(rep|trp)\d*_\d",
@@ -40,17 +47,26 @@ _TOP = re.compile(
     r"foreign|treps|reverse repo|cash|commodit|gold|silver|real estate|infrastructure investment)",
     re.IGNORECASE,
 )
-_LISTING = re.compile(r"^(\(?[a-z]\)|listed|unlisted|awaiting|privately|rated|unrated)", re.IGNORECASE)
+_LISTING = re.compile(
+    r"^(\(?[a-z]\)|listed|unlisted|awaiting|privately|rated|unrated)", re.IGNORECASE
+)
 # A bare futures table heading ("Stock Futures", "Details of Stock Future / Index Future"), not the notes'
 # "Hedging Positions through Futures as on ..." sentences that repeat later with different columns.
-_FUT_HEADING = re.compile(r"(details of )?((stock|index|commodity|currency)\s*/?\s*)+futures?", re.IGNORECASE)
-_HEDGED = re.compile(r"total\s*(%|percentage|%age)\s*of existing assets hedged through (equity )?futures", re.IGNORECASE)
+_FUT_HEADING = re.compile(
+    r"(details of )?((stock|index|commodity|currency)\s*/?\s*)+futures?", re.IGNORECASE
+)
+_HEDGED = re.compile(
+    r"total\s*(%|percentage|%age)\s*of existing assets hedged through (equity )?futures",
+    re.IGNORECASE,
+)
 _MASK = {"#", "^", "$", "*", "$$"}
 _EXPIRY = re.compile(r"(\d{1,2})[./](\d{1,2})[./](\d{4})\s*$")
 _EXPIRY_MON = re.compile(r"(\d{1,2})[- ]([A-Za-z]{3})[- ](\d{4})\s*$")
 
 
-_IN_PORTFOLIO_FUT = re.compile(r"\b(stock|index|currency|commodity)\s+futures?\b", re.IGNORECASE)
+_IN_PORTFOLIO_FUT = re.compile(
+    r"\b(stock|index|currency|commodity)\s+futures?\b", re.IGNORECASE
+)
 
 
 @dataclass(frozen=True)
@@ -93,7 +109,11 @@ def _cols(hdr: list, need_isin: bool) -> dict[str, int]:
             cols["industry"] = j
         elif h == "quantity":
             cols["qty"] = j
-        elif "market value" in h or "market/fair value" in h or h.startswith("mkt val"):
+        elif (
+            "market value" in h
+            or re.search(r"market/\s*fair value", h)
+            or h.startswith("mkt val")
+        ):
             cols["mv"] = j
         elif h.startswith(("% to", "% of")):
             cols["pct"] = j
@@ -119,18 +139,33 @@ def _find_as_of(rows: list[list]) -> date | None:
                 n = _AS_ON_NUM.search(c)
                 if n:
                     y = int(n.group(3))
-                    return date(y + 2000 if y < 100 else y, int(n.group(2)), int(n.group(1)))
+                    return date(
+                        y + 2000 if y < 100 else y, int(n.group(2)), int(n.group(1))
+                    )
+                d = _AS_ON_DMY.search(c)
+                if d:
+                    for fmt in ("%d %B %Y", "%d %b %Y"):
+                        try:
+                            return datetime.strptime(
+                                f"{d.group(1)} {d.group(2)} {d.group(3)}", fmt
+                            ).date()
+                        except ValueError:
+                            continue
                 m = _AS_ON.search(c)
                 if m:
                     for fmt in ("%B %d %Y", "%b %d %Y"):
                         try:
-                            return datetime.strptime(f"{m.group(1)} {m.group(2)} {m.group(3)}", fmt).date()
+                            return datetime.strptime(
+                                f"{m.group(1)} {m.group(2)} {m.group(3)}", fmt
+                            ).date()
                         except ValueError:
                             continue
     return None
 
 
-def _is_subtotal_heading(rows: list[list], idx: int, mv_col: int, name_col: int, mv: float) -> bool:
+def _is_subtotal_heading(
+    rows: list[list], idx: int, mv_col: int, name_col: int, mv: float
+) -> bool:
     """True if rows[idx] (a cash-like name with a value but no ISIN or quantity) is a heading that carries
     the subtotal of the consecutive value rows beneath it (ICICI prints "Reverse Repo | 1042267.51" above
     the individual repo lines), rather than a holding of its own."""
@@ -138,7 +173,11 @@ def _is_subtotal_heading(rows: list[list], idx: int, mv_col: int, name_col: int,
     for r in rows[idx + 1 :]:
         v = num(r[mv_col]) if mv_col < len(r) else None
         lab = clean(r[name_col] if name_col < len(r) else None)
-        if v is None or not lab or lab.lower().startswith(("total", "sub total", "subtotal")):
+        if (
+            v is None
+            or not lab
+            or lab.lower().startswith(("total", "sub total", "subtotal"))
+        ):
             break
         total += v
         n += 1
@@ -188,7 +227,10 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
         (
             i
             for i, r in enumerate(rows[:30])
-            if any(isinstance(c, str) and c.strip().lower() in ("isin", "isin code") for c in r)
+            if any(
+                isinstance(c, str) and c.strip().lower() in ("isin", "isin code")
+                for c in r
+            )
         ),
         None,
     )
@@ -206,7 +248,9 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
     futures: list[FuturePosition] = []
     issues: list[Issue] = []
     raw_pct: list[float | None] = []
-    inline_fut: list[tuple[float | None, float, int, bool]] = []  # raw pct, signed value, index, in total?
+    inline_fut: list[
+        tuple[float | None, float, int, bool]
+    ] = []  # raw pct, signed value, index, in total?
 
     def cell(r, j):
         return r[j] if j is not None and 0 <= j < len(r) else None
@@ -222,6 +266,11 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
         r = rows[idx]
         row_no = idx + 1
         label = clean(cell(r, cols["name"]))
+        if not label:
+            # HDFC prints headings and totals in the ISIN column and instrument names one column over
+            alt = clean(cell(r, cols["isin"]))
+            if alt and not _as_isin(alt):
+                label = alt
         low = (label or "").lower()
         mv = num(cell(r, cols["mv"]))
         texts = [clean(c) for c in r if isinstance(c, str) and clean(c)]
@@ -240,12 +289,22 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                     if counted:
                         extra_mv += v
                         extra_pct += (fp or 0.0) / scale
-                finish_block(t.amc, key, holdings, mv, issues, extra_mv=extra_mv, extra_pct=extra_pct)
+                finish_block(
+                    t.amc,
+                    key,
+                    holdings,
+                    mv,
+                    issues,
+                    extra_mv=extra_mv,
+                    extra_pct=extra_pct,
+                )
                 mode = "after"
                 continue
             if not label or low.startswith(("total", "sub total", "subtotal")):
                 continue
-            if low.endswith(" total"):  # Tata: "MONEY MARKET INSTRUMENTS TOTAL" closes the block
+            if low.endswith(
+                " total"
+            ):  # Tata: "MONEY MARKET INSTRUMENTS TOTAL" closes the block
                 sub = listing = None
                 continue
             isin = _as_isin(cell(r, cols["isin"]))
@@ -267,13 +326,24 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                     sub = label
                 continue
             if mv is None:
-                issues.append(Issue(t.amc, key, "warning", f"row {row_no}: {label!r} has no market value"))
+                issues.append(
+                    Issue(
+                        t.amc,
+                        key,
+                        "warning",
+                        f"row {row_no}: {label!r} has no market value",
+                    )
+                )
                 continue
             if t.skip_swaps and (
                 re.match(r"^irs\s*-", label.lower())
-                or re.match(r"^(irs|interest rate swaps?|swaps?)\b", (sub or "").lower())
+                or re.match(
+                    r"^(irs|interest rate swaps?|swaps?)\b", (sub or "").lower()
+                )
             ):
-                scheme.notes["swaps_excluded"] = "interest-rate swap lines (notional) are not holdings"
+                scheme.notes["swaps_excluded"] = (
+                    "interest-rate swap lines (notional) are not holdings"
+                )
                 continue
             if (
                 t.futures_name_marker
@@ -291,7 +361,11 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                 inline_fut.append((fp, mv, len(futures) - 1, False))
                 continue
             ind = clean(cell(r, cols["industry"])) or ""
-            if t.futures_in_portfolio and isin is None and _IN_PORTFOLIO_FUT.search(ind):
+            if (
+                t.futures_in_portfolio
+                and isin is None
+                and _IN_PORTFOLIO_FUT.search(ind)
+            ):
                 fp = num(cell(r, cols["pct"]))
                 exp = cell(r, cols.get("maturity"))
                 futures.append(
@@ -352,13 +426,17 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                     )
                 )  # fmt: skip
                 continue
-            if lab and re.search(r"total percentage of existing assets hedged", lab, re.IGNORECASE):
+            if lab and re.search(
+                r"total percentage of existing assets hedged", lab, re.IGNORECASE
+            ):
                 scheme.notes["hedged_through_futures"] = lab
             mode = "after"
             continue
         if mode == "futures":
             hdr_text = " ".join(t_.lower() for t_ in texts)
-            if "quantity" in hdr_text and ("market value" in hdr_text or "value" in hdr_text):
+            if "quantity" in hdr_text and (
+                "market value" in hdr_text or "value" in hdr_text
+            ):
                 try:
                     fcols = _cols(r, need_isin=False)
                 except LayoutError:
@@ -396,7 +474,9 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
         if h.yield_pct is not None:
             h.yield_pct = h.yield_pct / scale
     if mode == "main":
-        issues.append(Issue(t.amc, key, "error", "portfolio ended without a GRAND TOTAL row"))
+        issues.append(
+            Issue(t.amc, key, "error", "portfolio ended without a GRAND TOTAL row")
+        )
     return [scheme], holdings, futures, issues
 
 
@@ -412,7 +492,14 @@ def parse_workbook(t: Template, path, skip_sheets: tuple[str, ...] = ("index",))
             s, h, f, i = parse_sheet(t, sheet, rows, path.name)
         except LayoutError as e:
             if "ISIN header not found" in str(e):
-                issues.append(Issue(t.amc, sheet, "warning", f"sheet {sheet!r} has no portfolio table; skipped"))
+                issues.append(
+                    Issue(
+                        t.amc,
+                        sheet,
+                        "warning",
+                        f"sheet {sheet!r} has no portfolio table; skipped",
+                    )
+                )
             else:
                 issues.append(Issue(t.amc, sheet, "error", str(e)))
             continue

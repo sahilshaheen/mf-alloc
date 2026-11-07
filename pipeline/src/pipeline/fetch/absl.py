@@ -19,7 +19,9 @@ API = (
     "&ctype=%2Fsitecore%2Fcontent%2FRoot%2FBSL%2FLibrary%2FLists%2FFAQ%2FCustomer%20Types%2FIndividual"
     "&month=%20&year=0"
 )
-_TITLE = re.compile(r"monthly portfolios? as on\s+([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})", re.IGNORECASE)
+_TITLE = re.compile(
+    r"monthly portfolios? as on\s+([A-Za-z]+)\s+(\d{1,2}),\s*(\d{4})", re.IGNORECASE
+)
 
 
 SITE = "https://mutualfund.adityabirlacapital.com"

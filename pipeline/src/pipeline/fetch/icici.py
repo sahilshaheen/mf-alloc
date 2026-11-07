@@ -12,7 +12,9 @@ import httpx
 from .model import Entry, Period
 
 AMC = "icici"
-BASE = "https://www.icicipruamc.com/blob/downloads/Files/Monthly%20Portfolio%20Disclosures"
+BASE = (
+    "https://www.icicipruamc.com/blob/downloads/Files/Monthly%20Portfolio%20Disclosures"
+)
 
 
 def candidate_urls(period: Period) -> list[str]:
@@ -25,5 +27,13 @@ def list_entries(client: httpx.Client, period: Period) -> list[Entry]:
     for url in candidate_urls(period):
         r = client.head(url)
         if r.status_code == 200:
-            return [Entry(AMC, period, url, url.rsplit("/", 1)[1], title=f"Monthly portfolio disclosure {period}")]
+            return [
+                Entry(
+                    AMC,
+                    period,
+                    url,
+                    url.rsplit("/", 1)[1],
+                    title=f"Monthly portfolio disclosure {period}",
+                )
+            ]
     return []

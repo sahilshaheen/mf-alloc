@@ -111,7 +111,10 @@ def _classify(args) -> int:
     period = Period.parse(args.period)
     cap_files = sorted((args.raw / "amfi" / str(period)).glob("market_cap_*.xlsx"))
     if not cap_files:
-        print(f"no AMFI cap list in {args.raw}/amfi/{period}; run `fetch amfi`", file=sys.stderr)
+        print(
+            f"no AMFI cap list in {args.raw}/amfi/{period}; run `fetch amfi`",
+            file=sys.stderr,
+        )
         return 1
     clf = Classifier(load_cap_list(cap_files[-1]))
     names = list(ADAPTERS) if args.amc == "all" else [args.amc]
@@ -121,7 +124,9 @@ def _classify(args) -> int:
     fallback: dict[tuple, float] = collections.defaultdict(float)
     for amc in names:
         d = args.staged / amc / str(period)
-        holdings = [json.loads(x) for x in (d / "holdings.jsonl").read_text().splitlines()]
+        holdings = [
+            json.loads(x) for x in (d / "holdings.jsonl").read_text().splitlines()
+        ]
         with (d / "classified.jsonl").open("w") as out:
             for h in holdings:
                 c = clf.classify(h)
@@ -135,7 +140,11 @@ def _classify(args) -> int:
                     fallback[(amc, h["section"], h["subsection"], h["listing"])] += mv
     total = sum(by_bucket.values()) or 1.0
     print(f"classified {period} ({cap_files[-1].name})")
-    for title, agg in (("bucket", by_bucket), ("rule", by_rule), ("domestic cap", by_cap)):
+    for title, agg in (
+        ("bucket", by_bucket),
+        ("rule", by_rule),
+        ("domestic cap", by_cap),
+    ):
         print(f"-- by {title} (% of total market value)")
         for k, v in sorted(agg.items(), key=lambda kv: -kv[1]):
             print(f"  {v / total * 100:6.2f}%  {k}")

@@ -28,7 +28,11 @@ def parse_links(html: str, base: str = PAGE_URL) -> dict[date, str]:
         m = _LIST_DATE.search(href)
         if not m:
             continue
-        d = date(int(m.group(3)), 6, 30) if m.group(2).lower().startswith("jun") else date(int(m.group(3)), 12, 31)
+        d = (
+            date(int(m.group(3)), 6, 30)
+            if m.group(2).lower().startswith("jun")
+            else date(int(m.group(3)), 12, 31)
+        )
         out.setdefault(d, str(httpx.URL(base).join(href)))
     return out
 

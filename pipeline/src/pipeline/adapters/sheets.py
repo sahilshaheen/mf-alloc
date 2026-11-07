@@ -27,4 +27,6 @@ def read_sheets(path: Path) -> dict[str, list[list]]:
             for sh in wb.sheets()
         }
     wb = openpyxl.load_workbook(io.BytesIO(raw), read_only=True, data_only=True)
-    return {n: [list(r) for r in wb[n].iter_rows(values_only=True)] for n in wb.sheetnames}
+    return {
+        n: [list(r) for r in wb[n].iter_rows(values_only=True)] for n in wb.sheetnames
+    }

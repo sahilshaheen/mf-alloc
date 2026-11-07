@@ -16,7 +16,9 @@ SITE = "https://www.miraeassetmf.co.in"
 API = SITE + "/AjaxService/GetDownloadsData"
 PAGE_SIZE = 200
 MAX_PAGES = 30
-_TITLE = re.compile(r"as on\s+\d{1,2}\w*\s+([A-Za-z]+)\s+(\d{4})\s+for\s+(.+)$", re.IGNORECASE)
+_TITLE = re.compile(
+    r"as on\s+\d{1,2}\w*\s+([A-Za-z]+)\s+(\d{4})\s+for\s+(.+)$", re.IGNORECASE
+)
 
 
 def parse_rows(rows: list[dict], period: Period) -> list[tuple[str, str, str]]:
@@ -37,16 +39,41 @@ def parse_rows(rows: list[dict], period: Period) -> list[tuple[str, str, str]]:
 def list_entries(client: httpx.Client, period: Period) -> list[Entry]:
     found: dict[str, Entry] = {}
     for page in range(1, MAX_PAGES + 1):
-        r = client.post(API, json={"request": {"modulename": "portfolio_tab1", "pgno": page, "pgsize": PAGE_SIZE}})
+        r = client.post(
+            API,
+            json={
+                "request": {
+                    "modulename": "portfolio_tab1",
+                    "pgno": page,
+                    "pgsize": PAGE_SIZE,
+                }
+            },
+        )
         r.raise_for_status()
         rows = r.json().get("Data") or []
         if not rows:
             break
         for name, url, title in parse_rows(rows, period):
-            found.setdefault(url, Entry(AMC, period, SITE + url, url.rsplit("/", 1)[1], scheme_name=name, title=title))
+            found.setdefault(
+                url,
+                Entry(
+                    AMC,
+                    period,
+                    SITE + url,
+                    url.rsplit("/", 1)[1],
+                    scheme_name=name,
+                    title=title,
+                ),
+            )
         # results are newest-first: stop once a whole page is older than the requested month
         dates = [_TITLE.search(x.get("Title") or "") for x in rows]
         years = [(int(m.group(2)), m.group(1)[:3].lower()) for m in dates if m]
-        if years and found and all((y, mo) != (period.year, period.month_abbr.lower()) for y, mo in years):
+        if (
+            years
+            and found
+            and all(
+                (y, mo) != (period.year, period.month_abbr.lower()) for y, mo in years
+            )
+        ):
             break
     return list(found.values())

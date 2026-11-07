@@ -31,5 +31,13 @@ def list_entries(client: httpx.Client, period: Period) -> list[Entry]:
     for url in candidate_urls(period):
         r = client.head(url)
         if r.status_code == 200:
-            return [Entry(AMC, period, url, url.rsplit("/", 1)[1], title=f"All schemes monthly portfolio {period}")]
+            return [
+                Entry(
+                    AMC,
+                    period,
+                    url,
+                    url.rsplit("/", 1)[1],
+                    title=f"All schemes monthly portfolio {period}",
+                )
+            ]
     return []

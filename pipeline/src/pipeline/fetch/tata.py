@@ -31,6 +31,12 @@ def list_entries(client: httpx.Client, period: Period) -> list[Entry]:
     r = client.get(PAGE_URL)
     r.raise_for_status()
     return [
-        Entry(AMC, period, SITE + p, urllib.parse.unquote(p.rsplit("/", 1)[1]), title=f"Monthly portfolio {period}")
+        Entry(
+            AMC,
+            period,
+            SITE + p,
+            urllib.parse.unquote(p.rsplit("/", 1)[1]),
+            title=f"Monthly portfolio {period}",
+        )
         for p in parse_links(r.text, period)
     ]

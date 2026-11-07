@@ -32,9 +32,7 @@ class Rule:
     note: str
 
     def matches(self, h: dict) -> bool:
-        return all(
-            p.search(h.get(f) or "") for f, p in self.patterns.items()
-        )
+        return all(p.search(h.get(f) or "") for f, p in self.patterns.items())
 
 
 def load_rules(path: Path | None = None) -> list[Rule]:

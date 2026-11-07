@@ -35,7 +35,14 @@ def parse_workbook(path: Path):
             s, h, f, i = parse_sheet(T, key, sheets[sheet], path.name)
         except LayoutError as e:
             if len(portfolio) > 1 and "ISIN header not found" in str(e):
-                issues.append(Issue(AMC, key, "warning", f"sheet {sheet!r} has no portfolio table; skipped"))
+                issues.append(
+                    Issue(
+                        AMC,
+                        key,
+                        "warning",
+                        f"sheet {sheet!r} has no portfolio table; skipped",
+                    )
+                )
                 continue
             issues.append(Issue(AMC, key, "error", str(e)))
             continue

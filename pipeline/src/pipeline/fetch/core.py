@@ -42,7 +42,11 @@ def _extract_zip(zpath: Path) -> int:
     with zipfile.ZipFile(zpath) as zf:
         for info in zf.infolist():
             base = Path(info.filename).name
-            if info.is_dir() or not base.lower().endswith((".xls", ".xlsx")) or base.startswith(("~", ".")):
+            if (
+                info.is_dir()
+                or not base.lower().endswith((".xls", ".xlsx"))
+                or base.startswith(("~", "."))
+            ):
                 continue
             (target / base).write_bytes(zf.read(info))
             n += 1
