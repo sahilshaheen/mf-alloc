@@ -1,7 +1,7 @@
 id,amc,section,subsection,listing,name,isin,bucket,note
-cash_nca,,,,,net receivable|net current asset|other current asset|margin amount|cash (&|and) cash eq|^cash( margin\b.*)?$|tri-?party|treps|reverse repo|corporate bond repo|^repo\b,,cash_like,Cash and repo lines are reported under whatever section precedes them (Motilal prints them after the last section)
+cash_nca,,,,,net receivable|net current asset|^(rep|trp)\d*_\d|other current asset|margin amount|cash (&|and) cash eq|^cash( margin\b.*)?$|tri-?party|treps|reverse repo|corporate bond repo|^repo\b,,cash_like,Cash and repo lines are reported under whatever section precedes them (Motilal prints them after the last section)
 commodity_heading,,,^(gold|silver)$,,,,commodities,Physical gold/silver bars sit under a bare heading
-commodity_section,,^(gold|silver)$,,,,,commodities,Gold/silver as a top-level section (ICICI, SBI, ABSL)
+commodity_section,,^(gold|silver|commodities)$,,,,,commodities,Gold/silver as a top-level section (ICICI, SBI, ABSL)
 commodity_listing,,,,^(gold|silver)$,,,commodities,
 commodity_name,,,,,^(gold|silver) (\d|bullion),,commodities,Bars with no heading (Wealth Company)
 fund_unit_isin,,,,,,^INF,fund_unit,INF ISINs are MF/ETF units; resolved by fund-of-funds look-through in compute
@@ -21,5 +21,7 @@ foreign_no_isin_motilal,^motilal$,^equity,,,,^$,equity_foreign,Motilal's US stoc
 alt_fund,,,alternative investment fund,,alternative investment fund,,other,AIF units: not looked through in v1
 swap,,^derivatives$,interest rate swap,,,,other,Swaps have no disclosed notional; excluded from exposure
 equity_domestic,,^equity,,,,,equity_domestic,
+equity_isin,,,,,,^INE\w{4}01\w{3}$,equity_domestic,Equity-share ISIN (security type 01) in a sheet that gives the row no section (DSP arbitrage funds)
+other_derivatives,,^derivatives$,,,,,other,Derivative lines carried as holdings; no notional here
 debt,,^(debt|securiti[sz]ed),,,,,debt,
-money_market,,^(money market|short term deposit),,,,,cash_like,Money-market instruments are cash-like (decision 1)
+money_market,,^(money market|short term deposit|reverse repo|treps),,,,,cash_like,Money-market instruments are cash-like (decision 1)

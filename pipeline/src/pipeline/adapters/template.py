@@ -31,7 +31,7 @@ _ISIN = re.compile(r"^[A-Z]{2}[A-Z0-9]{9}\d$")
 _AS_ON = re.compile(r"as\s+on\s*:?\s*([A-Za-z]+)\s+(\d{1,2})\s*,?\s*(\d{4})", re.IGNORECASE)
 _GRAND = re.compile(r"^(grand total|total net assets|net assets)\b", re.IGNORECASE)
 _CASH = re.compile(
-    r"treps|tri-?party|repo\b|net (current|receivable)|receivable|cash\b|margin amount|collateral",
+    r"treps|tri-?party|repo\b|net (current|receivable)|receivable|cash\b|margin amount|collateral|^(rep|trp)\d*_\d",
     re.IGNORECASE,
 )
 _TOP = re.compile(
@@ -48,10 +48,22 @@ _EXPIRY = re.compile(r"(\d{1,2})[./](\d{1,2})[./](\d{4})\s*$")
 _EXPIRY_MON = re.compile(r"(\d{1,2})[- ]([A-Za-z]{3})[- ](\d{4})\s*$")
 
 
+_IN_PORTFOLIO_FUT = re.compile(r"\b(stock|index|currency|commodity)\s+futures?\b", re.IGNORECASE)
+
+
 @dataclass(frozen=True)
 class Template:
     amc: str
     scheme_name: Callable[[list[list]], str | None]
+    # DSP lists futures inside the portfolio (industry column says "Stock Futures", negative value for
+    # shorts), so they are split out as futures rather than read as holdings. Its GRAND TOTAL excludes
+    # them (verified: equity block + money market + units + cash = the grand total to the paisa).
+    futures_in_portfolio: bool = False
+    # In-portfolio futures whose industry text contains one of these words are included in the AMC's
+    # GRAND TOTAL at signed value, so they are added back when reconciling. DSP: its total counts the
+    # "Index Futures" block but not the "Stock Futures" hedges (checked: every block subtotal then sums
+    # to the grand total).
+    total_includes_futures: tuple[str, ...] = ()
 
 
 def _as_isin(x) -> str | None:
@@ -81,6 +93,8 @@ def _cols(hdr: list, need_isin: bool) -> dict[str, int]:
             cols.setdefault("yield", j)
         elif h.startswith("long"):
             cols["side"] = j
+        elif h.startswith("maturity date"):
+            cols["maturity"] = j
     need = {"name", "industry", "qty", "mv", "pct"} | ({"isin"} if need_isin else set())
     missing = need - cols.keys()
     if missing:
@@ -179,6 +193,7 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
     futures: list[FuturePosition] = []
     issues: list[Issue] = []
     raw_pct: list[float | None] = []
+    inline_fut: list[tuple[float | None, float, int, bool]] = []  # raw pct, signed value, index, in total?
 
     def cell(r, j):
         return r[j] if j is not None and 0 <= j < len(r) else None
@@ -205,7 +220,14 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                 scale = 100.0 if gp is not None and gp > 1.5 else 1.0
                 for h, p in zip(holdings, raw_pct, strict=True):
                     h.pct_nav = p / scale if p is not None else None
-                finish_block(t.amc, key, holdings, mv, issues)
+                extra_mv = extra_pct = 0.0
+                for fp, v, k, counted in inline_fut:
+                    if fp is not None:
+                        futures[k].pct_nav = abs(fp) / scale
+                    if counted:
+                        extra_mv += v
+                        extra_pct += (fp or 0.0) / scale
+                finish_block(t.amc, key, holdings, mv, issues, extra_mv=extra_mv, extra_pct=extra_pct)
                 mode = "after"
                 continue
             if not label or low.startswith(("total", "sub total", "subtotal")):
@@ -230,6 +252,21 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                 continue
             if mv is None:
                 issues.append(Issue(t.amc, key, "warning", f"row {row_no}: {label!r} has no market value"))
+                continue
+            ind = clean(cell(r, cols["industry"])) or ""
+            if t.futures_in_portfolio and isin is None and _IN_PORTFOLIO_FUT.search(ind):
+                fp = num(cell(r, cols["pct"]))
+                exp = cell(r, cols.get("maturity"))
+                futures.append(
+                    FuturePosition(
+                        t.amc, key, row_no, "commodity" if "commodity" in ind.lower() else "stock_index",
+                        "short" if (qty if qty is not None else mv) < 0 else "long", label,
+                        exp.date() if isinstance(exp, datetime) else _expiry(label), None,
+                        abs(qty) if qty is not None else None, abs(mv), None,
+                    )
+                )  # fmt: skip
+                counted = any(k in ind.lower() for k in t.total_includes_futures)
+                inline_fut.append((fp, mv, len(futures) - 1, counted))
                 continue
             pct_cell = cell(r, cols["pct"])
             pct = num(pct_cell)
@@ -322,3 +359,23 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
     if mode == "main":
         issues.append(Issue(t.amc, key, "error", "portfolio ended without a GRAND TOTAL row"))
     return [scheme], holdings, futures, issues
+
+
+def parse_workbook(t: Template, path, skip_sheets: tuple[str, ...] = ("index",)):
+    """Parse every scheme sheet of a workbook (one sheet per scheme), skipping non-scheme sheets."""
+    from .sheets import read_sheets
+
+    schemes, holdings, futures, issues = [], [], [], []
+    for sheet, rows in read_sheets(path).items():
+        if sheet.lower() in skip_sheets:
+            continue
+        try:
+            s, h, f, i = parse_sheet(t, sheet, rows, path.name)
+        except LayoutError as e:
+            issues.append(Issue(t.amc, sheet, "error", str(e)))
+            continue
+        schemes += s
+        holdings += h
+        futures += f
+        issues += i
+    return schemes, holdings, futures, issues

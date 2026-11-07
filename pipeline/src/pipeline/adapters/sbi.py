@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from .common import LayoutError, clean
-from .sheets import read_sheets
-from .template import Template, parse_sheet
+from .common import clean
+from .template import Template
+from .template import parse_workbook as parse_workbook_sheets
 
 AMC = "sbi"
 
@@ -23,19 +23,4 @@ T = Template(AMC, _name)
 
 
 def parse_workbook(path: Path):
-    schemes, holdings, futures, issues = [], [], [], []
-    from ..schema import Issue
-
-    for sheet, rows in read_sheets(path).items():
-        if sheet.lower() == "index":
-            continue
-        try:
-            s, h, f, i = parse_sheet(T, sheet, rows, path.name)
-        except LayoutError as e:
-            issues.append(Issue(AMC, sheet, "error", str(e)))
-            continue
-        schemes += s
-        holdings += h
-        futures += f
-        issues += i
-    return schemes, holdings, futures, issues
+    return parse_workbook_sheets(T, path)
