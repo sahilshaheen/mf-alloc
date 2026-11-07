@@ -72,7 +72,7 @@ def _adapt_one(amc: str, args) -> int:
     period = Period.parse(args.period)
     adapter = ADAPTERS[amc]
     raw_dir = args.raw / amc / str(period)
-    files = sorted(p for p in raw_dir.iterdir() if p.suffix in (".xls", ".xlsx"))
+    files = sorted(p for p in raw_dir.rglob("*") if p.suffix in (".xls", ".xlsx"))
     if not files:
         print(f"no raw files in {raw_dir}", file=sys.stderr)
         return 1

@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import zipfile
 from datetime import UTC, datetime
 from pathlib import Path
 
@@ -27,6 +28,25 @@ def _sha256(path: Path) -> str:
         for chunk in iter(lambda: f.read(1 << 20), b""):
             h.update(chunk)
     return h.hexdigest()
+
+
+def _extract_zip(zpath: Path) -> int:
+    """Extract an AMC zip next to itself into <zip stem>/, flat, skipping anything unsafe.
+
+    Downloaded archives are untrusted: only plain .xls/.xlsx members are written, by base name,
+    so no member can escape the target directory or smuggle in other file types.
+    """
+    target = zpath.with_suffix("")
+    target.mkdir(exist_ok=True)
+    n = 0
+    with zipfile.ZipFile(zpath) as zf:
+        for info in zf.infolist():
+            base = Path(info.filename).name
+            if info.is_dir() or not base.lower().endswith((".xls", ".xlsx")) or base.startswith(("~", ".")):
+                continue
+            (target / base).write_bytes(zf.read(info))
+            n += 1
+    return n
 
 
 def _load_manifest(path: Path) -> dict:
@@ -81,6 +101,8 @@ def download_entries(
             else:
                 part.replace(dest)
                 record.update(status="ok", size=size, sha256=_sha256(dest))
+                if dest.suffix.lower() == ".zip":
+                    record["extracted"] = _extract_zip(dest)
                 counts["ok"] += 1
         except httpx.HTTPError as exc:
             part.unlink(missing_ok=True)
