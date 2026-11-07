@@ -124,6 +124,24 @@ Fund names here are not links yet (contributors carry no ISIN).
 column is 960px. Controls must grow with their text and never use fixed heights that long Malayalam or
 Hindi can overflow. Hide text that does not fit with a container query instead of clipping it.
 
+## Motion and interaction
+
+Minimum in place: side panels (fund detail on Funds, funds-behind on Breakdowns) share one `SidePanel`
+component and slide in from the right over 200 ms (a full-width sheet below 1100 px); every clickable item
+gets the `--hover` background shade with a 120 ms fade (rows, tabs, nav, buttons, legend rows); whole Funds rows
+are clickable, not only the name. Reduced motion turns it all off (global rule in `base.css`). Panels animate in
+only; closing is instant. Use the tokens (`--dur-*`, `--ease`) for anything new, transform and opacity only.
+
+Ideas to try later (unbuilt, none promised):
+- Close animation for panels (slide out, then unmount).
+- Numbers on the Overview count up once on first view, and segments grow in (`--dur-first`, once).
+- The logo's lens sweeps across the "looking through" bar when the Net/Gross toggle flips.
+- Shared-element move: a fund row's look-through bar glides into the panel's bar when it opens.
+- Cap and sector bars slide to their new widths when you switch tabs or flip Net/Gross.
+- Hovering a fund in the table highlights where its money sits in the Overview strata.
+- The "On this device" stamp settles into place on first load, then stays still.
+- Soft cross-fade between routes.
+
 ## Open items
 
 - Notes section on Overview (hedged funds, look-through, options), colour-blind pattern option, stale-data

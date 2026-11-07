@@ -1,5 +1,6 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Navigate, NavLink, useParams } from 'react-router'
+import { SidePanel } from '../components/SidePanel'
 import { formatInr, formatPercent } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
@@ -90,7 +91,8 @@ export function Breakdowns() {
   const { t } = useI18n()
   const { portfolio, view } = usePortfolio()
   const { bucket: param } = useParams()
-  const [group, setGroup] = useState<Group | null>(null)
+  const [panel, setPanel] = useState<Group | 'bucket' | null>(null)
+  const closePanel = useCallback(() => setPanel(null), [])
 
   if (!portfolio) return <Navigate to="/welcome" replace />
   const bucket = (param ?? 'equity_domestic') as Bucket
@@ -100,60 +102,62 @@ export function Breakdowns() {
   const totals = portfolio[view]
   const valueOf = (b: Bucket) => (b === 'other' ? totals.other + totals.fund_unit : totals[b])
   const value = valueOf(bucket)
-  const showingGroup = bucket === 'equity_domestic' ? group : null
-  const funds = showingGroup
-    ? dimensionContributors(portfolio, showingGroup.dimension, showingGroup.key, Infinity)
-    : topContributors(portfolio, view, bucket, Infinity)
-  const fundsTotal = showingGroup ? funds.reduce((sum, fund) => sum + fund.value, 0) : value
-  const behindName = showingGroup
-    ? showingGroup.dimension === 'cap'
-      ? t(`bd.cap.${showingGroup.key}` as TranslationKey)
-      : showingGroup.key
-    : bucketName(bucket)
+  const group = panel && panel !== 'bucket' ? panel : null
+
+  const funds = group ? dimensionContributors(portfolio, group.dimension, group.key, Infinity) : topContributors(portfolio, view, bucket, Infinity)
+  const fundsTotal = group ? funds.reduce((sum, fund) => sum + fund.value, 0) : value
+  const behindName = group ? (group.dimension === 'cap' ? t(`bd.cap.${group.key}` as TranslationKey) : group.key) : bucketName(bucket)
+  const behindTitle = t('bd.fundsBehind', { name: behindName })
 
   return (
-    <main className="bd">
-      <h1 className="serif">{t('bd.title')}</h1>
-      <p className="bd__intro">{t('bd.intro')}</p>
+    <div className="bd-layout">
+      <main className="bd">
+        <h1 className="serif">{t('bd.title')}</h1>
+        <p className="bd__intro">{t('bd.intro')}</p>
 
-      <nav className="bd__tabs" aria-label={t('bd.tabs')}>
-        {TABS.map((tab) => (
-          <NavLink key={tab} to={`/breakdowns/${tab}`} onClick={() => setGroup(null)} className={tab === bucket ? 'active' : undefined}>
-            <span className="bd__swatch" style={{ background: bucketFill(tab) }} />
-            {bucketName(tab)}
-            <span className="num">{formatPercent(valueOf(tab) / portfolio.total)}</span>
-          </NavLink>
-        ))}
-      </nav>
+        <nav className="bd__tabs" aria-label={t('bd.tabs')}>
+          {TABS.map((tab) => (
+            <NavLink key={tab} to={`/breakdowns/${tab}`} onClick={closePanel} className={tab === bucket ? 'active' : undefined}>
+              <span className="bd__swatch" style={{ background: bucketFill(tab) }} />
+              {bucketName(tab)}
+              <span className="num">{formatPercent(valueOf(tab) / portfolio.total)}</span>
+            </NavLink>
+          ))}
+        </nav>
 
-      <section>
-        <h2 className="serif">{bucketName(bucket)}</h2>
-        <p className="num bd__figures">
-          <span className="serif">{formatPercent(value / portfolio.total)}</span>
-          <span>{formatInr(value)}</span>
-        </p>
+        <section>
+          <h2 className="serif">{bucketName(bucket)}</h2>
+          <p className="num bd__figures">
+            <span className="serif">{formatPercent(value / portfolio.total)}</span>
+            <span>{formatInr(value)}</span>
+          </p>
+          {value > 0 && (
+            <button type="button" className="bd__open" aria-pressed={panel === 'bucket'} onClick={() => setPanel(panel === 'bucket' ? null : 'bucket')}>
+              {t('bd.fundsBehind', { name: bucketName(bucket) })} →
+            </button>
+          )}
 
-        {value === 0 && <p className="bd__note">{t('bd.empty')}</p>}
-        {value > 0 && bucket === 'equity_domestic' && <EquityDetail portfolio={portfolio} group={group} onSelect={setGroup} />}
-        {value > 0 && bucket !== 'equity_domestic' && <p className="bd__note">{t('bd.noDetail')}</p>}
+          {value === 0 && <p className="bd__note">{t('bd.empty')}</p>}
+          {value > 0 && bucket === 'equity_domestic' && (
+            <EquityDetail portfolio={portfolio} group={group} onSelect={(next) => setPanel(next)} />
+          )}
+          {value > 0 && bucket !== 'equity_domestic' && <p className="bd__note">{t('bd.noDetail')}</p>}
+        </section>
+      </main>
 
-        {funds.length > 0 && (
-          <>
-            <h3 className="serif" lang={showingGroup?.dimension === 'sector' ? 'en' : undefined}>
-              {t('bd.fundsBehind', { name: behindName })}
-            </h3>
-            <ul className="bd__funds">
-              {funds.map((fund) => (
-                <li key={fund.name}>
-                  <span lang="en">{fund.name}</span>
-                  <span className="num bd__pct">{formatPercent(fund.value / fundsTotal)}</span>
-                  <span className="num bd__amount">{formatInr(fund.value)}</span>
-                </li>
-              ))}
-            </ul>
-          </>
-        )}
-      </section>
-    </main>
+      {panel && (
+        <SidePanel label={behindTitle} title={behindTitle} titleLang={group?.dimension === 'sector' ? 'en' : undefined} onClose={closePanel}>
+          <ul className="bd__funds">
+            {funds.map((fund) => (
+              <li key={fund.name}>
+                <span lang="en">{fund.name}</span>
+                <span className="num bd__pct">{formatPercent(fund.value / fundsTotal)}</span>
+                <span className="num bd__amount">{formatInr(fund.value)}</span>
+              </li>
+            ))}
+          </ul>
+        </SidePanel>
+      )}
+    </div>
   )
 }

@@ -74,6 +74,11 @@
   color: var(--ink2);
 }
 
+.funds__row:not(.funds__row--head, [aria-selected='true']):hover {
+  background: var(--hover);
+  cursor: pointer;
+}
+
 .funds__row[aria-selected='true'] {
   background: var(--sheet);
   box-shadow: inset 3px 0 0 var(--ink);

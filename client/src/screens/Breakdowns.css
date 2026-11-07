@@ -1,4 +1,11 @@
+.bd-layout {
+  display: flex;
+  align-items: flex-start;
+}
+
 .bd {
+  flex: 1 1 0;
+  min-width: 0;
   max-width: 960px;
   margin: 0 auto;
   padding: 32px 40px 80px;
@@ -125,6 +132,11 @@
   cursor: pointer;
 }
 
+.bd__rows button:not([aria-pressed='true']):hover,
+.bd__tabs a:not(.active):hover {
+  background: var(--hover);
+}
+
 .bd__rows button[aria-pressed='true'] {
   background: var(--sheet);
   box-shadow: inset 3px 0 0 var(--ink);
@@ -152,6 +164,29 @@
 .bd__amount {
   color: var(--ink2);
   font-size: 14px;
+}
+
+.bd .bd__open {
+  margin-top: 12px;
+  padding: 8px 12px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 14px;
+  cursor: pointer;
+}
+
+.bd .bd__open:hover {
+  background: var(--hover);
+}
+
+.bd .bd__open[aria-pressed='true'] {
+  background: var(--sheet);
+  box-shadow: var(--shadow);
+}
+
+.bd__funds {
+  margin-top: 20px;
 }
 
 .bd__funds li {

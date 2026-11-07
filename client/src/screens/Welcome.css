@@ -61,6 +61,14 @@
   cursor: pointer;
 }
 
+.welcome button[type='submit']:not(:disabled):hover {
+  opacity: 0.88;
+}
+
+.welcome input[type='file']::file-selector-button:hover {
+  background: var(--hover);
+}
+
 .welcome button[type='submit']:disabled {
   opacity: 0.5;
   cursor: not-allowed;

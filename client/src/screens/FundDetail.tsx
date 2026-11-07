@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from 'react'
+import { useState } from 'react'
+import { SidePanel } from '../components/SidePanel'
 import { formatDate, formatInr, formatPercent } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
@@ -17,20 +18,7 @@ const weight = (vector: Vector, bucket: Bucket): number => (vector[bucket] ?? 0)
 export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void }) {
   const { t, language } = useI18n()
   const { view } = usePortfolio()
-  const closeButton = useRef<HTMLButtonElement>(null)
   const [copied, setCopied] = useState(false)
-
-  useEffect(() => {
-    closeButton.current?.focus()
-  }, [row.isin])
-
-  useEffect(() => {
-    const closeOnEscape = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') onClose()
-    }
-    window.addEventListener('keydown', closeOnEscape)
-    return () => window.removeEventListener('keydown', closeOnEscape)
-  }, [onClose])
 
   const { scheme } = row
   const category = scheme ? fundCategory(scheme) : null
@@ -43,76 +31,70 @@ export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void
   }
 
   return (
-    <aside className="fund-detail" aria-label={t('funds.detail')}>
-      <div className="fund-detail__top">
-        <h2 className="serif" lang="en">
-          {row.name}
-        </h2>
-        <button ref={closeButton} type="button" className="fund-detail__close" aria-label={t('funds.close')} onClick={onClose}>
-          ✕
-        </button>
-      </div>
-      <p className="num fund-detail__meta" lang="en">
-        {row.isin}
-        {scheme?.category ? ` · ${scheme.category}` : ''}
-      </p>
-      <p className="num fund-detail__value">
-        <span className="serif">{formatInr(row.value)}</span>
-        <span>
-          {scheme
-            ? t('funds.ofPortfolio', { pct: formatPercent(row.share), date: formatDate(scheme.as_of, language) })
-            : formatPercent(row.share)}
-        </span>
-      </p>
-
-      {category && (
-        <p className="fund-detail__category">
-          {category.minEquity > 0 ? t('funds.minEquity', { pct: formatPercent(category.minEquity) }) : t('funds.noMinEquity')}
+    <SidePanel label={t('funds.detail')} title={row.name} titleLang="en" onClose={onClose}>
+      <div className="fund-detail">
+        <p className="num fund-detail__meta" lang="en">
+          {row.isin}
+          {scheme?.category ? ` · ${scheme.category}` : ''}
         </p>
-      )}
+        <p className="num fund-detail__value">
+          <span className="serif">{formatInr(row.value)}</span>
+          <span>
+            {scheme
+              ? t('funds.ofPortfolio', { pct: formatPercent(row.share), date: formatDate(scheme.as_of, language) })
+              : formatPercent(row.share)}
+          </span>
+        </p>
 
-      {scheme ? (
-        <>
-          <div className="fund-detail__bar num" role="img" aria-label={present.map((b) => `${bucketName(b)} ${formatPercent(weight(row.vector, b))}`).join(', ')}>
-            {present.map((bucket) => (
-              <span
-                key={bucket}
-                style={{
-                  flex: `${weight(row.vector, bucket)} 1 0`,
-                  background: bucketFill(bucket),
-                  color: WHITE_TEXT_BUCKETS.has(bucket) ? '#ffffff' : '#1b2422',
-                }}
-              >
-                {weight(row.vector, bucket) >= MIN_SHARE_FOR_BAR_LABEL ? formatPercent(weight(row.vector, bucket)) : ''}
-              </span>
-            ))}
-          </div>
+        {category && (
+          <p className="fund-detail__category">
+            {category.minEquity > 0 ? t('funds.minEquity', { pct: formatPercent(category.minEquity) }) : t('funds.noMinEquity')}
+          </p>
+        )}
 
-          <h3 className="serif">{t('funds.calcTitle', { view: t(`overview.${view}`) })}</h3>
-          <table className="fund-detail__calc num" aria-label={t('funds.calcTitle', { view: t(`overview.${view}`) })}>
-            <tbody>
+        {scheme ? (
+          <>
+            <div className="fund-detail__bar num" role="img" aria-label={present.map((b) => `${bucketName(b)} ${formatPercent(weight(row.vector, b))}`).join(', ')}>
               {present.map((bucket) => (
-                <tr key={bucket}>
-                  <th scope="row">{bucketName(bucket)}</th>
-                  <td>{formatPercent(weight(row.vector, bucket))}</td>
-                  <td>{formatInr(row.value * weight(row.vector, bucket))}</td>
-                </tr>
+                <span
+                  key={bucket}
+                  style={{
+                    flex: `${weight(row.vector, bucket)} 1 0`,
+                    background: bucketFill(bucket),
+                    color: WHITE_TEXT_BUCKETS.has(bucket) ? '#ffffff' : '#1b2422',
+                  }}
+                >
+                  {weight(row.vector, bucket) >= MIN_SHARE_FOR_BAR_LABEL ? formatPercent(weight(row.vector, bucket)) : ''}
+                </span>
               ))}
-            </tbody>
-          </table>
-          {row.hedged && <p className="fund-detail__note">{view === 'net' ? t('funds.calcNote') : t('funds.calcNoteGross')}</p>}
-          {row.partialLookThrough && <p className="fund-detail__note">{t('funds.flagPartial')}</p>}
-          <p className="fund-detail__note">{t('funds.source', { date: formatDate(scheme.as_of, language) })}</p>
-        </>
-      ) : (
-        <p className="fund-detail__missing">{t('funds.notInData')}</p>
-      )}
+            </div>
 
-      <div className="fund-detail__actions">
-        <button type="button" onClick={copyIsin}>
-          {copied ? t('funds.copied') : t('funds.copyIsin')}
-        </button>
+            <h3 className="serif">{t('funds.calcTitle', { view: t(`overview.${view}`) })}</h3>
+            <table className="fund-detail__calc num" aria-label={t('funds.calcTitle', { view: t(`overview.${view}`) })}>
+              <tbody>
+                {present.map((bucket) => (
+                  <tr key={bucket}>
+                    <th scope="row">{bucketName(bucket)}</th>
+                    <td>{formatPercent(weight(row.vector, bucket))}</td>
+                    <td>{formatInr(row.value * weight(row.vector, bucket))}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+            {row.hedged && <p className="fund-detail__note">{view === 'net' ? t('funds.calcNote') : t('funds.calcNoteGross')}</p>}
+            {row.partialLookThrough && <p className="fund-detail__note">{t('funds.flagPartial')}</p>}
+            <p className="fund-detail__note">{t('funds.source', { date: formatDate(scheme.as_of, language) })}</p>
+          </>
+        ) : (
+          <p className="fund-detail__missing">{t('funds.notInData')}</p>
+        )}
+
+        <div className="fund-detail__actions">
+          <button type="button" onClick={copyIsin}>
+            {copied ? t('funds.copied') : t('funds.copyIsin')}
+          </button>
+        </div>
       </div>
-    </aside>
+    </SidePanel>
   )
 }

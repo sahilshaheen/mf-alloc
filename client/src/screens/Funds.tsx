@@ -88,7 +88,15 @@ export function Funds() {
               <span role="columnheader">{t('funds.colFlags')}</span>
             </div>
             {rows.map((row) => (
-              <div role="row" key={row.isin} className="funds__row" aria-selected={row.isin === isin}>
+              <div
+                role="row"
+                key={row.isin}
+                className="funds__row"
+                aria-selected={row.isin === isin}
+                onClick={(event) => {
+                  if (!(event.target as HTMLElement).closest('a')) navigate(`/funds/${row.isin}`)
+                }}
+              >
                 <span role="cell" className="funds__name">
                   <Link to={`/funds/${row.isin}`} lang="en" aria-current={row.isin === isin ? 'true' : undefined}>
                     {row.name}

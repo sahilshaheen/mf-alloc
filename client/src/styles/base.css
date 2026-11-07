@@ -49,6 +49,15 @@ a {
   outline-offset: 3px;
 }
 
+a,
+button,
+[role='row'] {
+  transition:
+    background-color var(--dur-fast) var(--ease),
+    box-shadow var(--dur-fast) var(--ease),
+    color var(--dur-fast) var(--ease);
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -22,6 +22,10 @@
   color: var(--ink3);
 }
 
+.segmented button:not([aria-pressed='true'], [aria-checked='true']):hover {
+  background: var(--hover);
+}
+
 .segmented button[aria-pressed='true'] {
   background: var(--sheet);
   box-shadow: var(--shadow);
