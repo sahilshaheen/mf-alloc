@@ -8,8 +8,7 @@ Your statement is parsed in the browser and never leaves your device. The only s
 
 | Component | State |
 |---|---|
-| `pipeline/` fetch, adapt, classify | Working. 13 AMCs, about 77% of industry AUM (Sep 2026 disclosures) |
-| `pipeline/` compute, publish | Not built |
+| `pipeline/` fetch, adapt, classify, compute, publish | Working. 13 AMCs, about 77% of industry AUM (Sep 2026 disclosures); bundle is 1,148 schemes, about 165 KB gzipped |
 | `client/` web app | Pending (Vite scaffold only) |
 
 ## How it works
@@ -21,7 +20,7 @@ Your statement is parsed in the browser and never leaves your device. The only s
 │ portfolio  │   │ (raw) │   │(canon-│   │ (buckets,│   │ (net/   │   │ (versioned │   │ exposure     │
 │ disclosures│   │       │   │ ical) │   │ cap, sec)│   │ gross)  │   │  bundle)   │   │ bundle       │
 └────────────┘   └───────┘   └───────┘   └──────────┘   └─────────┘   └────────────┘   └──────┬───────┘
-  built                built       built         built        not built      not built           │
+  built                built       built         built        built          built               │
                                                                                                 ▼
                                           CAS file ──► parse locally ──► join on ISIN ──► allocation views
                                                                            (client, pending)
@@ -32,8 +31,8 @@ Your statement is parsed in the browser and never leaves your device. The only s
 1. **fetch**: downloads each AMC's monthly portfolio file into `data/raw/<amc>/<YYYY-MM>/` with a `manifest.json` (URL, size, sha256, fetch time). AMCs that block scripts are handled by hand or a real browser session and recorded with `register`.
 2. **adapt**: one adapter per AMC turns its spreadsheet layout into canonical records (schemes, holdings, futures). Every scheme must reconcile to the sheet's own grand total, otherwise the run fails.
 3. **classify**: assigns each holding a Level-1 bucket (`equity_domestic`, `equity_foreign`, `debt`, `cash_like`, `commodities`, `real_assets`, `other`, plus `fund_unit` for MF/ETF units), and market cap and sector for domestic equity, using first-match-wins rules in `classify/rules.csv`.
-4. **compute** *(not built)*: net and gross exposure vectors per scheme, hedge netting from futures, look-through for fund-of-funds.
-5. **publish** *(not built)*: a static, versioned exposure bundle keyed by ISIN.
+4. **compute**: matches schemes to ISINs (AMFI's NAV file), then builds net and gross exposure vectors per scheme with hedge netting from futures and look-through for fund-of-funds. Hedges without a disclosed notional are flagged, not guessed; fund units it cannot resolve stay in `fund_unit`.
+5. **publish**: a static, versioned exposure bundle (`exposure-<YYYY-MM>.json` plus `manifest.json`), keyed by ISIN. It is built locally; uploading it to the data host is manual.
 
 **Client (private, per user)** *(pending)*
 
@@ -43,7 +42,19 @@ A PWA that reads the statement locally, matches folios to schemes by ISIN, joins
 
 - Privacy is checkable, not a badge: parsing happens on-device and the UI says so specifically.
 - Show uncertainty: unmatched ISINs, stale data and unclassified holdings get their own colour and count.
-- Describe, don't advise: no returns, tax or rebalancing suggestions in v1.
+- Describe, don't advise: no tax-loss harvesting, rebalancing or "buy/sell" suggestions.
+
+## Roadmap
+
+Analyses planned on top of the exposure bundle and the user's statement, roughly in build order. All are descriptive.
+
+1. **Look-through stock concentration:** a stock's share of the whole portfolio across funds, with the funds contributing to it.
+2. **Fund overlap:** shared holdings between the user's funds.
+3. **Sector and market-cap concentration** against a benchmark (needs benchmark constituents).
+4. **Debt credit quality and maturity** (needs ratings added to the canonical schema).
+5. **Change over time:** net and gross allocation month by month, from several bundle versions.
+6. **Portfolio XIRR** from transactions. Only the CAMS/KFintech detailed CAS carries them; the NSDL/CDSL CAS is holdings-only.
+7. **Regular vs Direct plans explainer:** a short, factual entry in the Data & method screen's terms section: what each plan type is, how the expense ratio differs, and that a distributor provides advice and service. No persuasive numbers, and it does not look at the user's own funds.
 
 Full UI and UX spec: [docs/design-spec.md](docs/design-spec.md).
 
@@ -56,6 +67,7 @@ pipeline/            Python 3.13, managed with uv
     fetch/           per-AMC downloaders
     adapters/        per-AMC parsers to the canonical schema (schema.py)
     classify/        bucket rules (rules.csv) and classifier
+    compute/         ISIN matching, exposure vectors, bundle build
     sources.py       manifest, `status` and `register` commands
   tests/
   data/              raw/ and staged/ are git-ignored
@@ -79,6 +91,8 @@ uv run pipeline fetch all  --period $P
 uv run pipeline status     --period $P
 uv run pipeline adapt all    --period $P
 uv run pipeline classify all --period $P
+uv run pipeline compute      --period $P
+uv run pipeline publish      --period $P
 ```
 
 The full monthly runbook, including AMCs that need a browser or hand download, is in [pipeline/README.md](pipeline/README.md).

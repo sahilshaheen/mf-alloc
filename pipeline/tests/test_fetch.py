@@ -40,3 +40,17 @@ def test_wealth_parse_downloads_from_rsc_payload():
     payload = json.dumps({"downloads": items}, separators=(",", ":"))
     html = "self.__next_f.push([1," + json.dumps(payload) + "])"
     assert wealth.parse_downloads(html)[0]["attachment"]["url"] == "/uploads/a_1.xlsx"
+
+
+def test_amfi_always_offers_the_nav_file_even_without_a_cap_list_yet():
+    import httpx
+
+    from pipeline.fetch import amfi
+
+    client = httpx.Client(
+        transport=httpx.MockTransport(
+            lambda request: httpx.Response(200, text="<html></html>")
+        )
+    )
+    entries = amfi.list_entries(client, Period(2026, 9))
+    assert [e.filename for e in entries] == ["NAVAll.txt"]
