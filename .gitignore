@@ -4,3 +4,9 @@
 pipeline/data/raw/
 pipeline/data/out/
 .env
+.playwright-mcp/
+__pycache__/
+*.pyc
+.venv/
+.ruff_cache/
+.pytest_cache/
