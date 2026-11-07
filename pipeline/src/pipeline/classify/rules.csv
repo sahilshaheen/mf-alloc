@@ -1,10 +1,16 @@
 id,amc,section,subsection,listing,name,isin,bucket,note
-cash_nca,,,,,net receivable|net current asset|^(rep|trp)\d*_\d|other current asset|margin amount|cash (&|and) cash eq|^cash( margin\b.*)?$|tri-?party|treps|reverse repo|corporate bond repo|^repo\b,,cash_like,Cash and repo lines are reported under whatever section precedes them (Motilal prints them after the last section)
+cash_nca,,,,,"net receivable|net current (asset|liabilit)|margin deposit|^(rep|trp)\d*_\d|other current asset|margin amount|cash (&|and) cash eq|^cash( margin\b.*)?$|tri-?party|treps|reverse repo|corporate bond repo|^(\(?\w{1,3}\)\s*)?repo\b",,cash_like,Cash and repo lines are reported under whatever section precedes them (Motilal prints them after the last section)
 commodity_heading,,,^(gold|silver)$,,,,commodities,Physical gold/silver bars sit under a bare heading
 commodity_section,,^(gold|silver|commodities)\b,,,,,commodities,Gold/silver as a top-level section (ICICI, SBI, ABSL)
 commodity_listing,,,,^(\(?\w\)\s*)?(gold|silver)$,,,commodities,
 commodity_name,,,,,^(gold|silver) (\d|bullion),,commodities,Bars with no heading (Wealth Company)
+commodity_physical,,,,,^(gold|silver) physical\b,,commodities,Tata files physical gold/silver bars under its equity section
+real_asset_isin,,,,,,^INE.{4}2[35],real_assets,"ISIN security type 23 = InvIT units, 25 = REIT units; AMCs file them under debt, money-market or derivatives headings and some name the sponsor instead of the trust. Bonds a trust issues have a debt type code and stay debt"
+equity_share_isin,,,,,,^INE\w{4}01\w{3}$,equity_domestic,"Equity-share ISIN (security type 01). Ahead of heading rules: stale headings (DSP ARBITRAGE after Foreign Securities, Nippon REIT, written-off SBI/ABSL stocks) otherwise mislabel Indian shares"
+tbill_isin,,,,,,^IN002\d{3}[A-Z],cash_like,"T-bill / cash management bill (letter in the ISIN marks the tenor), whatever heading it sits under (Tata files them under DEBT)"
+govt_bond_isin,,,,,,^IN[0-4]\d,debt,"Dated G-secs, STRIPS and state development loans are debt even when filed under a money-market heading (UTI, ABSL, SBI)"
 fund_unit_isin,,,,,,^INF,fund_unit,INF ISINs are MF/ETF units; resolved by fund-of-funds look-through in compute
+options_subsection,,,^options$,,,,other,HDFC prints written options after its Mutual Fund Units block; options have no disclosed notional
 fund_unit_heading,,,exchange traded fund|mutual fund unit,,,,fund_unit,
 fund_unit_listing,,,,exchange traded fund|mutual fund unit,,,fund_unit,
 fund_unit_section,,^(exchange traded funds|mutual fund units)$,,,,,fund_unit,
@@ -21,7 +27,7 @@ foreign_no_isin_motilal,^motilal$,^equity,,,,^$,equity_foreign,Motilal's US stoc
 alt_fund,,,alternative investment fund,,alternative investment fund,,other,AIF units: not looked through in v1
 swap,,^derivatives$,interest rate swap,,,,other,Swaps have no disclosed notional; excluded from exposure
 equity_domestic,,^equity,,,,,equity_domestic,
-equity_isin,,,,,,^INE\w{4}01\w{3}$,equity_domestic,Equity-share ISIN (security type 01) in a sheet that gives the row no section (DSP arbitrage funds)
 other_derivatives,,^derivatives$,,,,,other,Derivative lines carried as holdings; no notional here
+money_market_listing,,,,"^(\(?\w{1,3}\)\s*)?money market",,,cash_like,Tata nests money market under DEBT INSTRUMENTS as a lettered listing (D) MONEY MARKET INSTRUMENTS)
 debt,,^(debt|securiti[sz]ed),,,,,debt,
 money_market,,^(money market|short term deposit|reverse repo|treps),,,,,cash_like,Money-market instruments are cash-like (decision 1)

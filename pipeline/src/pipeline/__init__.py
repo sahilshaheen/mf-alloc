@@ -31,6 +31,23 @@ def main() -> int:
     c.add_argument("--period", required=True, help="portfolio as-of month, YYYY-MM")
     c.add_argument("--raw", type=Path, default=DEFAULT_ROOT)
     c.add_argument("--staged", type=Path, default=Path("data/staged"))
+    cp = sub.add_parser(
+        "compute", help="net and gross exposure per scheme, with look-through"
+    )
+    cp.add_argument("--period", required=True, help="portfolio as-of month, YYYY-MM")
+    cp.add_argument("--raw", type=Path, default=DEFAULT_ROOT)
+    cp.add_argument("--staged", type=Path, default=Path("data/staged"))
+    cp.add_argument("--out", type=Path, default=Path("data/computed"))
+    cp.add_argument(
+        "--max-unmatched",
+        type=float,
+        default=0.05,
+        help="fail if more than this fraction of schemes has no ISIN match",
+    )
+    pb = sub.add_parser("publish", help="build the public exposure bundle")
+    pb.add_argument("--period", required=True, help="portfolio as-of month, YYYY-MM")
+    pb.add_argument("--computed", type=Path, default=Path("data/computed"))
+    pb.add_argument("--out", type=Path, default=Path("data/out"))
     st = sub.add_parser(
         "status", help="per-AMC state for a month, plus what is left to do by hand"
     )
@@ -54,6 +71,10 @@ def main() -> int:
         return _adapt(args)
     if args.cmd == "classify":
         return _classify(args)
+    if args.cmd == "compute":
+        return _compute(args)
+    if args.cmd == "publish":
+        return _publish(args)
 
     period = Period.parse(args.period)
     names = list(AMCS) if args.amc == "all" else [args.amc]
@@ -191,4 +212,96 @@ def _classify(args) -> int:
         print("-- fallback rows (unclassified)")
         for k, v in sorted(fallback.items(), key=lambda kv: -kv[1])[:15]:
             print(f"  {v / total * 100:6.2f}%  {k}")
+    return 0
+
+
+def _read_jsonl(path: Path) -> list[dict]:
+    import json
+
+    return [json.loads(line) for line in path.read_text().splitlines()]
+
+
+def _compute(args) -> int:
+    import json
+    from datetime import date
+
+    from .compute.exposure import compute_exposures
+    from .compute.isins import load_overrides, match_schemes, parse_nav_all
+
+    month = Period.parse(args.period)
+    period = str(month)
+    nav_file = args.raw / "amfi" / period / "NAVAll.txt"
+    if not nav_file.exists():
+        print(f"{nav_file} missing; run `fetch amfi`", file=sys.stderr)
+        return 1
+    amcs = sorted(p.name for p in args.staged.iterdir() if (p / period).is_dir())
+
+    def load(name: str) -> list[dict]:
+        return [
+            r
+            for amc in amcs
+            for r in _read_jsonl(args.staged / amc / period / f"{name}.jsonl")
+        ]
+
+    schemes = load("schemes")
+    matched, unmatched = match_schemes(
+        schemes,
+        parse_nav_all(
+            nav_file.read_text(), live_since=date(month.year, month.month, 1)
+        ),
+        load_overrides(),
+    )
+    isin_to_scheme = {i: sid for sid, isins in matched.items() for i in isins}
+    exposures = compute_exposures(
+        load("holdings"),
+        load("classified"),
+        load("futures"),
+        isin_to_scheme,
+        {(s["amc"], s["scheme_key"]): s["grand_total_lakhs"] for s in schemes},
+    )
+
+    out_dir = args.out / period
+    out_dir.mkdir(parents=True, exist_ok=True)
+    flagged: dict[str, int] = {}
+    with (out_dir / "exposures.jsonl").open("w") as fh:
+        for s in schemes:
+            sid = (s["amc"], s["scheme_key"])
+            if sid not in exposures:
+                continue
+            e = exposures[sid]
+            for flag in e.flags:
+                flagged[flag] = flagged.get(flag, 0) + 1
+            row = {
+                "amc": s["amc"], "scheme_key": s["scheme_key"], "scheme_name": s["scheme_name"],
+                "as_of": s["as_of"], "isins": sorted(matched.get(sid, ())), "flags": sorted(e.flags),
+                "gross": dict(e.gross), "net": dict(e.net), "cap": dict(e.cap), "sector": dict(e.sector),
+            }  # fmt: skip
+            fh.write(json.dumps(row, sort_keys=True) + "\n")
+    names = {(s["amc"], s["scheme_key"]): s["scheme_name"] for s in schemes}
+    print(
+        f"{period}: {len(exposures)} schemes, {len(matched)} with ISINs, flags {flagged} -> {out_dir}"
+    )
+    for amc, key in unmatched:
+        print(f"  no ISIN: {amc} {key} {names[(amc, key)]}", file=sys.stderr)
+    if len(unmatched) > args.max_unmatched * len(schemes):
+        print(f"{len(unmatched)} of {len(schemes)} schemes unmatched", file=sys.stderr)
+        return 1
+    return 0
+
+
+def _publish(args) -> int:
+    import gzip
+
+    from .compute.publish import build_bundle, write_bundle
+
+    period = str(Period.parse(args.period))
+    bundle = build_bundle(
+        period, _read_jsonl(args.computed / period / "exposures.jsonl")
+    )
+    entry = write_bundle(bundle, args.out)
+    gzipped = len(gzip.compress((args.out / entry["file"]).read_bytes()))
+    print(
+        f"{args.out / entry['file']}: {entry['schemes']} schemes, {len(bundle['isins'])} ISINs, "
+        f"{entry['bytes']:,} bytes ({gzipped:,} gzipped)"
+    )
     return 0

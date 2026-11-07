@@ -51,3 +51,18 @@ def test_repo_counterparty_lines_without_isin_are_cash_not_headings():
     _, h, _, issues = parse_sheet(kotak.T, "KT", _sheet(rows), "f.xlsx")
     assert not _errors(issues), issues
     assert len(h) == 2
+
+
+def test_coupon_or_instrument_code_before_the_name_is_not_taken_as_the_name():
+    rows = [
+        ["Debt Instruments"],
+        [None, 0.0755, "REC LTD**", "INE020B08FH7", "CRISIL AAA", 6.33, 2500, 600.0, 60.0],
+        [None, "CP", "NATIONAL BANK FOR AGRICULTURE & RURAL DEVELOPMENT**", "INE261F14PZ7", "ICRA A1+", 6.35, 35000, 400.0, 40.0],
+        [None, None, None, None, "Grand Total", None, None, 1000.0, 100.0],
+    ]  # fmt: skip
+    _, h, _, issues = parse_sheet(kotak.T, "KT", _sheet(rows), "f.xlsx")
+    assert not _errors(issues), issues
+    assert [x.name for x in h] == [
+        "REC LTD",
+        "NATIONAL BANK FOR AGRICULTURE & RURAL DEVELOPMENT",
+    ]

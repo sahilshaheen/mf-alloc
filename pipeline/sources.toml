@@ -13,10 +13,10 @@
 # Portfolios are due ~10 days after month-end (SEBI), so run the month after next month's 10th.
 
 [amfi]
-name = "AMFI market-cap categorisation"
+name = "AMFI market-cap list and NAV file"
 method = "script"
 page = "https://www.amfiindia.com/otherdata/categorisation-of-stocks"
-note = "Half-yearly (Jun/Dec). `fetch amfi` picks the latest list dated before the portfolio month. Needed by classify."
+note = "Half-yearly (Jun/Dec). `fetch amfi` picks the latest list dated before the portfolio month. Needed by classify. Also fetches NAVAll.txt (scheme ISINs), needed by compute."
 
 [sbi]
 name = "SBI Mutual Fund"

@@ -1,4 +1,6 @@
-"""AMFI half-yearly large/mid/small cap categorisation list (a reference input, not an AMC).
+"""AMFI reference inputs (not an AMC): the cap categorisation list and the NAV file.
+
+The NAV file (NAVAll.txt) is only used for its scheme-to-ISIN map; it is a snapshot of the day it is fetched.
 
 The page lists one xlsx per half-year, with inconsistent URLs, so links are scraped from the page.
 A list covers the six months ended on its date and applies to portfolios reported after that date:
@@ -16,6 +18,8 @@ from .model import Entry, Period
 
 AMC = "amfi"
 PAGE_URL = "https://www.amfiindia.com/otherdata/categorisation-of-stocks"
+
+NAV_URL = "https://portal.amfiindia.com/spages/NAVAll.txt"
 
 _LINK = re.compile(r'href="([^"]+\.xlsx)"', re.IGNORECASE)
 _LIST_DATE = re.compile(r"(\d{1,2})[_ ]?(Jun|June|Dec)[_ ]?(\d{4})", re.IGNORECASE)
@@ -50,13 +54,17 @@ def applicable_list(links: dict[date, str], period: Period) -> tuple[date, str] 
 def list_entries(client: httpx.Client, period: Period) -> list[Entry]:
     r = client.get(PAGE_URL)
     r.raise_for_status()
+    nav = Entry(
+        AMC, period, NAV_URL, "NAVAll.txt", title="AMFI NAV file (scheme ISINs)"
+    )
     hit = applicable_list(parse_links(r.text), period)
     if hit is None:
-        return []
+        return [nav]
     d, url = hit
     return [
         Entry(
             AMC, period, url, f"market_cap_{d.isoformat()}.xlsx",
             title=f"AMFI cap list, six months ended {d.isoformat()}",
-        )
+        ),
+        nav,
     ]  # fmt: skip

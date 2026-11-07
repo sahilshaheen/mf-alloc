@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import csv
 import re
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 
@@ -67,6 +68,12 @@ class Classifier:
     def __init__(self, caps: dict[str, str], rules: list[Rule] | None = None):
         self.caps = caps
         self.rules = rules or load_rules()
+        # A face-value split reissues the ISIN with a new serial (last three characters) after the
+        # half-yearly cap list was published; issuer + security type identify the same share.
+        per_prefix = Counter(isin[:9] for isin in caps)
+        self._cap_by_prefix = {
+            isin[:9]: cap for isin, cap in caps.items() if per_prefix[isin[:9]] == 1
+        }
 
     def classify(self, h: dict) -> dict:
         # `section` falls back to nothing: rows with no heading are matched by name/subsection/listing.
@@ -78,7 +85,8 @@ class Classifier:
             bucket, rule_id = "other", "fallback"
         cap = sector = None
         if bucket == "equity_domestic":
-            cap = self.caps.get(h.get("isin") or "", "unknown")
+            isin = h.get("isin") or ""
+            cap = self.caps.get(isin) or self._cap_by_prefix.get(isin[:9], "unknown")
             ind = (h.get("industry_or_rating") or "").strip()
             sector = ind if ind and ind.lower() not in _NO_SECTOR else None
         return {

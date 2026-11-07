@@ -11,3 +11,4 @@ __pycache__/
 .ruff_cache/
 .pytest_cache/
 pipeline/data/staged/
+pipeline/data/computed/

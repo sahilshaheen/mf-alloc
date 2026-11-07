@@ -14,13 +14,27 @@ uv run pipeline adapt <uti|motilal|nippon|wealth|sbi|icici|absl|dsp|ppfas|mirae|
 
 Parses raw files into canonical records (`src/pipeline/schema.py`) at `data/staged/<amc>/<YYYY-MM>/{schemes,holdings,futures,issues}.jsonl`. Exits non-zero if any block fails validation (holdings must sum to the sheet's GRAND TOTAL).
 
-`amfi` is a reference input, not an AMC: the half-yearly large/mid/small cap list. For a portfolio period it fetches the latest list dated before that month (Sept 2026 -> the 30 Jun 2026 list).
+`amfi` is a reference input, not an AMC. For a portfolio period it fetches the latest half-yearly large/mid/small cap list dated before that month (Sept 2026 -> the 30 Jun 2026 list), and `NAVAll.txt`, whose only use here is the scheme-to-ISIN map. `NAVAll.txt` is a snapshot of the day it is fetched, so fetch it close to the run.
 
 ```
 uv run pipeline classify <uti|motilal|nippon|wealth|sbi|icici|absl|dsp|ppfas|mirae|tata|all> --period YYYY-MM
 ```
 
-Assigns each holding a Level-1 bucket, plus market cap and sector for domestic equity, into `data/staged/<amc>/<YYYY-MM>/classified.jsonl`, and prints weight by bucket and rule. Needs `fetch amfi` first. Rules are first-match-wins in `src/pipeline/classify/rules.csv`; anything unmatched becomes `other` (rule `fallback`) and is listed. `fund_unit` marks MF/ETF units that the compute stage will replace with the underlying fund's exposure.
+Assigns each holding a Level-1 bucket, plus market cap and sector for domestic equity, into `data/staged/<amc>/<YYYY-MM>/classified.jsonl`, and prints weight by bucket and rule. Needs `fetch amfi` first. Rules are first-match-wins in `src/pipeline/classify/rules.csv`. Rules on the ISIN's security type (equity share, InvIT/REIT unit, T-bill, G-sec/SDL/STRIPS) come before heading-based rules, because AMCs' headings go stale or misfile instruments; anything unmatched becomes `other` (rule `fallback`) and is listed. `fund_unit` marks MF/ETF units that the compute stage will replace with the underlying fund's exposure.
+
+```
+uv run pipeline compute --period YYYY-MM [--max-unmatched 0.05]
+```
+
+Writes `data/computed/<YYYY-MM>/exposures.jsonl`: per scheme, gross and net vectors by bucket, plus market cap and sector, all as fractions of NAV (the scheme's grand total). Where an AMC counts futures in its grand total (Motilal, DSP), that gap is added to cash, since the adapters reconcile holdings plus exactly those futures to the total. Net applies futures (short futures turn hedged equity into cash; long futures add exposure funded from cash, direction from `side`, never from the sign of the notional). Fund units that resolve to another disclosed scheme are replaced by that scheme's vectors, recursively; others stay in `fund_unit`. Schemes worth zero (written-off segregated portfolios) are skipped.
+
+Each scheme is matched to its ISINs by normalised name within its AMC (`compute/isins.py`). Only plans with a non-zero NAV published since the portfolio month began count: segregated portfolios share the live scheme's name in NAVAll.txt and are told apart only by a zero or years-old NAV. Names that differ beyond that go in `compute/overrides.csv`; the rest are listed on stderr as `no ISIN`, and the run fails if more than `--max-unmatched` of schemes are unmatched. Flags on a scheme: `hedge_notional_missing` (a future has no notional, so it was not netted: The Wealth Company publishes prices and margin only) and `unresolved_fund_units` (a fund unit could not be resolved, e.g. overseas funds, AIF units, AMCs not covered); both carry up through look-through.
+
+```
+uv run pipeline publish --period YYYY-MM
+```
+
+Builds the public bundle in `data/out/`: `exposure-<YYYY-MM>.json` (schemes without an ISIN are left out; `isins` maps every plan/option ISIN to an index into `schemes`) and `manifest.json`, whose `latest` entry gives the newest period's file, sha256 and size. Upload both to the data host; the build does not.
 
 ## Monthly run (next month's disclosures)
 
@@ -36,6 +50,8 @@ uv run pipeline register hdfc  --period $P  # provenance for files not fetched b
 uv run pipeline register kotak --period $P
 uv run pipeline adapt all    --period $P
 uv run pipeline classify all --period $P
+uv run pipeline compute --period $P         # also fetch amfi first if NAVAll.txt is not there yet
+uv run pipeline publish --period $P
 uv run pipeline status --period $P          # all ok? any CHECK lines? (wrong-month file, errors, big scheme-count drop)
 ```
 
