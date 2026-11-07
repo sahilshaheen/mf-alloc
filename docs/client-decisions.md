@@ -33,7 +33,9 @@ Other statement types are rejected with a clear message. The redacted real state
 (its holdings are real), and the integration test skips when the file is absent.
 
 **Net and gross.** Net counts hedged equity as cash-like. Gross is as reported. Funds missing from the
-bundle count as Other.
+bundle sit in the "Not classified" asset class (internally the `other` bucket, which also holds anything
+the pipeline could not classify) and as "Not in our data" under Level 1. They are never called "Other",
+because we do not know what they hold.
 
 **No comparison narrative.** We do not compare "what labels say" with "what funds hold". The labels give
 only floors, so the comparison depended on an arbitrary choice of which labels count as equity. The
