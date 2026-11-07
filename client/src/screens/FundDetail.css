@@ -110,11 +110,6 @@
   font-weight: 400;
 }
 
-.fund-detail__calc thead th {
-  font-size: 13px;
-  color: var(--ink3);
-}
-
 .fund-detail__calc th[scope='row'] {
   padding-left: 0;
   text-align: left;

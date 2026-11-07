@@ -5,6 +5,7 @@ import type { TranslationKey } from '../i18n/translator'
 import { fundCategory } from '../portfolio/fundCategory'
 import type { FundRow } from '../portfolio/fundsModel'
 import { BUCKETS, type Bucket, type Vector } from '../portfolio/types'
+import { usePortfolio } from '../portfolio/usePortfolio'
 import { bucketFill, WHITE_TEXT_BUCKETS } from './bucketStyle'
 import './FundDetail.css'
 
@@ -15,6 +16,7 @@ const weight = (vector: Vector, bucket: Bucket): number => (vector[bucket] ?? 0)
 
 export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void }) {
   const { t, language } = useI18n()
+  const { view } = usePortfolio()
   const closeButton = useRef<HTMLButtonElement>(null)
   const [copied, setCopied] = useState(false)
 
@@ -86,28 +88,19 @@ export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void
             ))}
           </div>
 
-          <h3 className="serif">{t('funds.calcTitle')}</h3>
-          <table className="fund-detail__calc num">
-            <thead>
-              <tr>
-                <th scope="col" />
-                <th scope="col">{t('overview.gross')}</th>
-                <th scope="col">{t('overview.net')}</th>
-                <th scope="col">{formatInr(row.value)}</th>
-              </tr>
-            </thead>
+          <h3 className="serif">{t('funds.calcTitle', { view: t(`overview.${view}`) })}</h3>
+          <table className="fund-detail__calc num" aria-label={t('funds.calcTitle', { view: t(`overview.${view}`) })}>
             <tbody>
-              {SHOWN_BUCKETS.filter((bucket) => weight(scheme.gross, bucket) > 0 || weight(scheme.net, bucket) > 0).map((bucket) => (
+              {present.map((bucket) => (
                 <tr key={bucket}>
                   <th scope="row">{bucketName(bucket)}</th>
-                  <td>{formatPercent(weight(scheme.gross, bucket))}</td>
-                  <td>{formatPercent(weight(scheme.net, bucket))}</td>
+                  <td>{formatPercent(weight(row.vector, bucket))}</td>
                   <td>{formatInr(row.value * weight(row.vector, bucket))}</td>
                 </tr>
               ))}
             </tbody>
           </table>
-          {row.hedged && <p className="fund-detail__note">{t('funds.calcNote')}</p>}
+          {row.hedged && <p className="fund-detail__note">{view === 'net' ? t('funds.calcNote') : t('funds.calcNoteGross')}</p>}
           {row.partialLookThrough && <p className="fund-detail__note">{t('funds.flagPartial')}</p>}
           <p className="fund-detail__note">{t('funds.source', { date: formatDate(scheme.as_of, language) })}</p>
         </>

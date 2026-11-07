@@ -89,7 +89,8 @@ checkable in the repository. Add a source whenever a new rule is added.
 **Funds.** Rows are merged by ISIN (several folios of one fund become one row), sorted by value. The Net/Gross
 choice lives in the portfolio context, so Overview and Funds share it. The design's "category says vs
 look-through says" bar is replaced by the SEBI category line and its stated equity minimum (or "SEBI states no
-minimum"), then the look-through bar and a gross-versus-net table by asset class. The bundle has no per-holding
+minimum"), then the look-through bar and a table by asset class for the selected view only (the panel follows the Net/Gross
+toggle; it never shows both at once). The bundle has no per-holding
 data, so the calculation shows only what the gross and net vectors support. Flags: hedged (gross equity
 exceeds net by more than 0.5% of the fund), partial look-through (`unresolved_fund_units`), not in our data,
 and holdings more than two months older than the statement date.
