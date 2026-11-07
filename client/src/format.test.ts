@@ -1,6 +1,6 @@
 // @vitest-environment node
 import { describe, expect, it } from 'vitest'
-import { formatDate, formatInr, formatPercent } from './format'
+import { formatBytes, formatDate, formatInr, formatPercent } from './format'
 
 describe('formatInr', () => {
   it.each([
@@ -25,5 +25,16 @@ describe('formatDate', () => {
     expect(formatDate('2026-10-31', 'en')).toBe('31 Oct 2026')
     expect(formatDate('2026-10-31', 'hi')).toMatch(/^31 .+ 2026$/)
     expect(formatDate('2026-10-31', 'ml')).toMatch(/^31 .+ 2026$|^2026 .+ 31$/)
+  })
+})
+
+describe('formatBytes', () => {
+  it.each([
+    [0, '0 B'],
+    [512, '512 B'],
+    [1126, '1.1 KB'],
+    [4089446, '3.9 MB'],
+  ])('writes %d bytes as %s', (bytes, expected) => {
+    expect(formatBytes(bytes)).toBe(expected)
   })
 })

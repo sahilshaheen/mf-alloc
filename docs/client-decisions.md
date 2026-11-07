@@ -8,9 +8,9 @@ decision changes.
 
 Built: i18n (en, hi, ml), shell and header, statement parser (CAMS Summary), bundle loader and ISIN join,
 Welcome (upload and password), Overview, Data and method (short, with cited sources), Funds (table, search,
-fund detail panel at `/funds/:isin`). Asset classes and Privacy are placeholders.
+fund detail panel at `/funds/:isin`), Privacy. Asset classes is a placeholder.
 
-Next, in order: Privacy, Asset classes, then the rest of the
+Next, in order: Asset classes, then the rest of the
 Welcome design, mobile polish of the new screens, dark-mode toggle, PWA, export.
 
 Run: see the root README. Check a change in a browser at 390, 768, 1024 and 1440 px, in English and
@@ -97,6 +97,18 @@ Deferred from the design: row selection with an aggregate bar, Category/AMC/Grou
 controls, the holdings-as-of column, CSV export, AMC display names (the bundle holds only AMC codes), and the
 mobile card layout (phones show name, ISIN, value and flags only).
 
+**Privacy page.** Every claim on it is something the code does today, checked by reading the code and by
+inspecting the page's own request list in a browser (all requests same-origin, none carrying the file).
+It says: the PDF is read in the browser; the only network request in the code is a plain download of the
+public fund data; the data is identical for everyone; no analytics or third-party resources; the app keeps
+fund name, folio, ISIN, units, NAV and value in memory and not name, PAN or address; nothing is written to
+browser storage. It deliberately does not claim, because they are not true or not built yet:
+a content-security-policy (one exists in untracked `deploy/_headers` but is not confirmed live), "save on this
+device" (not built), a reproducible-build hash, and discarding folio numbers (they are kept in memory).
+The live request list reads `performance.getEntriesByType('resource')`; sizes are body sizes, and request
+bodies cannot be shown, so the page does not claim to show them. Re-check these claims whenever storage, a
+service worker (PWA), analytics or any new network call is added.
+
 **Layout.** Compact header below 1180px (nav scrolls, language switch on its own row on phones); content
 column is 960px. Controls must grow with their text and never use fixed heights that long Malayalam or
 Hindi can overflow. Hide text that does not fit with a container query instead of clipping it.
@@ -113,5 +125,6 @@ Hindi can overflow. Hide text that does not fit with a container query instead o
   hide contributors under a small share of the bucket, or show "and N others".
 - On phones the nav scrolls sideways and the active item can sit partly off-screen.
 - The new Overview was checked in English (1440, 390) and Malayalam (390) only, not Hindi.
+- Confirm `deploy/_headers` (CSP with `connect-src 'self'`) is what is deployed, then add the CSP promise to the Privacy page.
 - Whether REITs count as equity-related from 1 Jan 2026 rests on secondary sources, not the circular.
 - AMFI category text, not each scheme's offer document, decides its SEBI category.

@@ -3,6 +3,7 @@ import { Header } from './components/Header'
 import { DataMethod } from './screens/DataMethod'
 import { Funds } from './screens/Funds'
 import { Overview } from './screens/Overview'
+import { Privacy } from './screens/Privacy'
 import { Screen } from './screens/Screen'
 import { Welcome } from './screens/Welcome'
 
@@ -16,7 +17,7 @@ export default function App() {
         <Route path="/asset-classes" element={<Screen title="nav.assetClasses" />} />
         <Route path="/funds/:isin?" element={<Funds />} />
         <Route path="/data-and-method" element={<DataMethod />} />
-        <Route path="/privacy" element={<Screen title="nav.privacy" />} />
+        <Route path="/privacy" element={<Privacy />} />
       </Routes>
     </>
   )
