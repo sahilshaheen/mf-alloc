@@ -1,3 +1,3 @@
-from . import absl, dsp, icici, motilal, nippon, ppfas, sbi, uti, wealth
+from . import absl, dsp, icici, mirae, motilal, nippon, ppfas, sbi, tata, uti, wealth
 
-ADAPTERS = {m.AMC: m for m in (motilal, nippon, uti, wealth, sbi, icici, absl, dsp, ppfas)}
+ADAPTERS = {m.AMC: m for m in (motilal, nippon, uti, wealth, sbi, icici, absl, dsp, ppfas, mirae, tata)}
