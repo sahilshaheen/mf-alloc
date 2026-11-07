@@ -104,7 +104,7 @@ def _as_isin(x) -> str | None:
     return s if s and _ISIN.match(s) else None
 
 
-def _cols(hdr: list, need_isin: bool) -> dict[str, int]:
+def _cols(hdr: list, portfolio: bool) -> dict[str, int]:
     cols: dict[str, int] = {}
     for j, v in enumerate(hdr):
         if not isinstance(v, str):
@@ -140,11 +140,22 @@ def _cols(hdr: list, need_isin: bool) -> dict[str, int]:
     ):
         # Kotak's money-market sheets leave the Industry/Rating header blank; it is the column after the ISIN
         cols["industry"] = cols["isin"] + 1
-    need = {"name", "industry", "qty", "mv", "pct"} | ({"isin"} if need_isin else set())
+    # Futures tables (e.g. PPFAS's "Name | Long / (Short) | Quantity | Market value | % to AUM") have no industry.
+    need = {"name", "qty", "mv", "pct"} | ({"isin", "industry"} if portfolio else set())
     missing = need - cols.keys()
     if missing:
         raise LayoutError(f"header missing {sorted(missing)}: {hdr}")
     return cols
+
+
+def _futures_header(row: list, joined: str) -> dict[str, int] | None:
+    """Columns of a futures table's own header row, or None if the row is not one."""
+    if "quantity" not in joined or "value" not in joined:
+        return None
+    try:
+        return _cols(row, portfolio=False)
+    except LayoutError:
+        return None
 
 
 def _find_as_of(rows: list[list]) -> date | None:
@@ -253,7 +264,7 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
     )
     if hdr_idx is None:
         raise LayoutError(f"{key}: ISIN header not found")
-    cols = _cols(rows[hdr_idx], need_isin=True)
+    cols = _cols(rows[hdr_idx], portfolio=True)
     meta = rows[:hdr_idx]
     as_of = _find_as_of(meta)
     name = t.scheme_name(meta)
@@ -452,6 +463,8 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
             if ucols is not None and not futures:
                 fcols_u, mode = ucols, "underlying"
                 continue
+            # PPFAS prints the futures table's header before its "Index / Stock Futures" heading.
+            fcols = _futures_header(r, joined) or fcols
             if _FUT_HEADING.fullmatch(joined.strip(" :")) and mv is None:
                 fut_kind = "commodity" if "commodity" in joined else "stock_index"
                 mode = "futures"
@@ -482,13 +495,9 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
             continue
         if mode == "futures":
             hdr_text = " ".join(t_.lower() for t_ in texts)
-            if "quantity" in hdr_text and (
-                "market value" in hdr_text or "value" in hdr_text
-            ):
-                try:
-                    fcols = _cols(r, need_isin=False)
-                except LayoutError:
-                    pass
+            header = _futures_header(r, hdr_text)
+            if header is not None:
+                fcols = header
                 continue
             if not texts:
                 continue
@@ -501,9 +510,9 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                 if re.search(r"future", hdr_text) and len(texts) <= 2:
                     fut_kind = "commodity" if "commodity" in hdr_text else "stock_index"
                 continue
-            side_cell = clean(cell(r, fcols.get("side")))
-            if side_cell and side_cell.lower() in ("long", "short"):
-                side = side_cell.lower()
+            side_cell = (clean(cell(r, fcols.get("side"))) or "").strip("() ").lower()
+            if side_cell in ("long", "short"):
+                side = side_cell
             else:
                 side = "short" if (fq if fq is not None else fm) < 0 else "long"
             fp = num(cell(r, fcols["pct"]))
@@ -511,7 +520,7 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
             futures.append(
                 FuturePosition(
                     t.amc, key, row_no, fut_kind, side, fname_clean, _expiry(fname_clean),
-                    clean(cell(r, fcols["industry"])),
+                    clean(cell(r, fcols.get("industry"))),
                     abs(fq) if fq is not None else None,
                     abs(fm) if fm is not None else None,
                     abs(fp) / scale if fp is not None else None,

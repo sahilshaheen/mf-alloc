@@ -194,3 +194,25 @@ def test_classifier_new_rules():
     assert (
         c(name="Sovereign", section="Securitised Debt", isin="IN0020250011") == "debt"
     )
+
+
+def test_ppfas_futures_use_their_own_table_header_not_the_portfolio_columns():
+    t = Template("ppfas", lambda m: "Test Fund")
+    rows = [
+        [None, "HDFC Bank", "INE040A01034", "Banks", 10, 1000.0, 1.0, None],
+        [None, "GRAND TOTAL", None, None, None, 1000.0, 1.0, None],
+        [],
+        [None, "Derivatives"],
+        [None, "Name of the Instrument", "Long / (Short)", "Quantity", "Market value \n(Rs. in Lakhs)", "% to AUM", "Notes & Symbols"],
+        ["Index / Stock Futures"],
+        ["HDFBOCT26", "HDFC Bank Limited October 2026 Future", "(Short)", -2477150, -900.0, -0.9],
+        ["NIFTYFOCT26", "NIFTY October 2026 Future", "Long", 780, 50.0, 0.05],
+    ]  # fmt: skip
+    _, _, f, issues = parse_sheet(t, "K", _sheet(rows), "f.xlsx")
+    assert not [i for i in issues if i.level == "error"], issues
+    assert [
+        (x.side, x.quantity, x.notional_lakhs, x.pct_nav, x.industry) for x in f
+    ] == [
+        ("short", 2477150, 900.0, 0.9, None),
+        ("long", 780, 50.0, 0.05, None),
+    ]
