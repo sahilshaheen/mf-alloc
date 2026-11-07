@@ -26,10 +26,17 @@ def main() -> int:
     a.add_argument("--period", required=True, help="portfolio as-of month, YYYY-MM")
     a.add_argument("--raw", type=Path, default=DEFAULT_ROOT)
     a.add_argument("--out", type=Path, default=Path("data/staged"))
+    c = sub.add_parser("classify", help="assign holdings to buckets")
+    c.add_argument("amc", choices=[*ADAPTERS, "all"])
+    c.add_argument("--period", required=True, help="portfolio as-of month, YYYY-MM")
+    c.add_argument("--raw", type=Path, default=DEFAULT_ROOT)
+    c.add_argument("--staged", type=Path, default=Path("data/staged"))
     args = ap.parse_args()
 
     if args.cmd == "adapt":
         return _adapt(args)
+    if args.cmd == "classify":
+        return _classify(args)
 
     period = Period.parse(args.period)
     names = list(AMCS) if args.amc == "all" else [args.amc]
@@ -93,3 +100,47 @@ def _adapt_one(amc: str, args) -> int:
         f"{len(futures)} futures, {errors} errors, {len(issues) - errors} warnings -> {out_dir}"
     )
     return 1 if errors else 0
+
+
+def _classify(args) -> int:
+    import collections
+    import json
+
+    from .classify import Classifier, load_cap_list
+
+    period = Period.parse(args.period)
+    cap_files = sorted((args.raw / "amfi" / str(period)).glob("market_cap_*.xlsx"))
+    if not cap_files:
+        print(f"no AMFI cap list in {args.raw}/amfi/{period}; run `fetch amfi`", file=sys.stderr)
+        return 1
+    clf = Classifier(load_cap_list(cap_files[-1]))
+    names = list(ADAPTERS) if args.amc == "all" else [args.amc]
+    by_bucket: dict[str, float] = collections.defaultdict(float)
+    by_rule: dict[str, float] = collections.defaultdict(float)
+    by_cap: dict[str, float] = collections.defaultdict(float)
+    fallback: dict[tuple, float] = collections.defaultdict(float)
+    for amc in names:
+        d = args.staged / amc / str(period)
+        holdings = [json.loads(x) for x in (d / "holdings.jsonl").read_text().splitlines()]
+        with (d / "classified.jsonl").open("w") as out:
+            for h in holdings:
+                c = clf.classify(h)
+                out.write(json.dumps(c) + "\n")
+                mv = h["market_value_lakhs"] or 0.0
+                by_bucket[c["bucket"]] += mv
+                by_rule[c["rule"]] += mv
+                if c["cap"]:
+                    by_cap[c["cap"]] += mv
+                if c["rule"] == "fallback":
+                    fallback[(amc, h["section"], h["subsection"], h["listing"])] += mv
+    total = sum(by_bucket.values()) or 1.0
+    print(f"classified {period} ({cap_files[-1].name})")
+    for title, agg in (("bucket", by_bucket), ("rule", by_rule), ("domestic cap", by_cap)):
+        print(f"-- by {title} (% of total market value)")
+        for k, v in sorted(agg.items(), key=lambda kv: -kv[1]):
+            print(f"  {v / total * 100:6.2f}%  {k}")
+    if fallback:
+        print("-- fallback rows (unclassified)")
+        for k, v in sorted(fallback.items(), key=lambda kv: -kv[1])[:15]:
+            print(f"  {v / total * 100:6.2f}%  {k}")
+    return 0

@@ -1,0 +1,21 @@
+id,amc,section,subsection,listing,name,isin,bucket,note
+cash_nca,,,,,net receivable|net current asset|cash (&|and) cash eq|^cash( margin\b.*)?$|tri-?party|treps|reverse repo|corporate bond repo|^repo\b,,cash_like,Cash and repo lines are reported under whatever section precedes them (Motilal prints them after the last section)
+commodity_heading,,,^(gold|silver)$,,,,commodities,Physical gold/silver bars sit under a bare heading
+commodity_listing,,,,^(gold|silver)$,,,commodities,
+commodity_name,,,,,^(gold|silver) (\d|bullion),,commodities,Bars with no heading (Wealth Company)
+fund_unit_isin,,,,,,^INF,fund_unit,INF ISINs are MF/ETF units; resolved by fund-of-funds look-through in compute
+fund_unit_heading,,,exchange traded fund|mutual fund unit,,,,fund_unit,
+fund_unit_listing,,,,exchange traded fund|mutual fund unit,,,fund_unit,
+fund_unit_section,,^(exchange traded funds|mutual fund units)$,,,,,fund_unit,
+real_asset_heading,,,^(reit|invit|reits/invits|real est inv trust)s?$,,,,real_assets,
+real_asset_listing,,,,^(reit|invit)s?$,,,real_assets,
+real_asset_name,,^(equity|others),,,\b(infrastructure investment trust|real estate investment trust|invit|reit)\b,,real_assets,Only outside debt sections: REIT-issued NCDs are debt
+cdmdf,,,,,corporate debt market development fund,,debt,CDMDF holds corporate bonds and G-secs; treated as debt (judgement call)
+foreign_heading,,^equity,foreign|overseas|international,,,,equity_foreign,Nippon overseas ETFs carry IN ISINs so the heading decides
+foreign_listing,,^equity|^$,,foreign|overseas|international,,,equity_foreign,
+foreign_no_isin_motilal,^motilal$,^equity,,,,^$,equity_foreign,Motilal's US stocks have no ISIN. UTI's no-ISIN equity rows are suspended Indian stocks with dummy ISINs
+alt_fund,,,alternative investment fund,,alternative investment fund,,other,AIF units: not looked through in v1
+swap,,^derivatives$,interest rate swap,,,,other,Swaps have no disclosed notional; excluded from exposure
+equity_domestic,,^equity,,,,,equity_domestic,
+debt,,^debt,,,,,debt,
+money_market,,^(money market|short term deposit),,,,,cash_like,Money-market instruments are cash-like (decision 1)
