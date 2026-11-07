@@ -3,6 +3,7 @@ from . import (
     dsp,
     hdfc,
     icici,
+    kotak,
     mirae,
     motilal,
     nippon,
@@ -28,5 +29,6 @@ ADAPTERS = {
         mirae,
         tata,
         hdfc,
+        kotak,
     )
 }

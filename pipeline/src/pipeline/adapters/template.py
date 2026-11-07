@@ -37,9 +37,13 @@ _AS_ON_NUM = re.compile(
 _AS_ON_DMY = re.compile(
     r"as\s+on\s*:?\s*(\d{1,2})[-\s]([A-Za-z]{3,9})[-\s,]+(\d{4})", re.IGNORECASE
 )
+_COMMODITY_FUT = re.compile(
+    r"\b(gold|silver|crude|copper|natural gas|zinc|aluminium)\b", re.IGNORECASE
+)
+_REPO_SUB = re.compile(r"repo|treps|tri-?party", re.IGNORECASE)
 _GRAND = re.compile(r"^(grand total|total net assets|net assets)\b", re.IGNORECASE)
 _CASH = re.compile(
-    r"treps|tri-?party|repo\b|net (current|receivable)|receivable|cash\b|margin amount|collateral|^(rep|trp)\d*_\d",
+    r"treps|tri-?party|repo\b|net (current|receivable)|receivable|cash\b|margin amount|margin deposit|collateral|^(rep|trp)\d*_\d",
     re.IGNORECASE,
 )
 _TOP = re.compile(
@@ -88,6 +92,11 @@ class Template:
     futures_name_marker: str | None = None
     # Tata lists interest-rate swaps (at notional) under an "IRS"/"swaps" heading; its totals exclude them.
     skip_swaps: bool = False
+    # Kotak lists futures in the portfolio under a bare "Futures" sub-heading (underlying ISIN, signed
+    # quantity, market value = quantity x price, i.e. a real notional). futures_heading_in_total says
+    # whether the scheme's grand total already counts them.
+    futures_heading: bool = False
+    futures_heading_in_total: bool = False
 
 
 def _as_isin(x) -> str | None:
@@ -123,6 +132,14 @@ def _cols(hdr: list, need_isin: bool) -> dict[str, int]:
             cols["side"] = j
         elif h.startswith("maturity date"):
             cols["maturity"] = j
+    if (
+        "industry" not in cols
+        and "isin" in cols
+        and "qty" in cols
+        and cols["qty"] > cols["isin"] + 1
+    ):
+        # Kotak's money-market sheets leave the Industry/Rating header blank; it is the column after the ISIN
+        cols["industry"] = cols["isin"] + 1
     need = {"name", "industry", "qty", "mv", "pct"} | ({"isin"} if need_isin else set())
     missing = need - cols.keys()
     if missing:
@@ -267,10 +284,20 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
         row_no = idx + 1
         label = clean(cell(r, cols["name"]))
         if not label:
-            # HDFC prints headings and totals in the ISIN column and instrument names one column over
-            alt = clean(cell(r, cols["isin"]))
-            if alt and not _as_isin(alt):
-                label = alt
+            # HDFC prints headings and totals in the ISIN column and names one column over; Kotak's
+            # header says "Name of Instrument" in column A but the names sit two columns to its right.
+            lo, hi = sorted((cols["name"], cols["isin"]))
+            for j in range(lo, hi + 1):
+                alt = clean(cell(r, j))
+                if alt and not _as_isin(alt):
+                    label = alt
+                    break
+            else:
+                tot = clean(cell(r, cols["industry"]))
+                if tot and re.match(r"(grand )?total\b", tot, re.IGNORECASE):
+                    label = (
+                        tot  # Kotak prints Total / Grand Total in the Industry column
+                    )
         low = (label or "").lower()
         mv = num(cell(r, cols["mv"]))
         texts = [clean(c) for c in r if isinstance(c, str) and clean(c)]
@@ -313,7 +340,9 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                 isin is None
                 and qty is None
                 and mv is not None
-                and _CASH.search(label)
+                and (
+                    _CASH.search(label) or _REPO_SUB.search(f"{top or ''} {sub or ''}")
+                )
                 and not _is_subtotal_heading(rows, idx, cols["mv"], cols["name"], mv)
             )
             if isin is None and qty is None and not cash_item:
@@ -361,6 +390,25 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                 inline_fut.append((fp, mv, len(futures) - 1, False))
                 continue
             ind = clean(cell(r, cols["industry"])) or ""
+            if (
+                t.futures_heading
+                and (sub or "").lower() == "futures"
+                and (isin is not None or qty is not None)
+            ):
+                fp = num(cell(r, cols["pct"]))
+                futures.append(
+                    FuturePosition(
+                        t.amc, key, row_no,
+                        "commodity" if isin is None and _COMMODITY_FUT.search(label) else "stock_index",
+                        "short" if (qty if qty is not None else mv) < 0 else "long",
+                        label, _expiry(label), None, abs(qty) if qty is not None else None, abs(mv), None,
+                        underlying_isin=isin,
+                    )
+                )  # fmt: skip
+                inline_fut.append(
+                    (fp, mv, len(futures) - 1, t.futures_heading_in_total)
+                )
+                continue
             if (
                 t.futures_in_portfolio
                 and isin is None
