@@ -1,0 +1,59 @@
+@import './tokens.css';
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Hanken Grotesk Variable', 'Noto Sans Devanagari', 'Noto Sans Malayalam', system-ui, sans-serif;
+  font-size: 16px;
+  line-height: 1.55;
+}
+
+:lang(hi) body {
+  line-height: 1.75;
+}
+
+:lang(ml) body {
+  font-size: 14.5px;
+  line-height: 1.85;
+}
+
+.serif {
+  font-family: 'Newsreader Variable', 'Tiro Devanagari Hindi', 'Noto Serif Malayalam', Georgia, serif;
+  font-optical-sizing: auto;
+}
+
+.num {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+button,
+input {
+  font: inherit;
+  color: inherit;
+}
+
+a {
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
