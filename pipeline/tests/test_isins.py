@@ -2,7 +2,12 @@ from datetime import date
 
 import pytest
 
-from pipeline.compute.isins import match_schemes, normalise, parse_nav_all
+from pipeline.compute.isins import (
+    match_schemes,
+    normalise,
+    parse_nav_all,
+    parse_nav_categories,
+)
 
 NAV = """Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Plan;Option;Net Asset Value;Date
 
@@ -71,3 +76,25 @@ def test_override_points_a_scheme_at_its_amfi_name():
         overrides={("hdfc", "B"): "HDFC Top 100 Fund"},
     )
     assert matched[("hdfc", "B")] >= {"INF179K01AA1"} and unmatched == []
+
+
+def test_categories_come_from_the_heading_above_each_isin():
+    text = """Scheme Code;ISIN Div Payout/ ISIN Growth;ISIN Div Reinvestment;Scheme Name;Plan;Option;Net Asset Value;Date
+
+Open Ended Schemes(Equity Scheme - Large Cap Fund)
+
+HDFC Mutual Fund
+
+1;INF179K01AA1;INF179K01AC7;HDFC Top 100 Fund;Direct Plan;Growth;10;06-Nov-2026
+
+Close Ended Schemes(Income)
+
+Axis Mutual Fund
+
+2;INF846K01AA1;-;Axis FMP;Direct Plan;Growth;10;06-Nov-2026
+"""
+    assert parse_nav_categories(text) == {
+        "INF179K01AA1": "Equity Scheme - Large Cap Fund",
+        "INF179K01AC7": "Equity Scheme - Large Cap Fund",
+        "INF846K01AA1": "Income",
+    }

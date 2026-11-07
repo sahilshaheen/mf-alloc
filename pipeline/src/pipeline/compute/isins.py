@@ -28,6 +28,7 @@ AMFI_HEADINGS = {
 _AMC_BY_HEADING = {heading: amc for amc, heading in AMFI_HEADINGS.items()}
 _PARENTHETICAL = re.compile(r"\([^)]*\)")
 _NON_ALNUM = re.compile(r"[^a-z0-9]+")
+_CATEGORY_HEADING = re.compile(r"^[^;()]*Schemes?\((.*)\)$")
 
 
 def normalise(name: str) -> str:
@@ -57,6 +58,19 @@ def parse_nav_all(text: str, live_since: date) -> dict[tuple[str, str], set[str]
             out[(amc, normalise(fields[3]))] |= {
                 i for i in fields[1:3] if i not in ("", "-")
             }
+    return out
+
+
+def parse_nav_categories(text: str) -> dict[str, str]:
+    """ISIN -> SEBI category, from the `Open Ended Schemes(<category>)` heading above each block."""
+    out: dict[str, str] = {}
+    category: str | None = None
+    for line in map(str.strip, text.splitlines()):
+        if ";" not in line:
+            heading = _CATEGORY_HEADING.match(line)
+            category = heading[1] if heading else category
+        elif category and not line.startswith("Scheme Code"):
+            out |= {i: category for i in line.split(";")[1:3] if i not in ("", "-")}
     return out
 
 

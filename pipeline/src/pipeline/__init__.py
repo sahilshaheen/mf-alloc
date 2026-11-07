@@ -226,7 +226,12 @@ def _compute(args) -> int:
     from datetime import date
 
     from .compute.exposure import compute_exposures
-    from .compute.isins import load_overrides, match_schemes, parse_nav_all
+    from .compute.isins import (
+        load_overrides,
+        match_schemes,
+        parse_nav_all,
+        parse_nav_categories,
+    )
 
     month = Period.parse(args.period)
     period = str(month)
@@ -251,6 +256,7 @@ def _compute(args) -> int:
         ),
         load_overrides(),
     )
+    categories = parse_nav_categories(nav_file.read_text())
     isin_to_scheme = {i: sid for sid, isins in matched.items() for i in isins}
     exposures = compute_exposures(
         load("holdings"),
@@ -274,6 +280,7 @@ def _compute(args) -> int:
             row = {
                 "amc": s["amc"], "scheme_key": s["scheme_key"], "scheme_name": s["scheme_name"],
                 "as_of": s["as_of"], "isins": sorted(matched.get(sid, ())), "flags": sorted(e.flags),
+                "category": next((categories[i] for i in sorted(matched.get(sid, ())) if i in categories), None),
                 "gross": dict(e.gross), "net": dict(e.net), "cap": dict(e.cap), "sector": dict(e.sector),
             }  # fmt: skip
             fh.write(json.dumps(row, sort_keys=True) + "\n")

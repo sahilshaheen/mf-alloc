@@ -31,6 +31,7 @@ def build_bundle(period: str, rows: list[dict]) -> dict[str, Any]:
             {
                 "amc": r["amc"],
                 "name": r["scheme_name"],
+                "category": r.get("category"),
                 "as_of": r["as_of"],
                 **{k: _rounded(r[k]) for k in ("gross", "net", "cap", "sector")},
                 "flags": sorted(r["flags"]),
