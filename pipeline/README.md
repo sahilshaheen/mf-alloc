@@ -22,6 +22,29 @@ uv run pipeline classify <uti|motilal|nippon|wealth|sbi|icici|absl|dsp|ppfas|mir
 
 Assigns each holding a Level-1 bucket, plus market cap and sector for domestic equity, into `data/staged/<amc>/<YYYY-MM>/classified.jsonl`, and prints weight by bucket and rule. Needs `fetch amfi` first. Rules are first-match-wins in `src/pipeline/classify/rules.csv`; anything unmatched becomes `other` (rule `fallback`) and is listed. `fund_unit` marks MF/ETF units that the compute stage will replace with the underlying fund's exposure.
 
+## Monthly run (next month's disclosures)
+
+`sources.toml` is the manifest of where every AMC's file comes from and how. `pipeline status` reads it.
+
+```sh
+P=2026-10                                   # the month-end the portfolios are "as on"
+uv run pipeline fetch amfi --period $P      # market-cap list (new one only appears Jan/Jul)
+uv run pipeline fetch all  --period $P      # every scripted AMC (a manifest.json is written per AMC/month)
+uv run pipeline status --period $P          # what is missing, with the exact steps for each hand/browser AMC
+# do the hand/browser ones it lists (HDFC: browser session; Kotak: download by hand), then:
+uv run pipeline register hdfc  --period $P  # provenance for files not fetched by script
+uv run pipeline register kotak --period $P
+uv run pipeline adapt all    --period $P
+uv run pipeline classify all --period $P
+uv run pipeline status --period $P          # all ok? any CHECK lines? (wrong-month file, errors, big scheme-count drop)
+```
+
+Portfolios are due about 10 days after month-end, so run it after the 10th. Each month's files land in `data/raw/<amc>/<YYYY-MM>/`
+with a `manifest.json` (source URL or page, how obtained, size, sha256). `status` flags a sheet whose as-on date is not the
+requested month (a stale file), any reconciliation error, and a scheme count that fell more than 10% against
+`last_schemes` in `sources.toml` (update those numbers after a good run). When an AMC changes layout or URL, edit its
+fetcher, and its entry in `sources.toml`.
+
 ## Coverage
 
 Parsed and reconciled against each scheme's own grand total: Nippon, UTI, Motilal Oswal, The Wealth Company, SBI, ICICI Prudential, Aditya Birla Sun Life, DSP, PPFAS, Mirae Asset, Tata, HDFC.

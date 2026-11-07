@@ -1,0 +1,157 @@
+# Where each AMC's monthly portfolio comes from, and how to get it again next month.
+# Read by `pipeline status --period YYYY-MM` and `pipeline register`. Edit this file when an AMC changes.
+#
+# method:
+#   script   `pipeline fetch <amc> --period YYYY-MM` downloads it (fetch/<amc>.py has the page/API details)
+#   browser  site refuses scripts but serves a normal browser session with no challenge; save the files from
+#            a real browser (a person, or a browser session driven at human pace) into dest, then `register`
+#   manual   site challenges automated browsers (captcha); a person downloads the file(s) into dest, then `register`
+#   todo     not covered yet
+#
+# last_period / last_schemes: what the previous successful run produced; `status` flags a big drop.
+# Files always go to data/raw/<amc>/<YYYY-MM>/ ; period = the month-end the portfolio is "as on".
+# Portfolios are due ~10 days after month-end (SEBI), so run the month after next month's 10th.
+
+[amfi]
+name = "AMFI market-cap categorisation"
+method = "script"
+page = "https://www.amfiindia.com/otherdata/categorisation-of-stocks"
+note = "Half-yearly (Jun/Dec). `fetch amfi` picks the latest list dated before the portfolio month. Needed by classify."
+
+[sbi]
+name = "SBI Mutual Fund"
+method = "script"
+page = "https://www.sbimf.com/portfolios"
+note = "One workbook, a sheet per scheme. URL is built from the period; an 'all-scheme-' variant is tried too."
+last_period = "2026-09"
+last_schemes = 119
+
+[icici]
+name = "ICICI Prudential"
+method = "script"
+page = "https://www.icicipruamc.com"
+note = "A zip per month at a pattern URL (listing API refuses scripts). Zip is extracted next to itself."
+last_period = "2026-09"
+last_schemes = 151
+
+[nippon]
+name = "Nippon India"
+method = "script"
+page = "https://mf.nipponindiaim.com"
+last_period = "2026-09"
+last_schemes = 112
+
+[absl]
+name = "Aditya Birla Sun Life"
+method = "script"
+page = "https://mutualfund.adityabirlacapital.com"
+note = "JSON from FactsheetAccordionById; the CDN host in the JSON is retired and is rewritten to the site host. Real .xls (OLE)."
+last_period = "2026-09"
+last_schemes = 104
+
+[uti]
+name = "UTI"
+method = "script"
+page = "https://www.utimf.com"
+last_period = "2026-09"
+last_schemes = 83
+note = "A few scheme files (FF, SJ) are missing from UTI's own disclosure; warnings are expected."
+
+[dsp]
+name = "DSP"
+method = "script"
+page = "https://www.dspim.com/mandatory-disclosures/portfolio-disclosures"
+last_period = "2026-09"
+last_schemes = 91
+
+[mirae]
+name = "Mirae Asset"
+method = "script"
+page = "https://www.miraeassetmf.co.in"
+note = "POST /AjaxService/GetDownloadsData lists one xlsx per scheme, newest first."
+last_period = "2026-09"
+last_schemes = 99
+
+[tata]
+name = "Tata"
+method = "script"
+page = "https://www.tatamutualfund.com"
+note = "One workbook per month. If a month has several uploads the latest (e.g. _REVISED) is taken."
+last_period = "2026-09"
+last_schemes = 68
+
+[ppfas]
+name = "PPFAS (Parag Parikh)"
+method = "script"
+page = "https://amc.ppfas.com"
+note = "Only the combined workbook is fetched, not the per-scheme duplicates."
+last_period = "2026-09"
+last_schemes = 7
+
+[motilal]
+name = "Motilal Oswal"
+method = "script"
+page = "https://www.motilaloswalmf.com"
+last_period = "2026-09"
+last_schemes = 90
+
+[wealth]
+name = "The Wealth Company"
+method = "script"
+page = "https://www.wealthcompanyamc.in"
+last_period = "2026-09"
+last_schemes = 12
+
+[hdfc]
+name = "HDFC Mutual Fund"
+method = "browser"
+page = "https://www.hdfcfund.com/statutory-disclosure/portfolio/monthly-portfolio"
+files = "one .xlsx per scheme (~110), links on files.hdfcfund.com"
+steps = [
+  "Open the page in a normal browser (scripts/curl get 403, a browser session is served normally).",
+  "Click the month button (shows e.g. 'Oct - 2026'), click the month name inside it, pick the month you want.",
+  "Save every link ending .xlsx on the page into data/raw/hdfc/<YYYY-MM>/ at human pace (~1 file/second).",
+  "Check no file for another month slipped in (the page can keep a stale link from the previous month).",
+]
+note = "Each file: portfolio sheet + 0-2 'Derivative...' sheets. Futures notional comes from the Derivative sheets."
+last_period = "2026-09"
+last_schemes = 110
+
+[kotak]
+name = "Kotak Mutual Fund"
+method = "manual"
+page = "https://www.kotakmf.com/Information/statutory-disclosure"
+files = "one workbook, 'Consolidated SEBI Portfolio as on <month-end>' (~120 scheme sheets)"
+steps = [
+  "Open the page, Portfolios dropdown -> 'Consolidated & Fortnightly Portfolio'.",
+  "Download 'Consolidated SEBI Portfolio as on <month end>' (ConsolidatedSEBIPortfolio<Month><Year>.xlsx). Skip the Fortnightly ones.",
+  "Save it into data/raw/kotak/<YYYY-MM>/.",
+]
+note = "Automated browsers get a Radware hCaptcha when the dropdown changes; a person's browser does not. Do not automate."
+last_period = "2026-09"
+last_schemes = 119
+
+[axis]
+name = "Axis Mutual Fund"
+method = "todo"
+note = "Files behind a token-based, encrypted API. A person can download by hand; needs a sample file to write the adapter."
+
+[bandhan]
+name = "Bandhan"
+method = "todo"
+note = "Encrypted CMS call. Same as Axis."
+
+[edelweiss]
+name = "Edelweiss"
+method = "todo"
+note = "403 to scripts; not yet tried in a real browser."
+
+[canara_robeco]
+name = "Canara Robeco"
+method = "todo"
+note = "403 to scripts; not yet tried in a real browser."
+
+[others]
+name = "Invesco, HSBC, Franklin, quant, Sundaram and the rest"
+method = "todo"
+note = "Reachable but not built; each needs page discovery and a sample file."

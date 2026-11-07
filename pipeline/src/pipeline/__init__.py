@@ -31,7 +31,24 @@ def main() -> int:
     c.add_argument("--period", required=True, help="portfolio as-of month, YYYY-MM")
     c.add_argument("--raw", type=Path, default=DEFAULT_ROOT)
     c.add_argument("--staged", type=Path, default=Path("data/staged"))
+    st = sub.add_parser(
+        "status", help="per-AMC state for a month, plus what is left to do by hand"
+    )
+    st.add_argument("--period", required=True, help="portfolio as-of month, YYYY-MM")
+    st.add_argument("--raw", type=Path, default=DEFAULT_ROOT)
+    st.add_argument("--staged", type=Path, default=Path("data/staged"))
+    rg = sub.add_parser(
+        "register", help="write manifest.json for files saved by hand or a browser"
+    )
+    rg.add_argument("amc")
+    rg.add_argument("--period", required=True, help="portfolio as-of month, YYYY-MM")
+    rg.add_argument("--raw", type=Path, default=DEFAULT_ROOT)
     args = ap.parse_args()
+
+    if args.cmd == "status":
+        return _status(args)
+    if args.cmd == "register":
+        return _register(args)
 
     if args.cmd == "adapt":
         return _adapt(args)
@@ -57,6 +74,28 @@ def main() -> int:
             if counts["failed"]:
                 rc = 1
     return rc
+
+
+def _status(args) -> int:
+    from .sources import load_sources, render_status
+
+    Period.parse(args.period)
+    text, attention = render_status(args.period, load_sources(), args.raw, args.staged)
+    print(text)
+    return 1 if attention else 0
+
+
+def _register(args) -> int:
+    from .sources import load_sources, register
+
+    Period.parse(args.period)
+    sources = load_sources()
+    if args.amc not in sources:
+        print(f"{args.amc}: not in sources.toml", file=sys.stderr)
+        return 2
+    n = register(args.amc, sources[args.amc], args.period, args.raw)
+    print(f"{args.amc} {args.period}: {n} file(s) registered")
+    return 0
 
 
 def _adapt(args) -> int:
