@@ -51,6 +51,7 @@ _TOP = re.compile(
     r"foreign|treps|reverse repo|cash|commodit|gold|silver|real estate|infrastructure investment)",
     re.IGNORECASE,
 )
+_TYPE_CODE = re.compile(r"[A-Z]{2,6}")
 _LISTING = re.compile(
     r"^(\(?[a-z]\)|listed|unlisted|awaiting|privately|rated|unrated)", re.IGNORECASE
 )
@@ -298,11 +299,19 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
             # HDFC prints headings and totals in the ISIN column and names one column over; Kotak's
             # header says "Name of Instrument" in column A but the names sit two columns to its right.
             lo, hi = sorted((cols["name"], cols["isin"]))
-            for j in range(lo, hi + 1):
-                alt = clean(cell(r, j))
-                if alt and not _as_isin(alt):
-                    label = alt
-                    break
+            found = [
+                (cell(r, j), alt)
+                for j in range(lo, hi + 1)
+                if (alt := clean(cell(r, j))) and not _as_isin(alt)
+            ]
+            # Kotak puts a coupon (0.0755) or instrument code (CP, CD, TB, FRB, ZCB) before the name.
+            names = [
+                alt
+                for raw, alt in found
+                if not isinstance(raw, (int, float)) and not _TYPE_CODE.fullmatch(alt)
+            ]
+            if found:
+                label = names[0] if names else found[0][1]
             else:
                 tot = clean(cell(r, cols["industry"]))
                 if tot and re.match(r"(grand )?total\b", tot, re.IGNORECASE):
