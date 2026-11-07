@@ -257,6 +257,7 @@ def _compute(args) -> int:
         load("classified"),
         load("futures"),
         isin_to_scheme,
+        {(s["amc"], s["scheme_key"]): s["grand_total_lakhs"] for s in schemes},
     )
 
     out_dir = args.out / period

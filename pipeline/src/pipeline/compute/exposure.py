@@ -1,4 +1,4 @@
-"""Per-scheme exposure vectors, as fractions of the scheme's own holdings value.
+"""Per-scheme exposure vectors, as fractions of NAV (the scheme's grand total, else its holdings value).
 
 gross: holdings as classified. net: gross after futures (short futures turn hedged equity into
 cash; long futures add exposure funded from cash). cap and sector describe gross domestic equity.
@@ -44,14 +44,18 @@ def compute_exposures(
     classified: list[Row],
     futures: list[Row],
     isin_to_scheme: dict[str, SchemeId],
+    grand_totals: dict[SchemeId, float | None],
 ) -> dict[SchemeId, Exposure]:
     labels = {_row_key(c): c for c in classified}
     held: dict[SchemeId, list[tuple[Row, Row]]] = defaultdict(list)
     for h in holdings:
         held[(h["amc"], h["scheme_key"])].append((h, labels[_row_key(h)]))
-    bases = {
+    holdings_value = {
         sid: sum(h["market_value_lakhs"] or 0.0 for h, _ in rows)
         for sid, rows in held.items()
+    }
+    bases = {
+        sid: grand_totals.get(sid) or value for sid, value in holdings_value.items()
     }
     held = {sid: rows for sid, rows in held.items() if bases[sid] > 0}
     futs: dict[SchemeId, list[Row]] = defaultdict(list)
@@ -86,6 +90,11 @@ def compute_exposures(
                 own.cap[c["cap"]] += weight
             if c["sector"]:
                 own.sector[c["sector"]] += weight
+        # Adapters reconcile holdings + futures the AMC counts in its total (Motilal, DSP) to the
+        # grand total, so the gap is exactly those futures: margin-funded, i.e. a cash adjustment.
+        counted_futures = base - holdings_value[sid]
+        if counted_futures:
+            own.gross["cash_like"] += counted_futures / base
         own.net = defaultdict(float, own.gross)
         _net_futures(own, futs[sid], base)
         for child, weight in children:

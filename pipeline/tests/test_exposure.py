@@ -36,9 +36,11 @@ def future(
     }
 
 
-def run(holdings, futures=(), isins=None):
+def run(holdings, futures=(), isins=None, grand_totals=None):
     hs, cs = zip(*holdings)
-    return compute_exposures(list(hs), list(cs), list(futures), isins or {})
+    return compute_exposures(
+        list(hs), list(cs), list(futures), isins or {}, grand_totals or {}
+    )
 
 
 def test_short_futures_move_hedged_equity_to_cash_in_net_but_not_gross():
@@ -141,4 +143,15 @@ def test_future_direction_comes_from_side_not_the_sign_of_notional():
     out = run([holding("H", 1, 100, "equity_domestic")], [future("H", "short", -100)])[
         ("x", "H")
     ]
+    assert out.net == pytest.approx({"equity_domestic": 0.0, "cash_like": 1.0})
+
+
+def test_futures_counted_in_the_grand_total_are_cash_so_weights_are_of_nav():
+    # Motilal-style: the grand total (NAV) nets the short futures against a receivables plug.
+    out = run(
+        [holding("M", 1, 70, "equity_domestic"), holding("M", 2, 100, "cash_like")],
+        [future("M", "short", 70)],
+        grand_totals={("x", "M"): 100},
+    )[("x", "M")]
+    assert out.gross == pytest.approx({"equity_domestic": 0.7, "cash_like": 0.3})
     assert out.net == pytest.approx({"equity_domestic": 0.0, "cash_like": 1.0})
