@@ -16,6 +16,21 @@ Welcome design, mobile polish of the new screens, dark-mode toggle, PWA, export.
 Run: see the root README. Check a change in a browser at 390, 768, 1024 and 1440 px, in English and
 Malayalam (longest strings), with the redacted statement.
 
+## Working agreements
+
+- Commit at stages without asking; end messages with the Claude attribution line. Commit with
+  `git commit -F <file>` (an email in the attribution can trip a commit hook when passed inline).
+- Test-first for logic; lean tests. Run `npm test`, `npm run lint` and `npx tsc -b` in `client/` before each commit.
+- Do not hand-write manifests; add packages with `npm install`.
+- Edit files that contain Hindi or Malayalam with the edit tools or a script file run as
+  `python3 -X utf8 script.py`; piping non-ASCII through a shell heredoc failed here.
+- Check UI in a browser: start `npm run dev -- --port 5173 --strictPort` in `client/` (the bundle must be in
+  `client/public/data/`), open `/welcome`, upload `tools/redact/cas-redacted.pdf` (git-ignored, real
+  holdings, never commit) with password `Fixture@123`. A page reload drops the loaded statement, so use
+  in-app navigation or upload again. Playwright screenshots must be saved under the repo.
+- `.github/`, `deploy/` and `docs/fetching-statements.md` belong to someone else; leave them untracked and untouched.
+- Say plainly when something was not verified, and do not claim a number is right without a source.
+
 ## Decisions
 
 **Stack.** Vite, React 19, TypeScript, `react-router`, plain React state. No UI or i18n library.
@@ -82,3 +97,10 @@ Hindi can overflow. Hide text that does not fit with a container query instead o
 - `formatDate` prints "Sept" for September in English.
 - Unsupported: NSDL and CDSL CAS, CAMS Detailed.
 - Header is wider than the content column above 1180px. Deliberate, easy to change.
+- The Overview caption lists tiny contributors (₹6, ₹1) next to a large gap. They are unresolved fund units
+  (`unresolved_fund_units` flag: a fund holds a sliver of other funds the pipeline could not trace). Better:
+  hide contributors under a small share of the bucket, or show "and N others".
+- On phones the nav scrolls sideways and the active item can sit partly off-screen.
+- The new Overview was checked in English (1440, 390) and Malayalam (390) only, not Hindi.
+- Whether REITs count as equity-related from 1 Jan 2026 rests on secondary sources, not the circular.
+- AMFI category text, not each scheme's offer document, decides its SEBI category.
