@@ -1,0 +1,259 @@
+.overview {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 28px 40px 80px;
+}
+
+.overview__bar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 24px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 56px;
+}
+
+.overview__bar p {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink2);
+}
+
+.overview__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background: var(--sunk);
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.overview .segmented button {
+  font-size: 14px;
+}
+
+.overview .segmented button span {
+  color: var(--ink3);
+  font-weight: 400;
+}
+
+.overview .segmented button[aria-checked='true'] {
+  background: var(--sheet);
+  box-shadow: var(--shadow);
+  font-weight: 600;
+}
+
+.overview__headline {
+  margin: 0;
+  max-width: 19ch;
+  font-size: 56px;
+  line-height: 1.07;
+  font-weight: 500;
+  letter-spacing: -0.022em;
+}
+
+:lang(hi) .overview__headline {
+  font-size: 48px;
+  line-height: 1.28;
+  max-width: 22ch;
+}
+
+:lang(ml) .overview__headline {
+  font-size: 40px;
+  line-height: 1.36;
+  max-width: 24ch;
+}
+
+.overview__matched {
+  margin: 20px 0 64px;
+  color: var(--ink2);
+}
+
+.overview__figure {
+  margin: 0;
+}
+
+.overview__caption-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+  margin: 8px 2px;
+  font-size: 13.5px;
+  color: var(--ink3);
+}
+
+.overview__caption-row .num {
+  color: var(--ink2);
+}
+
+.sheet {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  height: 76px;
+  border-radius: 10px;
+  background: var(--sheet);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  transform: rotate(-0.35deg);
+}
+
+.sheet > div {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+  padding: 10px;
+  overflow: hidden;
+  box-shadow: -1px 0 0 var(--edge);
+}
+
+.sheet span:first-child {
+  font-size: 12.5px;
+  color: var(--ink2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.sheet span:last-child {
+  font-size: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.strata {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 2px;
+  height: 132px;
+  margin-top: -10px;
+}
+
+.strata__segment {
+  display: flex;
+  align-items: flex-end;
+  min-width: 0;
+  padding: 0 0 14px 12px;
+  overflow: hidden;
+  font-size: 24px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition:
+    flex-grow var(--dur-sheet) var(--ease),
+    opacity var(--dur-fast);
+}
+
+.overview figcaption {
+  margin: 20px 0 0;
+  padding: 14px 16px;
+  min-height: 48px;
+  border-radius: 8px;
+  background: var(--sunk);
+  font-size: 14.5px;
+}
+
+.overview figcaption span {
+  color: var(--ink2);
+}
+
+.overview__note {
+  margin: 16px 0 0;
+  font-size: 14.5px;
+  color: var(--ink2);
+}
+
+.overview h2 {
+  margin: 56px 0 8px;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+.legend {
+  border-top: 1px solid var(--edge);
+}
+
+.legend__row {
+  width: 100%;
+  display: grid;
+  grid-template-columns: 22px minmax(0, 1fr) 90px 120px;
+  gap: 16px;
+  align-items: baseline;
+  padding: 14px 8px;
+  border: 0;
+  border-bottom: 1px solid var(--edge);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+}
+
+.legend__row[aria-pressed='true'] {
+  background: var(--sheet);
+}
+
+.legend__swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  align-self: center;
+}
+
+.legend__note {
+  display: block;
+  font-size: 13px;
+  color: var(--ink3);
+}
+
+.legend__pct {
+  font-size: 26px;
+  font-weight: 500;
+  text-align: right;
+}
+
+.legend__value {
+  font-size: 14px;
+  color: var(--ink2);
+  text-align: right;
+}
+
+.overview__rounding {
+  margin: 10px 0 0;
+  font-size: 13px;
+  color: var(--ink3);
+}
+
+.overview__footer {
+  margin: 72px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--edge);
+  font-size: 13px;
+  color: var(--ink3);
+}
+
+@media (max-width: 600px) {
+  .overview {
+    padding: 20px 16px 64px;
+  }
+
+  .overview__headline {
+    font-size: 36px;
+  }
+
+  .legend__row {
+    grid-template-columns: 22px minmax(0, 1fr) 72px;
+  }
+
+  .legend__value {
+    display: none;
+  }
+}

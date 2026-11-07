@@ -15,6 +15,8 @@ export interface OverviewModel {
   equityShare: number
   labelledEquityShare: number
   pointsBelowLabels: number
+  hedgedEquity: number
+  unmatchedCount: number
 }
 
 export function overviewModel(portfolio: Portfolio, view: ExposureView): OverviewModel {
@@ -35,5 +37,24 @@ export function overviewModel(portfolio: Portfolio, view: ExposureView): Overvie
     equityShare,
     labelledEquityShare,
     pointsBelowLabels: Math.round((labelledEquityShare - equityShare) * 100),
+    hedgedEquity: Math.max(0, portfolio.gross.equity_domestic - portfolio.net.equity_domestic),
+    unmatchedCount: portfolio.positions.filter((position) => !position.scheme).length,
   }
+}
+
+export interface Contributor {
+  name: string
+  value: number
+}
+
+export function topContributors(portfolio: Portfolio, view: ExposureView, bucket: Bucket, limit: number): Contributor[] {
+  return portfolio.positions
+    .map(({ holding, scheme }) => {
+      const vector = scheme?.[view] ?? { other: 1 }
+      const weight = (vector[bucket] ?? 0) + (bucket === 'other' ? (vector.fund_unit ?? 0) : 0)
+      return { name: scheme?.name ?? holding.schemeName, value: holding.marketValue * weight }
+    })
+    .filter((contributor) => contributor.value > 0)
+    .sort((a, b) => b.value - a.value)
+    .slice(0, limit)
 }

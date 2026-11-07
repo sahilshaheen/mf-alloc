@@ -2,7 +2,8 @@ import { describe, expect, it } from 'vitest'
 import { BUCKETS, type Bucket } from './types'
 import { LABEL_GROUPS, type LabelGroup } from './labelGroup'
 import type { Portfolio } from './analysePortfolio'
-import { overviewModel } from './overviewModel'
+import { overviewModel, topContributors } from './overviewModel'
+import type { BundleScheme } from './types'
 
 const totals = (values: Partial<Record<Bucket, number>>) => Object.fromEntries(BUCKETS.map((b) => [b, values[b] ?? 0])) as Record<Bucket, number>
 const labelled = (values: Partial<Record<LabelGroup, number>>) => Object.fromEntries(LABEL_GROUPS.map((g) => [g, values[g] ?? 0])) as Record<LabelGroup, number>
@@ -41,5 +42,47 @@ describe('overviewModel', () => {
   it('reports a negative gap when the funds hold more equity than labelled', () => {
     const richer = { ...portfolio, labelled: labelled({ debt: 1000 }) }
     expect(overviewModel(richer, 'net').pointsBelowLabels).toBe(-50)
+  })
+})
+
+describe('topContributors', () => {
+  const scheme = (name: string, net: BundleScheme['net']): BundleScheme => ({
+    amc: 'test',
+    as_of: '2026-09-30',
+    name,
+    category: null,
+    net,
+    gross: net,
+    cap: {},
+    sector: {},
+    flags: [],
+  })
+  const position = (schemeName: string, marketValue: number, matched: BundleScheme | null) => ({
+    holding: { schemeName, marketValue } as Portfolio['positions'][number]['holding'],
+    scheme: matched,
+  })
+  const withPositions: Portfolio = {
+    ...portfolio,
+    positions: [
+      position('raw A', 1000, scheme('Alpha', { equity_domestic: 0.5, other: 0.5 })),
+      position('raw B', 200, scheme('Beta', { equity_domestic: 1 })),
+      position('raw C', 300, null),
+      position('raw D', 100, scheme('Delta', { fund_unit: 1 })),
+    ],
+  }
+
+  it('ranks the funds behind a bucket by the value they put in it', () => {
+    expect(topContributors(withPositions, 'net', 'equity_domestic', 2)).toEqual([
+      { name: 'Alpha', value: 500 },
+      { name: 'Beta', value: 200 },
+    ])
+  })
+
+  it('names a fund missing from the data by its statement name, and counts unresolved units as Other', () => {
+    expect(topContributors(withPositions, 'net', 'other', 3)).toEqual([
+      { name: 'Alpha', value: 500 },
+      { name: 'raw C', value: 300 },
+      { name: 'Delta', value: 100 },
+    ])
   })
 })
