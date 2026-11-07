@@ -1,3 +1,3 @@
-from . import nippon
+from . import motilal, nippon, uti, wealth
 
-ADAPTERS = {nippon.AMC: nippon}
+ADAPTERS = {m.AMC: m for m in (motilal, nippon, uti, wealth)}

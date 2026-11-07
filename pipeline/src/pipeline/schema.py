@@ -64,6 +64,11 @@ class FuturePosition:
     quantity: float | None
     notional_lakhs: float | None
     pct_nav: float | None
+    underlying_isin: str | None = None
+    # Some AMCs (e.g. Wealth Company) disclose only prices and margin, not notional.
+    contract_price: float | None = None
+    current_price: float | None = None
+    margin_lakhs: float | None = None
 
 
 @dataclass
