@@ -89,12 +89,15 @@ def test_zip_extraction_writes_only_excel_members_by_base_name(tmp_path: Path):
         zf.writestr("sub/dir/other.xls", b"x")
     z = tmp_path / "bundle.zip"
     z.write_bytes(buf.getvalue())
-    assert _extract_zip(z) == 2
+    assert _extract_zip(z) == 3
+    # the traversal member lands inside the target dir by base name; nothing is written outside it
     assert sorted(p.name for p in (tmp_path / "bundle").iterdir()) == [
+        "escape.xlsx",
         "fund.xlsx",
         "other.xls",
     ]
     assert not (tmp_path.parent / "escape.xlsx").exists()
+    assert not (tmp_path / "escape.xlsx").exists()
 
 
 def _sheet(rows):
