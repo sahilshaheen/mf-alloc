@@ -1,0 +1,76 @@
+.welcome {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 64px 24px 96px;
+}
+
+.welcome h1 {
+  margin: 0;
+  font-size: 48px;
+  line-height: 1.08;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+:lang(hi) .welcome h1 {
+  line-height: 1.28;
+}
+
+:lang(ml) .welcome h1 {
+  font-size: 40px;
+  line-height: 1.36;
+}
+
+.welcome__subtitle {
+  margin: 16px 0 32px;
+  color: var(--ink2);
+  font-size: 18px;
+}
+
+.welcome form {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.welcome label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--ink2);
+}
+
+.welcome input[type='password'] {
+  height: 44px;
+  padding: 0 12px;
+  border-radius: 8px;
+  border: 1px solid var(--edge);
+  background: var(--sheet);
+}
+
+.welcome button[type='submit'] {
+  align-self: flex-start;
+  height: 44px;
+  padding: 0 20px;
+  border-radius: 8px;
+  border: 0;
+  background: var(--ink);
+  color: var(--onink);
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.welcome button[type='submit']:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.welcome__problem {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--errbg);
+  color: var(--err);
+  font-size: 14px;
+}

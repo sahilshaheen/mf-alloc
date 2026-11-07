@@ -9,6 +9,17 @@ export const en = {
   'header.onDevice': 'On this device',
   'header.language': 'Language',
   'overview.matched': '{pct} of value matched.',
+  'welcome.title': 'See what your funds really hold.',
+  'welcome.subtitle': "Open your statement and see what's really inside your mutual funds. It's read on your device and never uploaded.",
+  'welcome.file': 'Statement PDF',
+  'welcome.password': 'Password (your PAN, in capitals)',
+  'welcome.open': 'Open your statement',
+  'welcome.reading': 'Reading…',
+  'error.passwordRequired': 'This file is password protected. Enter its password.',
+  'error.passwordWrong': "That password didn't open this file. CAMS uses your PAN in capital letters.",
+  'error.unsupported': "This doesn't look like a CAMS or KFintech Consolidated Account Summary.",
+  'error.unreadable': "We couldn't read this statement: {reason}",
+  'error.data': "Fund data couldn't be loaded.",
 } as const
 
 export type Dictionary = Record<keyof typeof en, string>
