@@ -1,14 +1,12 @@
 .funds {
   display: flex;
   align-items: flex-start;
-  max-width: 1280px;
-  margin: 0 auto;
 }
 
 .funds__main {
   flex: 1 1 0;
   min-width: 0;
-  padding: 32px 40px 64px;
+  padding: 32px 40px 64px max(40px, calc((100vw - 1280px) / 2 + 40px));
 }
 
 .funds__head {
