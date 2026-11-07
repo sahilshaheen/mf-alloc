@@ -9,7 +9,7 @@ Your statement is parsed in the browser and never leaves your device. The only s
 | Component | State |
 |---|---|
 | `pipeline/` fetch, adapt, classify, compute, publish | Working. 13 AMCs, about 77% of industry AUM (Sep 2026 disclosures); bundle is 1,148 schemes, about 165 KB gzipped |
-| `client/` web app | Pending (Vite scaffold only) |
+| `client/` web app | In progress. Reads a CAMS/KFintech Consolidated Account Summary in the browser, joins it to the bundle, and renders Overview (English, Hindi, Malayalam). Funds, Data & method, Privacy and the PWA shell are still placeholders |
 
 ## How it works
 
@@ -23,7 +23,7 @@ Your statement is parsed in the browser and never leaves your device. The only s
   built                built       built         built        built          built               │
                                                                                                 ▼
                                           CAS file ──► parse locally ──► join on ISIN ──► allocation views
-                                                                           (client, pending)
+                                                                           (client, partly built)
 ```
 
 **Pipeline (public data, runs monthly)**
@@ -34,7 +34,7 @@ Your statement is parsed in the browser and never leaves your device. The only s
 4. **compute**: matches schemes to ISINs (AMFI's NAV file), then builds net and gross exposure vectors per scheme with hedge netting from futures and look-through for fund-of-funds. Hedges without a disclosed notional are flagged, not guessed; fund units it cannot resolve stay in `fund_unit`.
 5. **publish**: a static, versioned exposure bundle (`exposure-<YYYY-MM>.json` plus `manifest.json`), keyed by ISIN. It is built locally; uploading it to the data host is manual.
 
-**Client (private, per user)** *(pending)*
+**Client (private, per user)** *(in progress)*
 
 A PWA that reads the statement locally, matches folios to schemes by ISIN, joins them against the exposure bundle, and renders allocation by asset class, fund, market cap and sector, with a "how is this calculated?" trail behind every number. No statement data is uploaded, stored on a server, or sent to analytics.
 
@@ -71,7 +71,7 @@ pipeline/            Python 3.13, managed with uv
     sources.py       manifest, `status` and `register` commands
   tests/
   data/              raw/ and staged/ are git-ignored
-client/              Vite + React + TypeScript PWA (pending)
+client/              Vite + React + TypeScript app (Overview built; PWA pending)
 docs/design-spec.md  UI/UX design spec
 ```
 
@@ -97,7 +97,16 @@ uv run pipeline publish      --period $P
 
 The full monthly runbook, including AMCs that need a browser or hand download, is in [pipeline/README.md](pipeline/README.md).
 
-The client is not usable yet. To run the scaffold: `cd client && npm install && npm run dev`.
+To run the client against the bundle you just built:
+
+```sh
+cd client
+npm install
+mkdir -p public/data && cp ../pipeline/data/out/* public/data/
+npm run dev          # npm test, npm run lint, npm run build
+```
+
+Only the CAMS/KFintech Summary statement is read so far; other statement types are rejected with a clear message. The statement is parsed in the browser by pdf.js and is never sent anywhere.
 
 ## Data sources and coverage
 
