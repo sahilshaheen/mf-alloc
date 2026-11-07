@@ -24,7 +24,7 @@ Assigns each holding a Level-1 bucket, plus market cap and sector for domestic e
 
 ## Coverage
 
-Parsed and reconciled against each scheme's own grand total: Nippon, UTI, Motilal Oswal, The Wealth Company, SBI, ICICI Prudential, Aditya Birla Sun Life, DSP, PPFAS, Mirae Asset, Tata.
+Parsed and reconciled against each scheme's own grand total: Nippon, UTI, Motilal Oswal, The Wealth Company, SBI, ICICI Prudential, Aditya Birla Sun Life, DSP, PPFAS, Mirae Asset, Tata, HDFC.
 
 SBI, ICICI and ABSL share a SEBI-style template (`adapters/template.py`): columns come from the header text, the percent-vs-fraction scale is read from the GRAND TOTAL row, and futures are read wherever the AMC puts them (a DERIVATIVES block, a futures table after the total, or an "Underlying | Long/Short | % to Net Assets" table).
 
@@ -34,4 +34,6 @@ Not parsed in v1: option positions (the files report only expired/exercised hedg
 
 ### Not fetchable by script (the site blocks non-browser clients)
 
-HDFC, Kotak (Radware bot check + captcha), Edelweiss and Canara Robeco (403 to plain requests) block scripted access; Axis serves its files through a token-based, encrypted API. The pipeline does not try to get around these. Adapters read whatever is in `data/raw/<amc>/<YYYY-MM>/`, so files saved from a browser can be dropped there by hand.
+Kotak (Radware bot check + captcha, even in an automated browser), Edelweiss and Canara Robeco (403 to plain requests) block scripted access; Axis serves its files through a token-based, encrypted API. The pipeline does not try to get around these. Adapters read whatever is in `data/raw/<amc>/<YYYY-MM>/`, so files saved from a browser can be dropped there by hand.
+
+HDFC refuses scripted clients (403) but serves a normal browser session with no challenge, so its 110 monthly files (`files.hdfcfund.com`, one per scheme) are saved by driving a real browser at human pace into `data/raw/hdfc/<YYYY-MM>/`; the adapter reads them from there. HDFC's Derivative sheets give futures with real notional.
