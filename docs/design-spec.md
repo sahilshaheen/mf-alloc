@@ -14,6 +14,7 @@ The problem it solves: a "Balanced Advantage" fund with 45% net equity, or an ar
 - The reference sketch (Overview hero) is the aesthetic anchor; see section 4.1.
 - A logo, wordmark and app icon for TrueHold (section 4.0).
 - The illustration set in section 5, as inline-SVG-friendly vector art.
+- Key screens (Welcome, Overview, Funds table) shown in English, Hindi and Malayalam (section 10.1), including the language switcher.
 
 ## 2. Audience
 
@@ -34,7 +35,7 @@ The problem it solves: a "Balanced Advantage" fund with 45% net equity, or an ar
 3. **Trust through specificity.** Say "parsed on this device", "as of 31 Aug 2026", "3 funds not matched", not "secure" or "up to date".
 4. **Never hide uncertainty.** Unmatched ISINs, stale data and unclassified holdings are shown in the UI with their own colour and a count.
 5. **Calm, not cold.** Formal in tone, restrained in colour, a little warmth from paper tones, serif type and small moments of motion.
-6. **No advice.** v1 does not show returns, XIRR, tax, or "you should rebalance" language. Never use red/green to imply good/bad allocation. The product describes, it does not judge.
+6. **No advice.** The analysis never shows tax, tax-loss harvesting, or "you should rebalance" language (returns/XIRR are on the README roadmap, shown descriptively). Never use red/green to imply good/bad allocation. The product describes, it does not judge.
 
 ## 4. Visual language
 
@@ -85,6 +86,7 @@ An ultra-clean, calm, pleasing interface that feels like good paper and good typ
 - Tabular, lining numerals with right-aligned figures in tables and charts.
 - Indian number formatting: ₹ with lakh/crore grouping (`₹12,34,567`, `₹1.2 Cr`), percentages to one decimal.
 - Line length under 80 characters.
+- **Three scripts, one system.** The type system must cover Latin, Devanagari (Hindi) and Malayalam. Choose or pair faces so the three look like one family at the same optical size, with tabular figures in each. Self-hosted, subset per script, and loaded only for the active language. See section 10.1.
 - **All fonts and assets self-hosted.** The app's Content-Security-Policy blocks every origin except its own data CDN, so no Google Fonts or remote images or icons at runtime. Illustrations and icons ship as inline SVG.
 
 ### 4.4 Motion: small, charming, never in the way
@@ -114,7 +116,7 @@ Illustrations are decorative (`aria-hidden`) and must work in light and dark.
 
 ## 6. Information architecture and navigation
 
-**Desktop:** light navigation (Overview · Asset classes · Funds · Data & method · Privacy), not a heavy sidebar; a quiet header with the data-freshness chip, net/gross toggle, search/command button, and a persistent **"On this device" stamp** (click → Privacy proof).
+**Desktop:** light navigation (Overview · Asset classes · Funds · Data & method · Privacy), not a heavy sidebar; a quiet header with the data-freshness chip, net/gross toggle, search/command button, a **language switcher** (EN · हिन्दी · മലയാളം, always shown in its own script), and a persistent **"On this device" stamp** (click → Privacy proof).
 **Mobile:** bottom tab bar with the same five items; toggles move into a sticky sub-header.
 
 Before a statement is loaded, only Welcome, Get a statement, Privacy and Data & method are reachable. After loading, the app opens on Overview.
@@ -203,7 +205,7 @@ For each screen: purpose, content, primary action, states.
 
 ### S11. Data & method
 - **Purpose:** credibility. Explain what the numbers are and how fresh they are.
-- **Content:** I6; a plain-language explanation of look-through and net vs gross with the worked example (80% shares + 30% short futures → 50% net equity, 30% cash-like arbitrage); a table of fund-data sources (AMC monthly disclosures, AMFI market-cap list, AMFI scheme master) with last-updated date; **freshness** shown per AMC (a heat strip of months); a **known limits** list (month-end snapshots, options at notional, classification lag); data-bundle version and hash with a **Copy** button.
+- **Content:** I6; a plain-language explanation of look-through and net vs gross with the worked example (80% shares + 30% short futures → 50% net equity, 30% cash-like arbitrage); a table of fund-data sources (AMC monthly disclosures, AMFI market-cap list, AMFI scheme master) with last-updated date; **freshness** shown per AMC (a heat strip of months); a **known limits** list (month-end snapshots, options at notional, classification lag); a short **Terms** section of plain-language entries (e.g. Regular vs Direct plan: what each is, how the expense ratio differs, and that a distributor provides advice and service; stated neutrally, with no figures meant to persuade); data-bundle version and hash with a **Copy** button.
 
 ### S12. Privacy proof
 - **Purpose:** turn the claim into something checkable.
@@ -212,7 +214,7 @@ For each screen: purpose, content, primary action, states.
 
 ### S13. Save & settings
 - **Purpose:** optional local persistence and housekeeping.
-- **Content:** **Save on this device** toggle (off by default) → passphrase creation with strength hint and a clear "we cannot recover this passphrase" notice; **Forget everything now** (destructive, confirm with a short dialog that lists exactly what will be deleted); display options (theme light/dark/system, density, number format lakh/crore vs millions), keyboard-shortcut cheat sheet; app version and update status.
+- **Content:** **Save on this device** toggle (off by default) → passphrase creation with strength hint and a clear "we cannot recover this passphrase" notice; **Forget everything now** (destructive, confirm with a short dialog that lists exactly what will be deleted); **language** (English, हिन्दी, മലയാളം; the choice is remembered on this device only if saving is on, otherwise it follows the browser language), display options (theme light/dark/system, density, number format lakh/crore vs millions), keyboard-shortcut cheat sheet; app version and update status.
 
 ### Cross-cutting states and components
 - **Empty states** (I4): no statement yet; filter with no results.
@@ -251,6 +253,24 @@ Plain, specific, calm. Short sentences. Explain a term once, in place.
 - Avoid: "Bank-grade military encryption", "Maximise your returns", "You're over-exposed!"
 - Numbers always carry their as-of date. Percentages that don't add to 100 because of rounding get a "rounded" footnote.
 - Errors say what happened, what we know, what to do next.
+
+### 10.1 Languages and localisation
+
+v1 ships in **English, Hindi (हिन्दी) and Malayalam (മലയാളം)**. Kerala is expected to be a large user group, and Hindi covers the widest readership; neither should feel like a translation bolted on. Design every screen for all three from the start.
+
+- **Switching:** language switcher in the header (section 6) and in S13, and offered on S1 so a first-time visitor can read the privacy promise in their own language. Language names are always written in their own script. Switching is instant, keeps the user's place, and never reloads or re-reads the statement.
+- **Default:** the browser language if it is one of the three, otherwise English. The choice is not sent anywhere and is stored only if the user turned on saving (S13).
+- **Text expansion and script height:** Hindi and Malayalam run longer than English and have taller line boxes (Malayalam conjuncts and stacked marks need generous leading). Buttons, chips, table headers and the Overview figures must not clip or truncate at 390 wide. Design with roughly 30-40% extra width and a more open line-height for Indic scripts, and show it in the mock-ups.
+- **Numbers:** keep lakh/crore grouping and Western digits (0-9) in all three languages (`₹12,34,567`), as statements and AMC data use them. The compact `₹1.2 Cr` form is kept as is.
+- **Dates:** "as of 31 Oct 2026" is localised (month names in the active language), always with the year.
+- **Jargon:** the dotted-underline terms (look-through, net vs gross, FoF, notional, AAUM) need a plain translated name plus the English term in brackets on first use, since many Indian investors know the English term from AMC material. Terms with no good translation stay in English transliterated into the script, with the definition popover in the active language.
+- **Fund and company names stay as reported.** Scheme names, AMC names, issuer names, ISINs and SEBI category labels are shown in English exactly as in the statement and AMC files; only our own UI text and explanations are translated. Search matches on the English names.
+- **Translation approach:** English is the source of truth. Terms are decided once in a glossary (English term, what Indian investors actually say, and a plain explanation) before any screen text is translated. Where people in practice say the English word (e.g. mutual fund, equity, debt, SIP), the UI keeps it, transliterated into the script. Translate a concept only when a natural word exists. Hindi is drafted with AI help; Malayalam drafts are marked unreviewed. The glossary and the privacy copy (S1, S12, the stamp) need a fluent human reviewer before a language ships; until then it is labelled "beta" in the switcher, and S11 has a "Report a wording problem" link.
+- **Tone:** the same plain, calm voice as section 10, written natively, not machine-translated word for word. Avoid heavily Sanskritised Hindi and formal "bookish" Malayalam.
+- **Privacy copy is the highest priority** for accurate translation: S1 subhead, S12 and the "On this device" stamp must be correct and equally strong in all three languages.
+- **Charts and exports:** chart labels, legends, tooltips and the print view are localised; CSV and JSON exports keep English, machine-stable keys and codes.
+- **Accessibility:** set the `lang` attribute per element so screen readers switch voices when English fund names appear inside Hindi or Malayalam text. Check that nothing relies on letter-based abbreviations (e.g. "Cr", "L") that do not exist in the other scripts.
+- **Out of scope for v1:** right-to-left languages, and other Indian languages. Keep UI strings in a catalogue and avoid layouts that assume English word order or length so more languages can be added later.
 
 ## 11. Sample data for mock-ups (illustrative, not real)
 
