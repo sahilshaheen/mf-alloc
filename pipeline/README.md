@@ -20,7 +20,7 @@ Parses raw files into canonical records (`src/pipeline/schema.py`) at `data/stag
 uv run pipeline classify <uti|motilal|nippon|wealth|sbi|icici|absl|dsp|ppfas|mirae|tata|all> --period YYYY-MM
 ```
 
-Assigns each holding a Level-1 bucket, plus market cap and sector for domestic equity, into `data/staged/<amc>/<YYYY-MM>/classified.jsonl`, and prints weight by bucket and rule. Needs `fetch amfi` first. Rules are first-match-wins in `src/pipeline/classify/rules.csv`. Rules on the ISIN's security type (equity share, InvIT/REIT unit, T-bill, G-sec/SDL/STRIPS) come before heading-based rules, because AMCs' headings go stale or misfile instruments; anything unmatched becomes `other` (rule `fallback`) and is listed. `fund_unit` marks MF/ETF units that the compute stage will replace with the underlying fund's exposure.
+Assigns each holding an asset-class bucket, plus market cap and sector for domestic equity, into `data/staged/<amc>/<YYYY-MM>/classified.jsonl`, and prints weight by bucket and rule. Needs `fetch amfi` first. Rules are first-match-wins in `src/pipeline/classify/rules.csv`. Rules on the ISIN's security type (equity share, InvIT/REIT unit, T-bill, G-sec/SDL/STRIPS) come before heading-based rules, because AMCs' headings go stale or misfile instruments; anything unmatched becomes `other` (rule `fallback`) and is listed. `fund_unit` marks MF/ETF units that the compute stage will replace with the underlying fund's exposure.
 
 ```
 uv run pipeline compute --period YYYY-MM [--max-unmatched 0.05]

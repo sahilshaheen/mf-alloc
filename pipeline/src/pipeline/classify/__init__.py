@@ -3,7 +3,7 @@
 Rules live in rules.csv (first match wins) so a change is a reviewable diff. This stage only
 labels rows; netting hedges and recursing into funds-of-funds is the compute stage.
 
-Level-1 buckets follow the design doc, plus the internal marker `fund_unit` for MF/ETF units that
+Asset-class buckets follow the design doc, plus the internal marker `fund_unit` for MF/ETF units that
 compute replaces with the underlying fund's exposure vector.
 """
 

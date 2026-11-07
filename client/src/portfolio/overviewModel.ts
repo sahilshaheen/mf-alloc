@@ -1,5 +1,4 @@
 import type { Portfolio } from './analysePortfolio'
-import { LABELLED_AS_EQUITY } from './labelGroup'
 import { BUCKETS, type Bucket } from './types'
 
 export type ExposureView = 'net' | 'gross'
@@ -13,8 +12,7 @@ export interface Segment {
 export interface OverviewModel {
   segments: Segment[]
   equityShare: number
-  labelledEquityShare: number
-  pointsBelowLabels: number
+  guaranteedEquityShare: number
   hedgedEquity: number
   unmatchedCount: number
 }
@@ -30,13 +28,10 @@ export function overviewModel(portfolio: Portfolio, view: ExposureView): Overvie
     share: values[bucket] / total,
   }))
   const equityShare = (totals.equity_domestic + totals.equity_foreign) / total
-  const labelledValue = [...LABELLED_AS_EQUITY].reduce((sum, group) => sum + portfolio.labelled[group], 0)
-  const labelledEquityShare = labelledValue / total
   return {
     segments,
     equityShare,
-    labelledEquityShare,
-    pointsBelowLabels: Math.round((labelledEquityShare - equityShare) * 100),
+    guaranteedEquityShare: portfolio.guaranteedEquity / total,
     hedgedEquity: Math.max(0, portfolio.gross.equity_domestic - portfolio.net.equity_domestic),
     unmatchedCount: portfolio.positions.filter((position) => !position.scheme).length,
   }

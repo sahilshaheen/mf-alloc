@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { BUCKETS, type Bucket } from './types'
-import { LABEL_GROUPS, type LabelGroup } from './labelGroup'
+import { LABEL_GROUPS, type LabelGroup } from './fundCategory'
 import type { Portfolio } from './analysePortfolio'
 import { overviewModel, topContributors } from './overviewModel'
 import type { BundleScheme } from './types'
@@ -14,7 +14,8 @@ const portfolio: Portfolio = {
   matchedShare: 1,
   net: totals({ equity_domestic: 400, equity_foreign: 100, debt: 300, cash_like: 150, other: 30, fund_unit: 20 }),
   gross: totals({ equity_domestic: 600, equity_foreign: 100, debt: 300, cash_like: 0, other: 0 }),
-  labelled: labelled({ equity: 600, balanced: 100, overseas: 100, debt: 200 }),
+  labelled: labelled({ equity: 800, debt: 200 }),
+  guaranteedEquity: 640,
 }
 
 describe('overviewModel', () => {
@@ -30,18 +31,9 @@ describe('overviewModel', () => {
     ])
   })
 
-  it('compares true equity with what the labels say, in points', () => {
-    const net = overviewModel(portfolio, 'net')
-    expect(net.equityShare).toBe(0.5)
-    expect(net.labelledEquityShare).toBe(0.8)
-    expect(net.pointsBelowLabels).toBe(30)
-
-    expect(overviewModel(portfolio, 'gross').pointsBelowLabels).toBe(10)
-  })
-
-  it('reports a negative gap when the funds hold more equity than labelled', () => {
-    const richer = { ...portfolio, labelled: labelled({ debt: 1000 }) }
-    expect(overviewModel(richer, 'net').pointsBelowLabels).toBe(-50)
+  it('reports true equity and the equity the fund categories guarantee, as shares of the portfolio', () => {
+    expect(overviewModel(portfolio, 'net')).toMatchObject({ equityShare: 0.5, guaranteedEquityShare: 0.64 })
+    expect(overviewModel(portfolio, 'gross').equityShare).toBe(0.7)
   })
 })
 

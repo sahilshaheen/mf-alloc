@@ -9,7 +9,7 @@ Your statement is parsed in the browser and never leaves your device. The only s
 | Component | State |
 |---|---|
 | `pipeline/` fetch, adapt, classify, compute, publish | Working. 13 AMCs, about 77% of industry AUM (Sep 2026 disclosures); bundle is 1,148 schemes, about 165 KB gzipped |
-| `client/` web app | In progress. Reads a CAMS/KFintech Consolidated Account Summary in the browser, joins it to the bundle, and renders Overview (English, Hindi, Malayalam). Funds, Data & method, Privacy and the PWA shell are still placeholders |
+| `client/` web app | In progress. Reads a CAMS/KFintech Consolidated Account Summary in the browser, joins it to the bundle, and renders Overview and Data and method (English, Hindi, Malayalam; Hindi and Malayalam are drafts awaiting native review). Funds, Asset classes, Privacy and the PWA shell are still placeholders. Status and design decisions: [docs/client-decisions.md](docs/client-decisions.md) |
 
 ## How it works
 
@@ -30,13 +30,18 @@ Your statement is parsed in the browser and never leaves your device. The only s
 
 1. **fetch**: downloads each AMC's monthly portfolio file into `data/raw/<amc>/<YYYY-MM>/` with a `manifest.json` (URL, size, sha256, fetch time). AMCs that block scripts are handled by hand or a real browser session and recorded with `register`.
 2. **adapt**: one adapter per AMC turns its spreadsheet layout into canonical records (schemes, holdings, futures). Every scheme must reconcile to the sheet's own grand total, otherwise the run fails.
-3. **classify**: assigns each holding a Level-1 bucket (`equity_domestic`, `equity_foreign`, `debt`, `cash_like`, `commodities`, `real_assets`, `other`, plus `fund_unit` for MF/ETF units), and market cap and sector for domestic equity, using first-match-wins rules in `classify/rules.csv`.
+3. **classify**: assigns each holding an asset-class bucket (`equity_domestic`, `equity_foreign`, `debt`, `cash_like`, `commodities`, `real_assets`, `other`, plus `fund_unit` for MF/ETF units), and market cap and sector for domestic equity, using first-match-wins rules in `classify/rules.csv`.
 4. **compute**: matches schemes to ISINs (AMFI's NAV file), then builds net and gross exposure vectors per scheme with hedge netting from futures and look-through for fund-of-funds. Hedges without a disclosed notional are flagged, not guessed; fund units it cannot resolve stay in `fund_unit`.
 5. **publish**: a static, versioned exposure bundle (`exposure-<YYYY-MM>.json` plus `manifest.json`), keyed by ISIN. It is built locally; uploading it to the data host is manual.
 
 **Client (private, per user)** *(in progress)*
 
 A PWA that reads the statement locally, matches folios to schemes by ISIN, joins them against the exposure bundle, and renders allocation by asset class, fund, market cap and sector, with a "how is this calculated?" trail behind every number. No statement data is uploaded, stored on a server, or sent to analytics.
+
+The Overview shows two separate levels and does not compare them:
+
+- **Level 1, fund categories:** how SEBI files each fund (equity, hybrid, debt, index/ETF/fund-of-funds), with the least equity those categories require (SEBI's stated floors; categories with none count as zero). Rules are in `client/src/portfolio/fundCategory.ts`, cited to SEBI circular HO/24/13/15(2)2026-IMD-RAC4/I/5764/2026 (26 Feb 2026).
+- **Level 2, look-through:** what the funds actually hold, net and gross, by asset class. This is the headline.
 
 ### Design principles
 
@@ -71,8 +76,9 @@ pipeline/            Python 3.13, managed with uv
     sources.py       manifest, `status` and `register` commands
   tests/
   data/              raw/ and staged/ are git-ignored
-client/              Vite + React + TypeScript app (Overview built; PWA pending)
+client/              Vite + React + TypeScript app (Overview and Data and method built; PWA pending)
 docs/design-spec.md  UI/UX design spec
+docs/client-decisions.md  client status and design decisions, updated as they change
 ```
 
 ## Getting started

@@ -1,0 +1,67 @@
+.method {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 40px 24px 96px;
+}
+
+.method h1 {
+  margin: 0 0 12px;
+  font-size: 44px;
+  font-weight: 500;
+}
+
+:lang(ml) .method h1 {
+  font-size: 32px;
+  line-height: 1.36;
+}
+
+:lang(hi) .method h1 {
+  line-height: 1.28;
+}
+
+.method .method__intro {
+  margin: 0 0 40px;
+  font-size: 18px;
+  color: var(--ink2);
+}
+
+.method section {
+  margin-bottom: 36px;
+}
+
+.method h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.method p,
+.method li {
+  margin: 0 0 8px;
+  color: var(--ink2);
+}
+
+.method ul,
+.method ol {
+  margin: 0;
+  padding-inline-start: 20px;
+}
+
+.method a {
+  color: var(--ink);
+  overflow-wrap: anywhere;
+}
+
+@media (max-width: 600px) {
+  .method {
+    padding: 24px 16px 64px;
+  }
+
+  .method h1 {
+    font-size: 34px;
+  }
+
+  .method .method__intro {
+    font-size: 16px;
+  }
+}
