@@ -131,9 +131,18 @@ For each screen: purpose, content, primary action, states.
 
 ### S2. Get your statement (guide)
 - **Purpose:** newcomers don't have the file. Help them get it.
-- **Content:** a two-card chooser (**Mutual funds only → CAMS/KFintech CAS**; **Stocks, ETFs, bonds and funds in demat → NSDL/CDSL CAS**; link to "I'm not sure" with a one-line rule of thumb), then numbered steps for the chosen option, with annotated mock screenshots drawn as simple vector wireframes (not real site screenshots). Note about the password the user sets on the request form and that the PDF arrives by email.
+- **Background (why the choice is not "funds vs stocks"):** both statement families can show mutual funds, so the chooser is about what the user holds and what they want from the app.
+  - **CAMS/KFintech CAS:** mutual fund folios held outside demat, across all AMCs (either registrar gives the full set). Comes as *Summary* (units, NAV, value per scheme) or *Detailed* (adds full transaction history). No demat holdings.
+  - **NSDL/CDSL CAS:** demat holdings (shares, ETFs, bonds, G-Secs, Sovereign Gold Bonds, AIFs, NPS via CDSL, mutual funds held in demat) plus mutual fund folios held outside demat. Holdings only, no transaction history, and only investments where the user is the first holder.
+- **Content:** a two-card chooser, then numbered steps for the chosen option, with annotated mock screenshots drawn as simple vector wireframes (not real site screenshots).
+  - **Card 1, "I only hold mutual funds" → CAMS/KFintech CAS (Detailed).** Note: this is the only option that carries transaction history, which v1 does not use but later versions may.
+  - **Card 2, "I also hold shares, ETFs or bonds in a demat account" → NSDL/CDSL CAS.** Note: it also lists mutual fund folios, so one file is usually enough.
+  - A link "I'm not sure" with a one-line rule of thumb: *if you have a demat account, use the NSDL/CDSL statement; if you only invest through fund apps or AMCs, use CAMS/KFintech.*
+  - A quiet line that both can be added together (S3 accepts two files) and that overlapping funds are merged (see S6).
+  - Password note, per source: CAMS uses the PAN, KFintech uses a password the user sets on the request form, NSDL/CDSL use a PAN-based password. The PDF arrives by email, and must be the original file, not a "print to PDF" copy.
 - **Primary action:** **I have my file** → S3.
 - **Pro touch:** the copy-able direct request links for each registrar.
+- **Open questions (verify against real statements before the parser is built):** whether folio rows in a depository CAS carry ISINs, and whether a CDSL statement includes NSDL accounts (sources conflict). Funds are matched by ISIN with AMFI code or name as fallback, since these fields can be missing.
 
 ### S3. Upload & unlock
 - **Purpose:** take the PDF(s) and the password.
