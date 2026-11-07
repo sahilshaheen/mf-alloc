@@ -4,6 +4,27 @@
   padding: 48px 40px 88px;
 }
 
+.privacy__hero {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 32px 56px;
+  align-items: center;
+}
+
+.privacy__hero > div:first-child {
+  flex: 1 1 420px;
+  min-width: 0;
+}
+
+.privacy__art {
+  flex: 0 1 340px;
+  min-width: 0;
+}
+
+.privacy section.privacy__hero {
+  margin-top: 0;
+}
+
 .privacy h1 {
   margin: 0;
   max-width: 18ch;

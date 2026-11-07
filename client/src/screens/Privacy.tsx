@@ -1,5 +1,6 @@
 import { formatBytes } from '../format'
 import { useI18n } from '../i18n/useI18n'
+import { Sealed } from '../illustrations/Sealed'
 import type { TranslationKey } from '../i18n/translator'
 import { useSessionRequests } from './useSessionRequests'
 import './Privacy.css'
@@ -14,8 +15,15 @@ export function Privacy() {
 
   return (
     <main className="privacy">
-      <h1 className="serif">{t('pv.title')}</h1>
-      <p className="privacy__intro">{t('pv.intro')}</p>
+      <section className="privacy__hero">
+        <div>
+          <h1 className="serif">{t('pv.title')}</h1>
+          <p className="privacy__intro">{t('pv.intro')}</p>
+        </div>
+        <div className="privacy__art" aria-hidden="true">
+          <Sealed />
+        </div>
+      </section>
 
       <section>
         <h2 className="serif">{t('pv.promiseTitle')}</h2>

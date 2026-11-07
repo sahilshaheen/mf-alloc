@@ -128,7 +128,24 @@
   color: var(--ink2);
 }
 
-.funds__empty,
+.funds__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 32px 0;
+}
+
+.funds__empty > div {
+  width: 220px;
+}
+
+.funds__empty p {
+  margin: 0;
+  font-size: 14.5px;
+  color: var(--ink2);
+}
+
 .funds__rounding {
   margin: 12px 0 0;
   font-size: 13px;

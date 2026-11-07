@@ -8,6 +8,7 @@ import { filterRows, fundRows, type FundRow } from '../portfolio/fundsModel'
 import { BUCKETS, type Bucket } from '../portfolio/types'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import { bucketFill } from './bucketStyle'
+import { EmptyPortfolio } from '../illustrations/Scenes'
 import { FundDetail } from './FundDetail'
 import './Funds.css'
 
@@ -129,7 +130,14 @@ export function Funds() {
             ))}
           </div>
         </div>
-        {rows.length === 0 && <p className="funds__empty">{t('funds.noMatch', { query: query.trim() })}</p>}
+        {rows.length === 0 && (
+          <div className="funds__empty">
+            <div aria-hidden="true">
+              <EmptyPortfolio />
+            </div>
+            <p>{t('funds.noMatch', { query: query.trim() })}</p>
+          </div>
+        )}
         <p className="funds__rounding">{t('funds.rounding')}</p>
       </main>
 

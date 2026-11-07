@@ -32,3 +32,8 @@ export interface ExposureBundle {
   schemes: BundleScheme[]
   isins: Record<string, number>
 }
+
+/** A bundle as loaded: with the hash that was checked against the manifest. */
+export interface LoadedBundle extends ExposureBundle {
+  sha256: string
+}

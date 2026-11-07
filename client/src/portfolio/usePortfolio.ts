@@ -1,10 +1,10 @@
 import { createContext, useContext } from 'react'
 import type { Portfolio } from './analysePortfolio'
 import type { ExposureView } from './overviewModel'
-import type { ExposureBundle } from './types'
+import type { LoadedBundle } from './types'
 
 export interface PortfolioState {
-  bundle: ExposureBundle | null
+  bundle: LoadedBundle | null
   bundleError: Error | null
   portfolio: Portfolio | null
   statementDate: string | null

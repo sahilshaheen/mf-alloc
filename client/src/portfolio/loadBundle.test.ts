@@ -22,6 +22,11 @@ describe('loadBundle', () => {
     expect(bundle.period).toBe('2026-09')
   })
 
+  it('reports the hash it verified, so the page can show it', async () => {
+    const bundle = await loadBundle('https://data.test/', await serve(validBundle))
+    expect(bundle.sha256).toBe(await sha256Hex(JSON.stringify(validBundle)))
+  })
+
   it('refuses a bundle whose hash does not match the manifest', async () => {
     await expect(loadBundle('https://data.test/', await serve(validBundle, { sha256: '0'.repeat(64) }))).rejects.toThrow(/hash/i)
   })

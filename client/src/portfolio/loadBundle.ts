@@ -1,8 +1,8 @@
-import type { ExposureBundle } from './types'
+import type { ExposureBundle, LoadedBundle } from './types'
 
 type Fetch = (url: string) => Promise<Response>
 
-export async function loadBundle(baseUrl: string, fetchFn: Fetch = (url) => fetch(url)): Promise<ExposureBundle> {
+export async function loadBundle(baseUrl: string, fetchFn: Fetch = (url) => fetch(url)): Promise<LoadedBundle> {
   const manifest = await getJson<{ latest: { file: string; sha256: string } }>(fetchFn, `${baseUrl}manifest.json`)
   const response = await fetchFn(`${baseUrl}${manifest.latest.file}`)
   if (!response.ok) throw new Error(`Could not load ${manifest.latest.file} (${response.status}).`)
@@ -14,7 +14,7 @@ export async function loadBundle(baseUrl: string, fetchFn: Fetch = (url) => fetc
 
   const bundle = JSON.parse(new TextDecoder().decode(body)) as ExposureBundle
   if (bundle.schema_version !== 1) throw new Error(`Unsupported bundle schema version ${bundle.schema_version}.`)
-  return bundle
+  return { ...bundle, sha256: manifest.latest.sha256 }
 }
 
 async function getJson<T>(fetchFn: Fetch, url: string): Promise<T> {

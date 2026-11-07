@@ -5,12 +5,12 @@ import { analysePortfolio, type Portfolio } from './analysePortfolio'
 import { loadBundle } from './loadBundle'
 import type { ExposureView } from './overviewModel'
 import { PortfolioContext } from './usePortfolio'
-import type { ExposureBundle } from './types'
+import type { LoadedBundle } from './types'
 
 const DATA_URL = `${import.meta.env.BASE_URL}data/`
 
 export function PortfolioProvider({ children }: { children: ReactNode }) {
-  const [bundle, setBundle] = useState<ExposureBundle | null>(null)
+  const [bundle, setBundle] = useState<LoadedBundle | null>(null)
   const [bundleError, setBundleError] = useState<Error | null>(null)
   const [view, setView] = useState<ExposureView>('net')
   const [opened, setOpened] = useState<{ portfolio: Portfolio; statementDate: string } | null>(null)

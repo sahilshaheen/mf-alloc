@@ -7,7 +7,7 @@ decision changes.
 ## Where things stand
 
 Built: i18n (en, hi, ml), shell and header, statement parser (CAMS Summary), bundle loader and ISIN join,
-Welcome (upload and password), Overview, Data and method (short, with cited sources), Funds (table, search,
+Welcome (hero, steps, sealed section, upload and password), Overview, Data and method (short, with cited sources), Funds (table, search,
 fund detail panel at `/funds/:isin`), Privacy, Breakdowns (`/breakdowns/:bucket`).
 
 Next, in order: bring the Breakdowns detail (market cap, sector) into the Funds page and panel, then the rest of the
@@ -82,9 +82,20 @@ summaries only. It is not confirmed against SEBI's own circular.
 **Naming.** "Level 1" and "Level 2" are client terms: Level 1 is fund categories, Level 2 is look-through.
 The pipeline's per-holding labels are called asset-class buckets, so the two do not clash.
 
-**Data and method.** Short on purpose: what each level is, known limits, and numbered sources with links. Detail
-lives in the code, which readers can audit and dispute. Every claim on it must have a source in the list or be
-checkable in the repository. Add a source whenever a new rule is added.
+**Data and method.** Follows the design board: hero with the calendar scene, worked net-versus-gross example, the
+category explanation (Level 1), a data-sources table, a table of fund houses covered, known limits, a Terms entry
+(Regular and Direct plans, stated neutrally), numbered sources with links, and the data-bundle version and hash
+with Copy. Every claim must have a source in the list or be checkable in the repository; add a source whenever a
+new rule is added. Differences from the board, on purpose: the board's month-by-month freshness strip is a
+coverage table instead (the bundle has one date per scheme, not a history); AMFI list dates show "—" because the
+bundle does not record them; disclosures are described as including futures only, because options are not parsed.
+
+**Illustrations and icons.** The six scenes from the Illustrations board are React components in
+`client/src/illustrations/` (Hero, Sealed, and in Scenes: Processing, EmptyPortfolio, Unreadable, Calendar), built
+on theme variables so dark mode is free, with per-instance SVG ids. Used on: Welcome (Hero; Processing while
+reading; Unreadable for unreadable or unsupported files; Sealed), Privacy (Sealed), Data and method (Calendar),
+Funds search with no match (EmptyPortfolio). The favicon is the board's hand-tuned 16 px mark with a dark-mode
+variant. Not yet used: the bucket spot icons (I7) and a PWA/app icon (needs PNGs; with the PWA work).
 
 **Funds.** Rows are merged by ISIN (several folios of one fund become one row), sorted by value. The Net/Gross
 choice lives in the portfolio context, so Overview and Funds share it. The design's "category says vs

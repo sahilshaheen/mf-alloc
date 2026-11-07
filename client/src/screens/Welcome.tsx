@@ -1,6 +1,9 @@
 import { useState, type FormEvent } from 'react'
-import { useNavigate } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { useI18n } from '../i18n/useI18n'
+import { Hero } from '../illustrations/Hero'
+import { Sealed } from '../illustrations/Sealed'
+import { Processing, Unreadable } from '../illustrations/Scenes'
 import type { TranslationKey } from '../i18n/translator'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import {
@@ -48,28 +51,63 @@ export function Welcome() {
     }
   }
 
+  const showUnreadable = problem?.key === 'error.unreadable' || problem?.key === 'error.unsupported'
+
   return (
     <main className="welcome">
-      <h1 className="serif">{t('welcome.title')}</h1>
-      <p className="welcome__subtitle">{t('welcome.subtitle')}</p>
-      <form onSubmit={submit}>
-        <label>
-          {t('welcome.file')}
-          <input type="file" accept="application/pdf" required onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-        </label>
-        <label>
-          {t('welcome.password')}
-          <input type="password" value={password} autoComplete="off" onChange={(event) => setPassword(event.target.value)} />
-        </label>
-        <button type="submit" disabled={!file || !bundle || reading}>
-          {reading ? t('welcome.reading') : t('welcome.open')}
-        </button>
-        {(problem || bundleError) && (
-          <p role="alert" className="welcome__problem">
-            {problem ? t(problem.key, { reason: problem.reason ?? '' }) : t('error.data')}
-          </p>
-        )}
-      </form>
+      <section className="welcome__hero">
+        <div className="welcome__intro">
+          <h1 className="serif">{t('welcome.title')}</h1>
+          <p className="welcome__subtitle">{t('welcome.subtitle')}</p>
+          <form onSubmit={submit}>
+            <label>
+              {t('welcome.file')}
+              <input type="file" accept="application/pdf" required onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
+            </label>
+            <label>
+              {t('welcome.password')}
+              <input type="password" value={password} autoComplete="off" onChange={(event) => setPassword(event.target.value)} />
+            </label>
+            <button type="submit" disabled={!file || !bundle || reading}>
+              {reading ? t('welcome.reading') : t('welcome.open')}
+            </button>
+            {(problem || bundleError) && (
+              <p role="alert" className="welcome__problem">
+                {problem ? t(problem.key, { reason: problem.reason ?? '' }) : t('error.data')}
+              </p>
+            )}
+          </form>
+        </div>
+        <div className="welcome__art">{reading ? <Processing /> : showUnreadable ? <Unreadable /> : <Hero />}</div>
+      </section>
+
+      <ol className="welcome__steps">
+        {([1, 2, 3] as const).map((n) => (
+          <li key={n}>
+            <span className="serif num">{n}</span>
+            <span>
+              <b>{t(`welcome.step${n}Title`)}</b>
+              {t(`welcome.step${n}Body`)}
+            </span>
+          </li>
+        ))}
+      </ol>
+
+      <section className="welcome__sealed">
+        <div className="welcome__sealed-art">
+          <Sealed />
+        </div>
+        <div>
+          <h2 className="serif">{t('welcome.sealedTitle')}</h2>
+          <p>{t('welcome.sealedBody')}</p>
+          <Link to="/privacy">{t('welcome.sealedLink')}</Link>
+        </div>
+      </section>
+
+      <footer className="welcome__foot">
+        <span>{t('welcome.tagline')}</span>
+        <span>{t('overview.noAdvice')}</span>
+      </footer>
     </main>
   )
 }
