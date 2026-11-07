@@ -112,9 +112,25 @@
   flex-direction: column;
   justify-content: space-between;
   min-width: 0;
-  padding: 10px;
+  padding: 10px 6px 10px 10px;
   overflow: hidden;
   box-shadow: -1px 0 0 var(--edge);
+}
+
+.sheet > div {
+  container-type: inline-size;
+}
+
+@container (max-width: 64px) {
+  .sheet span:last-child {
+    visibility: hidden;
+  }
+}
+
+@container (max-width: 90px) {
+  .sheet span:first-child {
+    visibility: hidden;
+  }
 }
 
 .sheet span:first-child {
@@ -129,6 +145,7 @@
   font-size: 20px;
   font-weight: 500;
   white-space: nowrap;
+  overflow: hidden;
 }
 
 .strata {
@@ -240,13 +257,80 @@
   color: var(--ink3);
 }
 
+@media (max-width: 900px) {
+  .overview {
+    padding: 24px 24px 72px;
+  }
+
+  .overview__headline {
+    font-size: 44px;
+  }
+
+  :lang(hi) .overview__headline {
+    font-size: 38px;
+  }
+
+  :lang(ml) .overview__headline {
+    font-size: 32px;
+  }
+}
+
 @media (max-width: 600px) {
   .overview {
     padding: 20px 16px 64px;
   }
 
+  .overview__bar {
+    margin-bottom: 32px;
+  }
+
+  .overview__controls,
+  .overview .segmented {
+    width: 100%;
+  }
+
+  .overview .segmented button {
+    flex: 1 1 0;
+    height: auto;
+    min-height: 38px;
+    padding: 6px 8px;
+  }
+
   .overview__headline {
-    font-size: 36px;
+    font-size: 34px;
+  }
+
+  :lang(hi) .overview__headline {
+    font-size: 30px;
+  }
+
+  :lang(ml) .overview__headline {
+    font-size: 26px;
+  }
+
+  .overview__matched {
+    margin-bottom: 40px;
+  }
+
+  .sheet {
+    height: 68px;
+  }
+
+  .strata {
+    height: 108px;
+  }
+
+  .strata__segment {
+    font-size: 18px;
+    padding-left: 8px;
+  }
+
+  .overview h2 {
+    margin-top: 40px;
+  }
+
+  .legend__pct {
+    font-size: 22px;
   }
 
   .legend__row {

@@ -51,9 +51,11 @@
 
 .site-header__tools {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 12px;
   margin-left: auto;
+  max-width: 100%;
 }
 
 .stamp {
@@ -71,8 +73,54 @@
   transform: rotate(-1.6deg);
 }
 
+@media (max-width: 1180px) {
+  .site-header__inner {
+    max-width: 960px;
+  }
+
+  .site-header nav {
+    order: 3;
+    flex: 1 0 100%;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    margin: 0 -8px;
+  }
+
+  .site-header nav a {
+    flex: none;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 900px) {
+  .site-header__inner {
+    padding: 12px 24px;
+  }
+}
+
 @media (max-width: 600px) {
   .site-header__inner {
     padding: 12px 16px;
+    gap: 8px 12px;
+  }
+
+  .site-header__tools {
+    display: contents;
+  }
+
+  .site-header__tools .stamp {
+    order: 1;
+    margin-left: auto;
+  }
+
+  .site-header__tools .segmented {
+    order: 2;
+    flex: 1 1 100%;
+  }
+
+  .site-header__tools .segmented button {
+    flex: 1 1 auto;
+    padding: 0 8px;
   }
 }

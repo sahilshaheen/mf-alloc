@@ -33,7 +33,6 @@ const LABEL_TONE: Record<LabelGroup, string> = {
   notMatched: 'var(--sunk)',
 }
 const MIN_SHARE_FOR_BAR_LABEL = 0.08
-const MIN_SHARE_FOR_SHEET_LABEL = 0.12
 
 const fill = (bucket: Bucket): string =>
   bucket === 'other' ? `repeating-linear-gradient(-45deg, rgba(0,0,0,.22) 0 1.5px, transparent 1.5px 5px), ${BUCKET_COLOUR[bucket]}` : BUCKET_COLOUR[bucket]
@@ -116,8 +115,8 @@ export function Overview() {
             const share = portfolio.labelled[group] / portfolio.total
             return (
               <div key={group} style={{ flex: `${portfolio.labelled[group]} 1 0`, background: LABEL_TONE[group] }}>
-                <span>{share >= MIN_SHARE_FOR_SHEET_LABEL ? t(`label.${group}`) : ''}</span>
-                <span className="serif num">{share >= 0.06 ? formatPercent(share) : ''}</span>
+                <span>{t(`label.${group}`)}</span>
+                <span className="serif num">{formatPercent(share)}</span>
               </div>
             )
           })}

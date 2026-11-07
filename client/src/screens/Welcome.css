@@ -66,6 +66,46 @@
   cursor: not-allowed;
 }
 
+.welcome input[type='file'] {
+  max-width: 100%;
+  font: inherit;
+  color: var(--ink);
+}
+
+.welcome input[type='file']::file-selector-button {
+  height: 44px;
+  margin-inline-end: 12px;
+  padding: 0 16px;
+  border-radius: 8px;
+  border: 1px solid var(--edge);
+  background: var(--sheet);
+  color: var(--ink);
+  font: inherit;
+  cursor: pointer;
+}
+
+@media (max-width: 600px) {
+  .welcome {
+    padding: 32px 16px 64px;
+  }
+
+  .welcome h1 {
+    font-size: 36px;
+  }
+
+  :lang(ml) .welcome h1 {
+    font-size: 28px;
+  }
+
+  .welcome__subtitle {
+    font-size: 16px;
+  }
+
+  .welcome button[type='submit'] {
+    align-self: stretch;
+  }
+}
+
 .welcome__problem {
   margin: 0;
   padding: 12px 14px;
