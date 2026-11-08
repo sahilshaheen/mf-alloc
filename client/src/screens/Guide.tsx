@@ -33,7 +33,6 @@ export function Guide() {
       <p>{t('guide.after')}</p>
 
       <p className="guide__note">{t('guide.caveat')}</p>
-      <p className="guide__note">{t('guide.demat')}</p>
       <Link to="/welcome">{t('guide.start')}</Link>
     </main>
   )

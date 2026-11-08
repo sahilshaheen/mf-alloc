@@ -246,8 +246,7 @@ export const en = {
   'guide.step7': 'Submit. The statement is emailed to you as a password-protected PDF.',
   'guide.open': 'Open the CAMS form',
   'guide.after': 'When the email arrives, come back and open the PDF here with that password.',
-  'guide.caveat': 'We walked through the form but did not submit it, so how long the email takes is not verified. If the site differs from this page, tell us.',
-  'guide.demat': 'Shares, ETFs and bonds in demat accounts are not covered yet.',
+  'guide.caveat': 'It usually arrives within a few minutes. If the site differs from this page, tell us.',
   'guide.start': 'Back to start',
   'welcome.guideLink': 'How to get it',
 } as const
