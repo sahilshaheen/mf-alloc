@@ -6,6 +6,7 @@ import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
 import { CAP_ORDER, dimensionContributors, equityBreakdown, type DimensionRow, type EquityDimension } from '../portfolio/breakdownModel'
 import { topContributors } from '../portfolio/overviewModel'
+import { sectorName } from '../portfolio/sector'
 import { BUCKETS, type Bucket } from '../portfolio/types'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import type { Portfolio } from '../portfolio/analysePortfolio'
@@ -45,7 +46,7 @@ function EquityDetail({
           return (
             <li key={row.key}>
               <button type="button" aria-pressed={selected} onClick={() => onSelect(selected ? null : { dimension, key: row.key })}>
-                <span lang={dimension === 'sector' ? 'en' : undefined}>{label(row.key)}</span>
+                <span>{label(row.key)}</span>
                 <span className="bd__track" aria-hidden="true">
                   <span style={{ width: `${(row.value / largest) * 100}%`, background: fillFor?.(row.key) }} />
                 </span>
@@ -70,7 +71,7 @@ function EquityDetail({
       {rows('cap', caps, capLabel, capFill)}
 
       <h3 className="serif">{t('bd.bySector')}</h3>
-      {rows('sector', shownSectors, (key) => key)}
+      {rows('sector', shownSectors, (key) => sectorName(t, key))}
       {sectors.length > TOP_SECTORS && (
         <button type="button" className="bd__more" onClick={() => setShowAllSectors(!showAllSectors)}>
           {showAllSectors ? t('bd.showTop') : t('bd.showAll', { count: String(sectors.length) })}
@@ -101,7 +102,7 @@ export function Breakdowns() {
 
   const funds = group ? dimensionContributors(portfolio, group.dimension, group.key, Infinity) : topContributors(portfolio, view, bucket, Infinity)
   const fundsTotal = group ? funds.reduce((sum, fund) => sum + fund.value, 0) : value
-  const behindName = group ? (group.dimension === 'cap' ? t(`bd.cap.${group.key}` as TranslationKey) : group.key) : bucketName(bucket)
+  const behindName = group ? (group.dimension === 'cap' ? t(`bd.cap.${group.key}` as TranslationKey) : sectorName(t, group.key)) : bucketName(bucket)
   const behindTitle = t('bd.fundsBehind', { name: behindName })
 
   return (
@@ -141,7 +142,7 @@ export function Breakdowns() {
       </main>
 
       {panel && (
-        <SidePanel label={behindTitle} title={behindTitle} titleLang={group?.dimension === 'sector' ? 'en' : undefined} onClose={closePanel}>
+        <SidePanel label={behindTitle} title={behindTitle} onClose={closePanel}>
           <ul className="bd__funds">
             {funds.map((fund) => (
               <li key={fund.name}>

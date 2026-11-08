@@ -41,7 +41,8 @@ input {
 }
 
 a {
-  color: var(--ink);
+  color: var(--link);
+  text-underline-offset: 3px;
 }
 
 :focus-visible {

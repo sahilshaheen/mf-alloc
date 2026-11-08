@@ -9,7 +9,7 @@ Your statement is parsed in the browser and never leaves your device. You can op
 | Component | State |
 |---|---|
 | `pipeline/` fetch, adapt, classify, compute, publish | Working. 13 AMCs, about 77% of industry AUM (Sep 2026 disclosures); bundle is 1,148 schemes, about 165 KB gzipped |
-| `client/` web app | In progress. Reads a CAMS/KFintech Consolidated Account Summary in the browser, joins it to the bundle, and renders Overview, Breakdowns, Funds, Data and method and Privacy (English, Hindi, Malayalam; Hindi and Malayalam are drafts awaiting native review). The PWA shell is still a placeholder. Status and design decisions: [docs/client-decisions.md](docs/client-decisions.md) |
+| `client/` web app | In progress. Reads a CAMS Consolidated Account Summary in the browser, joins it to the bundle, and renders Overview, Breakdowns, Funds, Data and method and Privacy (English, Hindi, Malayalam; Hindi and Malayalam are drafts awaiting native review). The PWA shell is still a placeholder. Status and design decisions: [docs/client-decisions.md](docs/client-decisions.md) |
 
 ## How it works
 
@@ -112,7 +112,7 @@ mkdir -p public/data && cp ../pipeline/data/out/* public/data/
 npm run dev          # npm test, npm run lint, npm run build
 ```
 
-Only the CAMS/KFintech Summary statement is read so far; other statement types are rejected with a clear message. The statement is parsed in the browser by pdf.js and is never sent anywhere.
+Only the CAMS Summary statement is read so far; other statement types are rejected with a clear message. The statement is parsed in the browser by pdf.js and is never sent anywhere.
 
 ## Data sources and coverage
 

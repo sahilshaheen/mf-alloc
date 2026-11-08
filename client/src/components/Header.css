@@ -16,6 +16,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
+  color: var(--ink);
   text-decoration: none;
   font-size: 21px;
   font-weight: 600;
@@ -78,6 +79,7 @@
   border-radius: 6px;
   font-size: 13px;
   font-weight: 600;
+  color: var(--ink);
   text-decoration: none;
   transform: rotate(-1.6deg);
 }

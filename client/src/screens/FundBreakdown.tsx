@@ -4,6 +4,7 @@ import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
 import { schemeBreakdown, type EquityDimension } from '../portfolio/breakdownModel'
 import type { FundRow } from '../portfolio/fundsModel'
+import { sectorName } from '../portfolio/sector'
 import { BUCKETS, type Bucket } from '../portfolio/types'
 import { bucketFill, capFill, rampFill, WHITE_TEXT_BUCKETS } from './bucketStyle'
 import './FundBreakdown.css'
@@ -26,7 +27,7 @@ export function FundBreakdown({ row }: { row: FundRow }) {
   const bucketName = (bucket: Bucket) => t(`bucket.${bucket}` as TranslationKey)
   const parts = zoom === 'equity_domestic' && row.scheme ? schemeBreakdown(row.scheme, dimension) : []
   const grossEquity = row.scheme?.gross.equity_domestic ?? 0
-  const partLabel = (key: string) => (dimension === 'cap' ? t(`bd.cap.${key}` as TranslationKey) : key)
+  const partLabel = (key: string) => (dimension === 'cap' ? t(`bd.cap.${key}` as TranslationKey) : sectorName(t, key))
   const partFill = (key: string, rank: number) => (dimension === 'cap' ? capFill(key) : rampFill(rank))
   const listed = dimension === 'sector' && !showAllSectors ? parts.slice(0, TOP_SECTORS) : parts
   const barParts =
@@ -36,6 +37,7 @@ export function FundBreakdown({ row }: { row: FundRow }) {
 
   return (
     <div className="zoom">
+      {zoom === null && <p className="zoom__hint">{t('funds.tapHint')}</p>}
       <div className="zoom__bar num" data-zoomed={zoom !== null}>
         {present.map((bucket) => {
           const zoomed = zoom === bucket
@@ -73,9 +75,7 @@ export function FundBreakdown({ row }: { row: FundRow }) {
         })}
       </div>
 
-      {zoom === null ? (
-        <p className="zoom__hint">{t('funds.tapHint')}</p>
-      ) : (
+      {zoom !== null && (
         <div className="zoom__detail">
           <div className="zoom__head">
             <button type="button" className="zoom__back" onClick={() => setZoom(null)}>
@@ -101,7 +101,7 @@ export function FundBreakdown({ row }: { row: FundRow }) {
                   return (
                     <li key={part.key}>
                       <span className="zoom__swatch" style={{ background: partFill(part.key, rank) }} />
-                      <span lang={dimension === 'sector' ? 'en' : undefined}>{partLabel(part.key)}</span>
+                      <span>{partLabel(part.key)}</span>
                       <span>{formatPercent(part.share)}</span>
                       <span>{formatInr(row.value * part.share * grossEquity)}</span>
                     </li>

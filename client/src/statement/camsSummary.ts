@@ -29,7 +29,7 @@ export function parseCamsSummary(pages: PageText[]): Statement {
   const asOn = findAsOn(pages)
   const parsed = pages.map(parsePage).filter((page): page is PageRows => page !== null)
   if (parsed.length === 0) {
-    throw new UnsupportedStatementError('This is not a CAMS or KFintech Consolidated Account Summary.')
+    throw new UnsupportedStatementError('This is not a CAMS Consolidated Account Summary.')
   }
 
   const holdings = parsed.flatMap((page) => page.holdings)

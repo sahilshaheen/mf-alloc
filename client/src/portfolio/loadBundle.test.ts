@@ -22,6 +22,12 @@ describe('loadBundle', () => {
     expect(bundle.period).toBe('2026-09')
   })
 
+  it('merges sector names that fund houses spell differently', async () => {
+    const scheme = { sector: { 'Cement and Cement Products': 0.25, 'Cement & Cement Products': 0.25 } }
+    const bundle = await loadBundle('https://data.test/', await serve({ ...validBundle, schemes: [scheme] }))
+    expect(bundle.schemes[0].sector).toEqual({ 'Cement & Cement Products': 0.5 })
+  })
+
   it('reports the hash it verified, so the page can show it', async () => {
     const bundle = await loadBundle('https://data.test/', await serve(validBundle))
     expect(bundle.sha256).toBe(await sha256Hex(JSON.stringify(validBundle)))

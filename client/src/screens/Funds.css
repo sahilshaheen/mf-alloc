@@ -99,6 +99,7 @@
 
 .funds__name a {
   display: block;
+  color: var(--ink);
   font-weight: 500;
   text-decoration: none;
   overflow-wrap: anywhere;

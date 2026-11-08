@@ -169,12 +169,13 @@
 
 .welcome button[type='submit'] {
   align-self: flex-start;
-  height: 44px;
-  padding: 0 20px;
+  height: 52px;
+  padding: 0 28px;
   border-radius: 8px;
   border: 0;
   background: var(--ink);
   color: var(--onink);
+  font-size: 17px;
   font-weight: 600;
   cursor: pointer;
 }

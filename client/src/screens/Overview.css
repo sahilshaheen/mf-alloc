@@ -34,6 +34,20 @@ a.chip:hover {
   background: var(--edge);
 }
 
+a.chip--primary {
+  height: 40px;
+  padding: 0 20px;
+  background: var(--ink);
+  color: var(--onink);
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+a.chip--primary:hover {
+  background: var(--ink);
+  opacity: 0.88;
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
@@ -143,14 +157,30 @@ ul.legend {
 .overview figcaption {
   margin: 20px 0 0;
   padding: 14px 16px;
-  min-height: 48px;
+  min-height: calc(4lh + 28px);
   border-radius: 8px;
   background: var(--sunk);
   font-size: 14.5px;
 }
 
-.overview figcaption span {
+.overview figcaption b {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.overview figcaption ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
   color: var(--ink2);
+}
+
+.overview figcaption li {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .overview__note {

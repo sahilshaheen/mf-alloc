@@ -56,7 +56,7 @@ export function Overview() {
         </p>
         <div className="overview__chips">
           <span className="chip num">{t('overview.dataAsOf', { date: formatDate(bundle.as_of, language) })}</span>
-          <Link className="chip" to="/save">
+          <Link className={savedAt ? 'chip' : 'chip chip--primary'} to="/save">
             {savedAt ? t('overview.savedLink') : t('overview.saveLink')}
           </Link>
           <Link className="chip" to="/welcome?new">
@@ -132,7 +132,13 @@ export function Overview() {
             <b>
               {bucketName(focus)} · {formatPercent(focusValue / portfolio.total)} · {formatInr(focusValue)}
             </b>
-            {contributors.length > 0 && <span> — {contributors.map((c) => `${c.name} ${formatInr(c.value)}`).join(' · ')}</span>}
+            <ul>
+              {contributors.map((c) => (
+                <li key={c.name}>
+                  {c.name} {formatInr(c.value)}
+                </li>
+              ))}
+            </ul>
           </figcaption>
         </figure>
 

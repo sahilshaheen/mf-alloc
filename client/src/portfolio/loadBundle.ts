@@ -1,3 +1,4 @@
+import { canonicalSectors } from './sector'
 import type { ExposureBundle, LoadedBundle } from './types'
 
 type Fetch = (url: string) => Promise<Response>
@@ -14,7 +15,8 @@ export async function loadBundle(baseUrl: string, fetchFn: Fetch = (url) => fetc
 
   const bundle = JSON.parse(new TextDecoder().decode(body)) as ExposureBundle
   if (bundle.schema_version !== 1) throw new Error(`Unsupported bundle schema version ${bundle.schema_version}.`)
-  return { ...bundle, sha256: manifest.latest.sha256 }
+  const schemes = bundle.schemes.map((scheme) => ({ ...scheme, sector: canonicalSectors(scheme.sector) }))
+  return { ...bundle, schemes, sha256: manifest.latest.sha256 }
 }
 
 async function getJson<T>(fetchFn: Fetch, url: string): Promise<T> {
