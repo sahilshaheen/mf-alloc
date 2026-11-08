@@ -6,6 +6,7 @@ import { Funds } from './screens/Funds'
 import { Overview } from './screens/Overview'
 import { Privacy } from './screens/Privacy'
 import { Save } from './screens/Save'
+import { Guide } from './screens/Guide'
 import { Welcome } from './screens/Welcome'
 
 export default function App() {
@@ -19,6 +20,7 @@ export default function App() {
         <Route path="/funds/:isin?" element={<Funds />} />
         <Route path="/data-and-method" element={<DataMethod />} />
         <Route path="/privacy" element={<Privacy />} />
+        <Route path="/get-statement" element={<Guide />} />
         <Route path="/save" element={<Save />} />
       </Routes>
     </>

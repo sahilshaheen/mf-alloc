@@ -109,6 +109,12 @@ export function Welcome() {
             <span>
               <b>{t(`welcome.step${n}Title`)}</b>
               {t(`welcome.step${n}Body`)}
+              {n === 1 && (
+                <>
+                  {' '}
+                  <Link to="/get-statement">{t('welcome.guideLink')}</Link>
+                </>
+              )}
             </span>
           </li>
         ))}
