@@ -251,4 +251,6 @@ export const hi: Dictionary = {
   'guide.caveat': 'यह आमतौर पर कुछ मिनटों में आ जाता है। साइट इस पन्ने से अलग दिखे तो हमें बताइए।',
   'guide.start': 'शुरुआत पर लौटिए',
   'welcome.guideLink': 'कैसे पाएँ',
+  'dm.coverSummary': '{houses} फ़ंड हाउस, {schemes} स्कीमों का डेटा, {date} तक।',
+  'dm.coverOf': '{schemes} में से {published} स्कीम',
 }

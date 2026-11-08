@@ -249,6 +249,8 @@ export const en = {
   'guide.caveat': 'It usually arrives within a few minutes. If the site differs from this page, tell us.',
   'guide.start': 'Back to start',
   'welcome.guideLink': 'How to get it',
+  'dm.coverSummary': '{houses} fund houses, {schemes} schemes with data as of {date}.',
+  'dm.coverOf': '{published} of {schemes} schemes',
 } as const
 
 export type Dictionary = Record<keyof typeof en, string>

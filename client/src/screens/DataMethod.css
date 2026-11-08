@@ -168,15 +168,7 @@
   color: var(--ink2);
 }
 
-.method__table--cover th,
-.method__table--cover td {
-  padding-block: 9px;
-}
 
-.method__table--cover td:nth-child(2),
-.method__table--cover td:nth-child(3) {
-  white-space: nowrap;
-}
 
 .method__list {
   margin: 0;
@@ -316,9 +308,56 @@
   .method__table {
     font-size: 14px;
   }
+}
 
-  .method__table--cover td:nth-child(3),
-  .method__table--cover th:nth-child(3) {
-    display: none;
-  }
+.method__houses {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.method__houses li {
+  display: grid;
+  grid-template-columns: 36px minmax(0, 1fr);
+  gap: 2px 12px;
+  align-items: center;
+  padding: 14px;
+  border: 1px solid var(--edge);
+  border-radius: 12px;
+  background: var(--sheet);
+}
+
+.method__mark {
+  display: grid;
+  grid-row: span 2;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--eq) 18%, var(--paper));
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.method__cover {
+  font-size: 13px;
+  color: var(--ink3);
+}
+
+.method__meter {
+  grid-column: 1 / -1;
+  height: 6px;
+  margin-top: 10px;
+  border-radius: 3px;
+  background: var(--edge);
+  overflow: hidden;
+}
+
+.method__meter span {
+  display: block;
+  height: 100%;
+  background: var(--eq);
 }

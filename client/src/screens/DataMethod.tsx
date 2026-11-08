@@ -25,6 +25,7 @@ const SOURCE_ROWS = [
 export function DataMethod() {
   const { t, language } = useI18n()
   const { bundle } = usePortfolio()
+  const houses = Object.entries(bundle?.amcs ?? {}).sort(([, a], [, b]) => b.schemes - a.schemes)
   const [copied, setCopied] = useState(false)
 
   const copyHash = async () => {
@@ -106,30 +107,27 @@ export function DataMethod() {
       {bundle && (
         <section>
           <h2 className="serif">{t('dm.coverTitle')}</h2>
-          <table className="method__table method__table--cover">
-            <thead>
-              <tr>
-                <th scope="col">{t('dm.colHouse')}</th>
-                <th scope="col">{t('dm.colSchemes')}</th>
-                <th scope="col">{t('dm.colLatest')}</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.entries(bundle.amcs)
-                .sort(([, a], [, b]) => b.schemes - a.schemes)
-                .map(([code, { published, schemes }]) => (
-                  <tr key={code}>
-                    <th scope="row" lang="en">
-                      {amcName(code)}
-                    </th>
-                    <td className="num">
-                      {published} / {schemes}
-                    </td>
-                    <td className="num">{formatDate(bundle.as_of, language)}</td>
-                  </tr>
-                ))}
-            </tbody>
-          </table>
+          <p>
+            {t('dm.coverSummary', {
+              houses: String(houses.length),
+              schemes: houses.reduce((sum, [, house]) => sum + house.published, 0).toLocaleString('en-IN'),
+              date: formatDate(bundle.as_of, language),
+            })}
+          </p>
+          <ul className="method__houses">
+            {houses.map(([code, { published, schemes }]) => (
+              <li key={code}>
+                <span className="method__mark serif" aria-hidden="true">
+                  {amcName(code).charAt(0)}
+                </span>
+                <b lang="en">{amcName(code)}</b>
+                <span className="method__cover num">{t('dm.coverOf', { published: String(published), schemes: String(schemes) })}</span>
+                <span className="method__meter" aria-hidden="true">
+                  <span style={{ width: `${(published / schemes) * 100}%` }} />
+                </span>
+              </li>
+            ))}
+          </ul>
           <p className="method__small">{t('dm.coverNote')}</p>
         </section>
       )}

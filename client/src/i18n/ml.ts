@@ -251,4 +251,6 @@ export const ml: Dictionary = {
   'guide.caveat': 'ഇത് സാധാരണയായി ഏതാനും മിനിറ്റുകൾക്കുള്ളിൽ എത്തും. സൈറ്റ് ഈ പേജിൽ നിന്ന് വ്യത്യസ്തമാണെങ്കിൽ ഞങ്ങളെ അറിയിക്കുക.',
   'guide.start': 'തുടക്കത്തിലേക്ക് മടങ്ങുക',
   'welcome.guideLink': 'എങ്ങനെ നേടാം',
+  'dm.coverSummary': '{houses} ഫണ്ട് ഹൗസുകൾ, {date} വരെയുള്ള {schemes} സ്കീമുകളുടെ ഡാറ്റ.',
+  'dm.coverOf': '{schemes} സ്കീമുകളിൽ {published}',
 }
