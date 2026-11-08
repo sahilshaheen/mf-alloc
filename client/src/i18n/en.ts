@@ -227,6 +227,10 @@ export const en = {
   'sv.openAnother': 'Open another statement',
   'overview.saveLink': 'Save on this device',
   'overview.savedLink': 'Saved on this device',
+  'funds.tapHint': 'Select an asset class to break it down.',
+  'funds.back': '← All asset classes',
+  'funds.equityNote': 'Shares of the equity this fund holds, before hedges. They do not change with Net and Gross.',
+  'funds.soon': 'No further breakdown for this asset class yet. It is coming.',
 } as const
 
 export type Dictionary = Record<keyof typeof en, string>

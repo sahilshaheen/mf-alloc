@@ -1,9 +1,11 @@
 import type { Portfolio } from './analysePortfolio'
 import type { Contributor } from './overviewModel'
+import type { BundleScheme } from './types'
 
 export type EquityDimension = 'cap' | 'sector'
 
 export const UNKNOWN = 'unknown'
+export const CAP_ORDER: readonly string[] = ['large', 'mid', 'small', UNKNOWN]
 
 export interface DimensionRow {
   key: string
@@ -27,4 +29,19 @@ export function dimensionContributors(portfolio: Portfolio, dimension: EquityDim
     .filter((contributor) => contributor.value > 0)
     .sort((a, b) => b.value - a.value)
     .slice(0, limit)
+}
+
+export interface SchemeShare {
+  key: string
+  share: number
+}
+
+/** The equity a fund holds split by cap or sector, as shares of that equity (they add up to one). */
+export function schemeBreakdown(scheme: BundleScheme, dimension: EquityDimension): SchemeShare[] {
+  const entries = Object.entries(scheme[dimension])
+  const total = entries.reduce((sum, [, weight]) => sum + weight, 0)
+  const order = (key: string) => (dimension === 'cap' ? CAP_ORDER.indexOf(key) : 0)
+  return entries
+    .map(([key, weight]) => ({ key, share: weight / total }))
+    .sort((a, b) => order(a.key) - order(b.key) || b.share - a.share)
 }

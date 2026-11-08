@@ -33,26 +33,6 @@
   color: var(--ink2);
 }
 
-.fund-detail__bar {
-  display: flex;
-  gap: 2px;
-  height: 28px;
-  margin-top: 20px;
-  border-radius: 6px;
-  overflow: hidden;
-  font-size: 13px;
-  font-weight: 600;
-}
-
-.fund-detail__bar span {
-  display: flex;
-  align-items: center;
-  min-width: 0;
-  padding-left: 8px;
-  overflow: hidden;
-  white-space: nowrap;
-}
-
 .fund-detail h3 {
   margin: 28px 0 8px;
   font-size: 20px;

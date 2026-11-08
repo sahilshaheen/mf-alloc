@@ -10,7 +10,7 @@ Built: i18n (en, hi, ml), shell and header, statement parser (CAMS Summary), bun
 Welcome (hero, steps, sealed section, upload and password), Overview, Data and method (short, with cited sources), Funds (table, search,
 fund detail panel at `/funds/:isin`), Privacy, Breakdowns (`/breakdowns/:bucket`).
 
-Next, in order: bring the Breakdowns detail (market cap, sector) into the Funds page and panel, then the rest of the
+Next, in order: the rest of the
 Welcome design, mobile polish of the new screens, dark-mode toggle, PWA, export.
 
 Run: see the root README. Check a change in a browser at 390, 768, 1024 and 1440 px, in English and
@@ -105,6 +105,14 @@ toggle; it never shows both at once). The bundle has no per-holding
 data, so the calculation shows only what the gross and net vectors support. Flags: hedged (gross equity
 exceeds net by more than 0.5% of the fund), partial look-through (`unresolved_fund_units`), not in our data,
 and holdings more than two months older than the statement date.
+Per-fund breakdown in the panel: the look-through bar is interactive. Selecting an asset-class segment zooms it
+(the segment grows to fill the bar and the others collapse, 200 ms, with the parts fading in; "← All asset
+classes" reverses it). Domestic equity offers market cap or sector, shown as shares of the equity the fund holds
+(they add up to 100%), with rupee amounts, and the bar shows the top six sectors plus one merged segment while
+the list shows every sector. All other asset classes zoom too and say "no further breakdown yet, coming".
+Cap and sector are gross, before hedges, so they do not follow the toggle (the panel says so). Logic and tests:
+`schemeBreakdown` in `portfolio/breakdownModel.ts`.
+
 Deferred from the design: row selection with an aggregate bar, Category/AMC/Group filters, Columns and density
 controls, the holdings-as-of column, CSV export, AMC display names (the bundle holds only AMC codes), and the
 mobile card layout (phones show name, ISIN, value and flags only).

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Portfolio } from './analysePortfolio'
-import { dimensionContributors, equityBreakdown } from './breakdownModel'
+import { dimensionContributors, equityBreakdown, schemeBreakdown } from './breakdownModel'
 import type { BundleScheme } from './types'
 
 const scheme = (name: string, cap: BundleScheme['cap'], sector: BundleScheme['sector']): BundleScheme => ({
@@ -59,5 +59,24 @@ describe('dimensionContributors', () => {
 
   it('limits the list', () => {
     expect(dimensionContributors(portfolio, 'cap', 'large', 1)).toEqual([{ name: 'Alpha', value: 500 }])
+  })
+})
+
+describe('schemeBreakdown', () => {
+  const fund = scheme('Alpha', { mid: 0.3, large: 0.5, unknown: 0.1 }, { IT: 0.2, Banks: 0.6, Pharma: 0.1 })
+
+  it('splits the equity a fund holds into shares that add up to one', () => {
+    const cap = schemeBreakdown(fund, 'cap')
+    expect(cap.map((row) => row.key)).toEqual(['large', 'mid', 'unknown'])
+    expect(cap.map((row) => row.share.toFixed(3))).toEqual(['0.556', '0.333', '0.111'])
+    expect(cap.reduce((sum, row) => sum + row.share, 0)).toBeCloseTo(1)
+  })
+
+  it('lists sectors largest first', () => {
+    expect(schemeBreakdown(fund, 'sector').map((row) => row.key)).toEqual(['Banks', 'IT', 'Pharma'])
+  })
+
+  it('has nothing to split for a fund with no equity detail', () => {
+    expect(schemeBreakdown(scheme('Bond', {}, {}), 'cap')).toEqual([])
   })
 })

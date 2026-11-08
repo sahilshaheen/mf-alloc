@@ -7,11 +7,10 @@ import { fundCategory } from '../portfolio/fundCategory'
 import type { FundRow } from '../portfolio/fundsModel'
 import { BUCKETS, type Bucket, type Vector } from '../portfolio/types'
 import { usePortfolio } from '../portfolio/usePortfolio'
-import { bucketFill, WHITE_TEXT_BUCKETS } from './bucketStyle'
+import { FundBreakdown } from './FundBreakdown'
 import './FundDetail.css'
 
 const SHOWN_BUCKETS = BUCKETS.filter((bucket) => bucket !== 'fund_unit')
-const MIN_SHARE_FOR_BAR_LABEL = 0.1
 
 const weight = (vector: Vector, bucket: Bucket): number => (vector[bucket] ?? 0) + (bucket === 'other' ? (vector.fund_unit ?? 0) : 0)
 
@@ -54,22 +53,9 @@ export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void
 
         {scheme ? (
           <>
-            <div className="fund-detail__bar num" role="img" aria-label={present.map((b) => `${bucketName(b)} ${formatPercent(weight(row.vector, b))}`).join(', ')}>
-              {present.map((bucket) => (
-                <span
-                  key={bucket}
-                  style={{
-                    flex: `${weight(row.vector, bucket)} 1 0`,
-                    background: bucketFill(bucket),
-                    color: WHITE_TEXT_BUCKETS.has(bucket) ? '#ffffff' : '#1b2422',
-                  }}
-                >
-                  {weight(row.vector, bucket) >= MIN_SHARE_FOR_BAR_LABEL ? formatPercent(weight(row.vector, bucket)) : ''}
-                </span>
-              ))}
-            </div>
+            <FundBreakdown row={row} />
 
-            <h3 className="serif">{t('funds.calcTitle', { view: t(`overview.${view}`) })}</h3>
+          <h3 className="serif">{t('funds.calcTitle', { view: t(`overview.${view}`) })}</h3>
             <table className="fund-detail__calc num" aria-label={t('funds.calcTitle', { view: t(`overview.${view}`) })}>
               <tbody>
                 {present.map((bucket) => (

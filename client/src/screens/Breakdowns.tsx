@@ -4,26 +4,21 @@ import { SidePanel } from '../components/SidePanel'
 import { formatInr, formatPercent } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
-import { dimensionContributors, equityBreakdown, UNKNOWN, type DimensionRow, type EquityDimension } from '../portfolio/breakdownModel'
+import { CAP_ORDER, dimensionContributors, equityBreakdown, type DimensionRow, type EquityDimension } from '../portfolio/breakdownModel'
 import { topContributors } from '../portfolio/overviewModel'
 import { BUCKETS, type Bucket } from '../portfolio/types'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import type { Portfolio } from '../portfolio/analysePortfolio'
-import { bucketFill } from './bucketStyle'
+import { bucketFill, capFill } from './bucketStyle'
 import './Breakdowns.css'
 
 const TABS: readonly Bucket[] = BUCKETS.filter((bucket) => bucket !== 'fund_unit')
 const TOP_SECTORS = 10
-const CAP_SHADE: Record<string, number> = { large: 100, mid: 62, small: 34 }
-const CAP_ORDER = ['large', 'mid', 'small', UNKNOWN]
 
 interface Group {
   dimension: EquityDimension
   key: string
 }
-
-const capFill = (key: string): string =>
-  key === UNKNOWN ? bucketFill('other') : `color-mix(in srgb, var(--eq) ${CAP_SHADE[key] ?? 50}%, var(--paper))`
 
 function EquityDetail({
   portfolio,
@@ -39,7 +34,7 @@ function EquityDetail({
   const caps = equityBreakdown(portfolio, 'cap').sort((a, b) => CAP_ORDER.indexOf(a.key) - CAP_ORDER.indexOf(b.key))
   const sectors = equityBreakdown(portfolio, 'sector')
   const shownSectors = showAllSectors ? sectors : sectors.slice(0, TOP_SECTORS)
-  const capLabel = (key: string) => (key in CAP_SHADE || key === UNKNOWN ? t(`bd.cap.${key}` as TranslationKey) : key)
+  const capLabel = (key: string) => (CAP_ORDER.includes(key) ? t(`bd.cap.${key}` as TranslationKey) : key)
 
   const rows = (dimension: EquityDimension, list: DimensionRow[], label: (key: string) => string, fillFor?: (key: string) => string) => {
     const largest = list[0]?.value ?? 1
