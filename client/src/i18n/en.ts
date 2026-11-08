@@ -251,6 +251,7 @@ export const en = {
   'welcome.guideLink': 'How to get it',
   'dm.coverSummary': '{houses} fund houses, {schemes} schemes with data as of {date}.',
   'dm.coverOf': '{published} of {schemes} schemes',
+  'dm.logoNote': 'Logos belong to their fund houses and are shown only to identify them. TrueHold is not affiliated with any of them.',
 } as const
 
 export type Dictionary = Record<keyof typeof en, string>

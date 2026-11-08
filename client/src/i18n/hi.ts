@@ -253,4 +253,5 @@ export const hi: Dictionary = {
   'welcome.guideLink': 'कैसे पाएँ',
   'dm.coverSummary': '{houses} फ़ंड हाउस, {schemes} स्कीमों का डेटा, {date} तक।',
   'dm.coverOf': '{schemes} में से {published} स्कीम',
+  'dm.logoNote': 'लोगो उनके फ़ंड हाउस के हैं और सिर्फ़ पहचान के लिए दिखाए गए हैं। TrueHold का इनमें से किसी से कोई संबंध नहीं है।',
 }

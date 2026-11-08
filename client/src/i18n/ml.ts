@@ -253,4 +253,5 @@ export const ml: Dictionary = {
   'welcome.guideLink': 'എങ്ങനെ നേടാം',
   'dm.coverSummary': '{houses} ഫണ്ട് ഹൗസുകൾ, {date} വരെയുള്ള {schemes} സ്കീമുകളുടെ ഡാറ്റ.',
   'dm.coverOf': '{schemes} സ്കീമുകളിൽ {published}',
+  'dm.logoNote': 'ലോഗോകൾ അതത് ഫണ്ട് ഹൗസുകളുടേതാണ്, തിരിച്ചറിയാൻ മാത്രം കാണിക്കുന്നു. TrueHold-ന് ഇവയിൽ ഒന്നുമായും ബന്ധമില്ല.',
 }

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { formatDate } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import { Calendar } from '../illustrations/Scenes'
-import { amcName } from '../portfolio/amcNames'
+import { amcLogo, amcName } from '../portfolio/amcNames'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import './DataMethod.css'
 
@@ -117,8 +117,8 @@ export function DataMethod() {
           <ul className="method__houses">
             {houses.map(([code, { published, schemes }]) => (
               <li key={code}>
-                <span className="method__mark serif" aria-hidden="true">
-                  {amcName(code).charAt(0)}
+                <span className="method__logo" data-dark={amcLogo(code)?.onDark ?? false}>
+                  {amcLogo(code) ? <img src={`/amc/${amcLogo(code)?.file}`} alt="" /> : <span className="serif">{amcName(code).charAt(0)}</span>}
                 </span>
                 <b lang="en">{amcName(code)}</b>
                 <span className="method__cover num">{t('dm.coverOf', { published: String(published), schemes: String(schemes) })}</span>
@@ -129,6 +129,7 @@ export function DataMethod() {
             ))}
           </ul>
           <p className="method__small">{t('dm.coverNote')}</p>
+          <p className="method__small">{t('dm.logoNote')}</p>
         </section>
       )}
 
