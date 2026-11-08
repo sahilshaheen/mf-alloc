@@ -248,6 +248,12 @@
   }
 }
 
+.welcome .welcome__saved {
+  margin: 0;
+  font-size: 14px;
+  color: var(--ink3);
+}
+
 .welcome__problem {
   margin: 0;
   padding: 12px 14px;

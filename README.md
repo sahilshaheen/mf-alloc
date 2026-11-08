@@ -2,7 +2,7 @@
 
 A private look-through allocation analyser for Indian mutual fund investors. Upload a CAMS/KFintech or NSDL/CDSL consolidated statement and see what your money is *actually* in: a Balanced Advantage fund at 45% net equity, or an arbitrage fund that is economically cash, is no longer counted as 100% equity.
 
-Your statement is parsed in the browser and never leaves your device. The only server-side artifact is a static, public exposure bundle built from AMCs' monthly portfolio disclosures.
+Your statement is parsed in the browser and never leaves your device. You can optionally save an encrypted copy of its holdings on the device (passphrase-protected, deletable), so you can reopen it without the PDF. The only server-side artifact is a static, public exposure bundle built from AMCs' monthly portfolio disclosures.
 
 ## Status
 
@@ -124,7 +124,7 @@ Not covered: Edelweiss, Canara Robeco, Axis and Bandhan. Their sites block non-b
 
 - Real statements, raw AMC downloads and `.env` files are git-ignored and must never be committed.
 - Disclosures used are the AMCs' own public monthly portfolios.
-- Nothing in this project sends user statement data anywhere.
+- Nothing in this project sends user statement data anywhere. The optional "Save on this device" keeps an AES-GCM encrypted copy in the browser's `localStorage`; the passphrase never leaves the page.
 
 ## Disclaimer
 

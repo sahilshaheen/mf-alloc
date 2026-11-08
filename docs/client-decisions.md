@@ -113,13 +113,27 @@ mobile card layout (phones show name, ISIN, value and flags only).
 inspecting the page's own request list in a browser (all requests same-origin, none carrying the file).
 It says: the PDF is read in the browser; the only network request in the code is a plain download of the
 public fund data; the data is identical for everyone; no analytics or third-party resources; the app keeps
-fund name, folio, ISIN, units, NAV and value in memory and not name, PAN or address; nothing is written to
-browser storage. It deliberately does not claim, because they are not true or not built yet:
-a content-security-policy (one exists in untracked `deploy/_headers` but is not confirmed live), "save on this
-device" (not built), a reproducible-build hash, and discarding folio numbers (they are kept in memory).
+fund name, folio, ISIN, units, NAV and value in memory and not name, PAN or address; nothing is stored on the
+device unless the user chooses "Save on this device" (see below). It deliberately does not claim, because they
+are not true or not built yet: a content-security-policy (one exists in untracked `deploy/_headers` but is not
+confirmed live), a reproducible-build hash, and discarding folio numbers (they are kept in memory and, if the
+user saves, in the encrypted copy).
 The live request list reads `performance.getEntriesByType('resource')`; sizes are body sizes, and request
 bodies cannot be shown, so the page does not claim to show them. Re-check these claims whenever storage, a
 service worker (PWA), analytics or any new network call is added.
+
+**Save on this device** (`/save`, optional, off by default). Stores the parsed statement (the same fields the
+app keeps in memory, never the PDF, never name, PAN or address) in `localStorage` under `truehold.saved`,
+encrypted in the browser: PBKDF2-SHA-256 (600,000 iterations, random salt) derives an AES-256-GCM key from the
+user's passphrase (minimum 8 characters, entered twice); a random IV per save. The save date is stored
+unencrypted, and the page says so. There is no recovery: a forgotten passphrase means opening the PDF again.
+On a visit with a saved copy, Welcome asks for the passphrase and rebuilds the portfolio by joining the saved
+holdings to the current fund-data bundle, so a restored portfolio reflects newer fund data. "Open another
+statement" (`/welcome?new`) re-uploads a PDF; the saved copy changes only when the user replaces or forgets it.
+Logic and tests are in `portfolio/savedStatement.ts`. Checked in a browser: the stored text holds no ISIN, fund
+name, folio or amount; a wrong passphrase is refused; the right one restores the same totals; Forget empties
+storage. The Privacy page's "nothing is stored" promise now reads "unless you ask". Re-check it if the saved
+fields ever change.
 
 **Breakdowns** (renamed from "Asset classes": the page holds more than asset classes). One tab per asset class at
 `/breakdowns/:bucket`, following the Net/Gross toggle. Domestic equity adds market cap (large, mid, small, size not

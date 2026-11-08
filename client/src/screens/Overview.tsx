@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Navigate } from 'react-router'
+import { Link, Navigate } from 'react-router'
 import { formatDate, formatInr, formatPercent } from '../format'
 import { ViewToggle } from '../components/ViewToggle'
 import { useI18n } from '../i18n/useI18n'
@@ -20,7 +20,7 @@ const categoryFill = (group: LabelGroup): string => `color-mix(in srgb, var(--in
 
 export function Overview() {
   const { t, language } = useI18n()
-  const { portfolio, statementDate, bundle, view, setView } = usePortfolio()
+  const { portfolio, statementDate, bundle, view, setView, savedAt } = usePortfolio()
   const [focus, setFocus] = useState<Bucket>('equity_domestic')
 
   useEffect(() => {
@@ -54,7 +54,15 @@ export function Overview() {
         <p className="num">
           {t('overview.portfolioLine', { total: formatInr(portfolio.total), date: formatDate(statementDate, language) })}
         </p>
-        <span className="chip num">{t('overview.dataAsOf', { date: formatDate(bundle.as_of, language) })}</span>
+        <div className="overview__chips">
+          <span className="chip num">{t('overview.dataAsOf', { date: formatDate(bundle.as_of, language) })}</span>
+          <Link className="chip" to="/save">
+            {savedAt ? t('overview.savedLink') : t('overview.saveLink')}
+          </Link>
+          <Link className="chip" to="/welcome?new">
+            {t('sv.openAnother')}
+          </Link>
+        </div>
       </div>
 
       <h1 className="serif overview__headline">{t('overview.headline', { equity: `${Math.round(model.equityShare * 100)}%` })}</h1>

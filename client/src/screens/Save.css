@@ -1,0 +1,140 @@
+.save {
+  max-width: 640px;
+  margin: 0 auto;
+  padding: 48px 24px 88px;
+}
+
+.save h1 {
+  margin: 0;
+  font-size: 44px;
+  line-height: 1.1;
+  font-weight: 500;
+  letter-spacing: -0.02em;
+}
+
+:lang(hi) .save h1 {
+  line-height: 1.3;
+}
+
+:lang(ml) .save h1 {
+  font-size: 32px;
+  line-height: 1.4;
+}
+
+.save p {
+  margin: 12px 0 0;
+  color: var(--ink2);
+}
+
+.save .save__intro {
+  font-size: 17px;
+}
+
+.save .save__status {
+  padding: 10px 14px;
+  border-radius: 8px;
+  background: var(--sunk);
+  color: var(--ink);
+}
+
+.save section {
+  margin-top: 36px;
+}
+
+.save h2 {
+  margin: 0;
+  font-size: 22px;
+  font-weight: 500;
+}
+
+.save form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 32px;
+}
+
+.save label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--ink2);
+}
+
+.save input {
+  height: 44px;
+  padding: 0 12px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  background: var(--sheet);
+}
+
+.save form p {
+  margin: -8px 0 0;
+  font-size: 14px;
+}
+
+.save .save__problem {
+  color: var(--err);
+}
+
+.save .save__warn {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  background: var(--warnbg);
+  color: var(--warn);
+}
+
+.save__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.save__actions button {
+  height: 44px;
+  padding: 0 20px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  background: transparent;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.save__actions button:hover {
+  background: var(--hover);
+}
+
+.save__actions .save__primary {
+  border: 0;
+  background: var(--ink);
+  color: var(--onink);
+  font-weight: 600;
+}
+
+.save__actions .save__primary:hover:not(:disabled) {
+  background: var(--ink);
+  opacity: 0.88;
+}
+
+.save__actions .save__primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .save {
+    padding: 28px 16px 64px;
+  }
+
+  .save h1 {
+    font-size: 34px;
+  }
+
+  :lang(ml) .save h1 {
+    font-size: 26px;
+  }
+}

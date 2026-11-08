@@ -1,10 +1,12 @@
 import { useState, type FormEvent } from 'react'
-import { Link, useNavigate } from 'react-router'
+import { Link, useNavigate, useSearchParams } from 'react-router'
+import { formatDate } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import { Hero } from '../illustrations/Hero'
 import { Sealed } from '../illustrations/Sealed'
 import { Processing, Unreadable } from '../illustrations/Scenes'
 import type { TranslationKey } from '../i18n/translator'
+import { WrongPassphraseError } from '../portfolio/savedStatement'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import {
   IncorrectPasswordError,
@@ -20,6 +22,7 @@ interface Problem {
 }
 
 function toProblem(error: unknown): Problem {
+  if (error instanceof WrongPassphraseError) return { key: 'error.passphraseWrong' }
   if (error instanceof PasswordRequiredError) return { key: 'error.passwordRequired' }
   if (error instanceof IncorrectPasswordError) return { key: 'error.passwordWrong' }
   if (error instanceof UnsupportedStatementError) return { key: 'error.unsupported' }
@@ -28,9 +31,12 @@ function toProblem(error: unknown): Problem {
 }
 
 export function Welcome() {
-  const { t } = useI18n()
-  const { bundle, bundleError, openStatement } = usePortfolio()
+  const { t, language } = useI18n()
+  const { bundle, bundleError, openStatement, savedAt, unlockSaved } = usePortfolio()
   const navigate = useNavigate()
+  const [params] = useSearchParams()
+  const unlockMode = savedAt !== null && !params.has('new')
+  const [passphrase, setPassphrase] = useState('')
   const [file, setFile] = useState<File | null>(null)
   const [password, setPassword] = useState('')
   const [problem, setProblem] = useState<Problem | null>(null)
@@ -38,11 +44,12 @@ export function Welcome() {
 
   async function submit(event: FormEvent) {
     event.preventDefault()
-    if (!file) return
+    if (!unlockMode && !file) return
     setReading(true)
     setProblem(null)
     try {
-      await openStatement(file, password)
+      if (unlockMode) await unlockSaved(passphrase)
+      else await openStatement(file!, password)
       navigate('/')
     } catch (error) {
       setProblem(toProblem(error))
@@ -60,17 +67,31 @@ export function Welcome() {
           <h1 className="serif">{t('welcome.title')}</h1>
           <p className="welcome__subtitle">{t('welcome.subtitle')}</p>
           <form onSubmit={submit}>
-            <label>
-              {t('welcome.file')}
-              <input type="file" accept="application/pdf" required onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
-            </label>
-            <label>
-              {t('welcome.password')}
-              <input type="password" value={password} autoComplete="off" onChange={(event) => setPassword(event.target.value)} />
-            </label>
-            <button type="submit" disabled={!file || !bundle || reading}>
-              {reading ? t('welcome.reading') : t('welcome.open')}
+            {unlockMode ? (
+              <label>
+                {t('welcome.savedPassphrase')}
+                <input type="password" value={passphrase} autoComplete="current-password" required onChange={(event) => setPassphrase(event.target.value)} />
+              </label>
+            ) : (
+              <>
+                <label>
+                  {t('welcome.file')}
+                  <input type="file" accept="application/pdf" required onChange={(event) => setFile(event.target.files?.[0] ?? null)} />
+                </label>
+                <label>
+                  {t('welcome.password')}
+                  <input type="password" value={password} autoComplete="off" onChange={(event) => setPassword(event.target.value)} />
+                </label>
+              </>
+            )}
+            <button type="submit" disabled={(unlockMode ? !passphrase : !file) || !bundle || reading}>
+              {reading ? t(unlockMode ? 'welcome.unlocking' : 'welcome.reading') : t(unlockMode ? 'welcome.unlock' : 'welcome.open')}
             </button>
+            {unlockMode && savedAt && (
+              <p className="welcome__saved">
+                {t('welcome.savedOn', { date: formatDate(savedAt, language) })} <Link to="/welcome?new">{t('welcome.openNew')}</Link>
+              </p>
+            )}
             {(problem || bundleError) && (
               <p role="alert" className="welcome__problem">
                 {problem ? t(problem.key, { reason: problem.reason ?? '' }) : t('error.data')}

@@ -11,6 +11,11 @@ export interface PortfolioState {
   view: ExposureView
   setView: (view: ExposureView) => void
   openStatement: (file: File, password: string) => Promise<void>
+  /** Date the portfolio was saved on this device, or null when nothing is saved. */
+  savedAt: string | null
+  unlockSaved: (passphrase: string) => Promise<void>
+  saveToDevice: (passphrase: string) => Promise<void>
+  forgetSaved: () => void
 }
 
 export const PortfolioContext = createContext<PortfolioState | null>(null)

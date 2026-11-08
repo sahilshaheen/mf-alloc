@@ -19,6 +19,21 @@
   color: var(--ink2);
 }
 
+.overview__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+a.chip {
+  text-decoration: none;
+  color: var(--ink);
+}
+
+a.chip:hover {
+  background: var(--edge);
+}
+
 .chip {
   display: inline-flex;
   align-items: center;
