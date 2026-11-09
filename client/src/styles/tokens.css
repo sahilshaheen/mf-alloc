@@ -26,6 +26,8 @@
   --warn: #7a4f00;
   --warnbg: #f3ead6;
   --err: #9c2f25;
+  --gain: #1f7a3a;
+  --loss: #9c2f25;
   --errbg: #f6e3df;
   --link: #1a5fb4;
   --focus: #1b2422;
@@ -65,6 +67,8 @@
   --warn: #e7c27c;
   --warnbg: #2e2718;
   --err: #f0a197;
+  --gain: #82d29b;
+  --loss: #f0a197;
   --errbg: #35211e;
   --link: #7db3f2;
   --focus: #eceee9;

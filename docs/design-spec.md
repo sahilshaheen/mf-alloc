@@ -35,7 +35,7 @@ The problem it solves: a "Balanced Advantage" fund with 45% net equity, or an ar
 3. **Trust through specificity.** Say "parsed on this device", "as of 31 Aug 2026", "3 funds not matched", not "secure" or "up to date".
 4. **Never hide uncertainty.** Unmatched ISINs, stale data and unclassified holdings are shown in the UI with their own colour and a count.
 5. **Calm, not cold.** Formal in tone, restrained in colour, a little warmth from paper tones, serif type and small moments of motion.
-6. **No advice.** The analysis never shows tax, tax-loss harvesting, or "you should rebalance" language (returns/XIRR are on the README roadmap, shown descriptively). Never use red/green to imply good/bad allocation. The product describes, it does not judge.
+6. **No advice.** The analysis never suggests an action: no tax-loss harvesting, "book gains before March" or "you should rebalance" language. Returns, XIRR and capital gains facts (realised and unrealised, short- and long-term) are shown descriptively; tax rules must be checked against the current Act and cited, and we show gains, not tax payable. Never use red/green to imply good/bad allocation (red/green for gains and losses is fine). The product describes, it does not judge.
 
 ## 4. Visual language
 

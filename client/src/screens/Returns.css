@@ -1,0 +1,153 @@
+.returns {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 28px 40px 80px;
+}
+
+.returns__bar {
+  margin: 0 0 56px;
+  font-size: 14px;
+  color: var(--ink2);
+}
+
+.returns__headline {
+  margin: 0 0 32px;
+  font-size: 44px;
+  font-weight: 500;
+  line-height: 1.12;
+  letter-spacing: -0.015em;
+}
+
+.returns__figures {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px 24px;
+  margin: 0 0 24px;
+  padding: 20px 0;
+  border-block: 1px solid var(--edge);
+}
+
+.returns__figures dt {
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.returns__figures dd {
+  margin: 4px 0 0;
+  font-size: 28px;
+}
+
+.returns--gain {
+  color: var(--gain);
+}
+
+.returns--loss {
+  color: var(--loss);
+}
+
+.returns__note {
+  max-width: 68ch;
+  margin: 0 0 12px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink2);
+}
+
+.returns h2 {
+  margin: 48px 0 12px;
+  font-size: 26px;
+  font-weight: 500;
+}
+
+.returns__scroll {
+  overflow-x: auto;
+}
+
+.returns__table {
+  min-width: 640px;
+  margin-bottom: 16px;
+  font-size: 14.5px;
+}
+
+.returns__row {
+  display: grid;
+  grid-template-columns: minmax(200px, 1fr) 104px 104px 104px 76px 92px;
+  gap: 0 12px;
+  align-items: center;
+  padding: 12px 8px;
+  border-bottom: 1px solid var(--edge);
+  text-align: right;
+}
+
+.returns__row--head {
+  align-items: end;
+  padding-block: 8px;
+  border-bottom-color: var(--ink);
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.returns__row > :first-child {
+  text-align: left;
+}
+
+.returns__name a {
+  color: var(--ink);
+  font-weight: 500;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+}
+
+.returns__name a:hover {
+  text-decoration: underline;
+}
+
+.returns__footer {
+  margin: 40px 0 0;
+  font-size: 13px;
+  color: var(--ink3);
+}
+
+@media (max-width: 900px) {
+  .returns {
+    padding: 24px 24px 64px;
+  }
+
+  .returns__figures {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .returns__table {
+    min-width: 0;
+  }
+
+  .returns__row {
+    grid-template-columns: minmax(0, 1fr) 96px 88px 64px;
+  }
+
+  .returns__secondary {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .returns {
+    padding: 20px 16px 64px;
+  }
+
+  .returns__headline {
+    font-size: 34px;
+  }
+
+  .returns__figures dd {
+    font-size: 24px;
+  }
+
+  .returns__row {
+    grid-template-columns: minmax(0, 1fr) 88px 64px;
+  }
+
+  .returns__row > :nth-child(3) {
+    display: none;
+  }
+}

@@ -51,15 +51,33 @@ The Overview shows two separate levels and does not compare them:
 
 ## Roadmap
 
-Analyses planned on top of the exposure bundle and the user's statement, roughly in build order. All are descriptive.
+Analyses planned on top of the exposure bundle and the user's statement, roughly in build order. All are descriptive: they state facts about the user's own money and never recommend an action.
 
-1. **Look-through stock concentration:** a stock's share of the whole portfolio across funds, with the funds contributing to it.
-2. **Fund overlap:** shared holdings between the user's funds.
-3. **Sector and market-cap concentration** against a benchmark (needs benchmark constituents).
-4. **Debt credit quality and maturity** (needs ratings added to the canonical schema).
-5. **Change over time:** net and gross allocation month by month, from several bundle versions.
-6. **Portfolio XIRR** from transactions. Only the CAMS/KFintech detailed CAS carries them; the NSDL/CDSL CAS is holdings-only.
-7. **Regular vs Direct plans explainer:** a short, factual entry in the Data & method screen's terms section: what each plan type is, how the expense ratio differs, and that a distributor provides advice and service. No persuasive numbers, and it does not look at the user's own funds.
+From the statement:
+
+1. **Gain and loss:** invested, current value, gain in ₹ and absolute %, per fund and in total, and each fund's share of the total gain. The Summary CAS already carries cost value.
+2. **Detailed CAS parser** (CAMS/KFintech), needed by items 3 to 7. The NSDL/CDSL CAS is holdings-only.
+3. **XIRR** per fund and for the portfolio, with a plain-language explainer next to absolute return. Switches and STPs are internal moves; IDCW payouts are inflows; under a year shows absolute return.
+4. **Active SIPs (an indication):** recurring SIP purchases grouped by folio, scheme and amount, called active if the last instalment is recent. Shows the next expected date and the monthly total. Same logic for STPs and SWPs.
+5. **Money in and out:** invested, redeemed and dividends received, by month; stamp duty and STT paid.
+6. **ELSS lock-in:** amount unlocking on each date, from purchase dates.
+7. **Capital gains facts:** realised gains this financial year and unrealised gains, split short- and long-term by holding period per lot. No suggestions to book or harvest gains.
+
+With the exposure bundle:
+
+8. **Look-through stock concentration:** a stock's share of the whole portfolio across funds, in ₹ and %, with the funds contributing to it.
+9. **Fund overlap:** shared holdings between the user's funds.
+10. **Where new money went:** a month's SIP instalments through each fund's holdings, by asset class and top stocks.
+11. **Change over time:** the user's allocation month by month, from month-end units rebuilt from transactions and that month's bundle. Splits each change into what the user bought or sold and what the funds changed.
+12. **Debt credit quality and maturity** (needs ratings added to the canonical schema).
+13. **Regular vs Direct plans explainer:** a short, factual entry in the Data & method screen's terms section: what each plan type is, how the expense ratio differs, and that a distributor provides advice and service. No persuasive numbers, and it does not look at the user's own funds.
+
+Later, each needs a new data source:
+
+- **Index comparison:** what the user's own cash flows, on the same dates, would be worth in an index (needs index or index-fund NAV history).
+- **Sector and market-cap concentration** against a benchmark (needs benchmark constituents).
+- **The user's own expense ratios** and their yearly cost in ₹ (needs AMFI's TER file; revisit item 13's stance first).
+- **Grandfathered cost for units bought before 1 Feb 2018** in capital gains facts (needs NAVs as of 31 Jan 2018).
 
 Full UI and UX spec: [docs/design-spec.md](docs/design-spec.md).
 

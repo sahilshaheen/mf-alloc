@@ -9,6 +9,7 @@ const links: { to: string; label: TranslationKey }[] = [
   { to: '/', label: 'nav.overview' },
   { to: '/breakdowns', label: 'nav.breakdowns' },
   { to: '/funds', label: 'nav.funds' },
+  { to: '/returns', label: 'nav.returns' },
   { to: '/data-and-method', label: 'nav.dataMethod' },
   { to: '/privacy', label: 'nav.privacy' },
 ]
