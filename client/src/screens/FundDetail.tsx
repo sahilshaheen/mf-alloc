@@ -17,6 +17,7 @@ const weight = (vector: Vector, bucket: Bucket): number => (vector[bucket] ?? 0)
 export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void }) {
   const { t, language } = useI18n()
   const { view } = usePortfolio()
+  const [zoom, setZoom] = useState<Bucket | null>(null)
   const [copied, setCopied] = useState(false)
 
   const { scheme } = row
@@ -53,14 +54,23 @@ export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void
 
         {scheme ? (
           <>
-            <FundBreakdown row={row} />
+            <FundBreakdown row={row} zoom={zoom} onZoom={setZoom} />
 
           <h3 className="serif">{t('funds.calcTitle', { view: t(`overview.${view}`) })}</h3>
             <table className="fund-detail__calc num" aria-label={t('funds.calcTitle', { view: t(`overview.${view}`) })}>
               <tbody>
                 {present.map((bucket) => (
                   <tr key={bucket}>
-                    <th scope="row">{bucketName(bucket)}</th>
+                    <th scope="row">
+                      {bucket === 'equity_domestic' ? (
+                        <button type="button" className="fund-detail__drill" aria-pressed={zoom === bucket} onClick={() => setZoom(zoom === bucket ? null : bucket)}>
+                          {bucketName(bucket)}
+                          <span>{t('funds.breakDown')} ›</span>
+                        </button>
+                      ) : (
+                        bucketName(bucket)
+                      )}
+                    </th>
                     <td>{formatPercent(weight(row.vector, bucket))}</td>
                     <td>{formatInr(row.value * weight(row.vector, bucket))}</td>
                   </tr>

@@ -17,9 +17,8 @@ const DIMENSIONS: EquityDimension[] = ['cap', 'sector']
 
 const weight = (row: FundRow, bucket: Bucket): number => (row.vector[bucket] ?? 0) + (bucket === 'other' ? (row.vector.fund_unit ?? 0) : 0)
 
-export function FundBreakdown({ row }: { row: FundRow }) {
+export function FundBreakdown({ row, zoom, onZoom }: { row: FundRow; zoom: Bucket | null; onZoom: (bucket: Bucket | null) => void }) {
   const { t } = useI18n()
-  const [zoom, setZoom] = useState<Bucket | null>(null)
   const [dimension, setDimension] = useState<EquityDimension>('cap')
   const [showAllSectors, setShowAllSectors] = useState(false)
 
@@ -57,7 +56,7 @@ export function FundBreakdown({ row }: { row: FundRow }) {
               aria-label={`${bucketName(bucket)} ${formatPercent(share)}`}
               title={`${bucketName(bucket)} ${formatPercent(share)}`}
               tabIndex={hidden ? -1 : 0}
-              onClick={() => setZoom(zoomed ? null : bucket)}
+              onClick={() => onZoom(zoomed ? null : bucket)}
             >
               {zoomed && barParts.length > 0 ? (
                 <span className="zoom__parts" aria-hidden="true">
@@ -78,7 +77,7 @@ export function FundBreakdown({ row }: { row: FundRow }) {
       {zoom !== null && (
         <div className="zoom__detail">
           <div className="zoom__head">
-            <button type="button" className="zoom__back" onClick={() => setZoom(null)}>
+            <button type="button" className="zoom__back" onClick={() => onZoom(null)}>
               {t('funds.back')}
             </button>
             <b>

@@ -227,6 +227,7 @@ export const en = {
   'sv.openAnother': 'Open another statement',
   'overview.saveLink': 'Save on this device',
   'overview.savedLink': 'Saved on this device',
+  'funds.breakDown': 'Break down',
   'funds.tapHint': 'Select a bar to see what is inside it: for equity, the market cap and sector split.',
   'funds.back': '← All asset classes',
   'funds.equityNote': 'Shares of the equity this fund holds, before hedges. They do not change with Net and Gross.',
