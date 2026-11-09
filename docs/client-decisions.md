@@ -6,9 +6,9 @@ decision changes.
 
 ## Where things stand
 
-Built: i18n (en, hi, ml), shell and header, statement parser (CAMS Summary), bundle loader and ISIN join,
+Built: i18n (en, hi, ml), shell and header, statement parsers (CAMS Summary; CAMS Detailed, not yet run on a real file), bundle loader and ISIN join,
 Welcome (hero, steps, sealed section, upload and password), Overview, Data and method (short, with cited sources), Funds (table, search,
-fund detail panel at `/funds/:isin`), Privacy, Breakdowns (`/breakdowns/:bucket`).
+fund detail panel at `/funds/:isin`), Returns (`/returns`), Privacy, Breakdowns (`/breakdowns/:bucket`).
 
 Next, in order: the rest of the
 Welcome design, mobile polish of the new screens, dark-mode toggle, PWA, export.
@@ -46,6 +46,21 @@ nothing it can't prove.
 loudly if a row's units × NAV disagrees with its value, or if the rows don't sum to the printed total.
 Other statement types are rejected with a clear message. The redacted real statement is not committed
 (its holdings are real), and the integration test skips when the file is absent.
+
+**Detailed statement parser.** `statement/camsDetailed.ts`, chosen when the PDF has an "Opening Unit
+Balance". Its layout comes from casparser's description of CAMS Detailed statements (MIT,
+codereverser/casparser), not from a real file: casparser's test PDFs are encrypted, and no public sample
+was found. Lines are rebuilt from pdf.js items; numbers go to the Amount, Units, Price or Unit Balance
+column whose header right edge is nearest, so pdf.js item widths are needed. It fails loudly if units don't
+add up to each printed running balance or the closing balance, or units × NAV disagrees with the market
+value. Closed schemes keep their transactions but give no holding. Checked so far only on unit tests and
+a synthetic PDF built to the same assumed layout; **run it on a real redacted Detailed statement before
+relying on it**, and fix the fixtures to match.
+
+**Returns.** Gain and absolute return use the statement's cost value. XIRR (Detailed only) treats
+purchases, SIPs, switches in, stamp duty, STT and TDS as money in; redemptions, switches out, reversals
+and IDCW payouts as money out; reinvested IDCW as neither. Switches cancel in the portfolio total. A fund
+held before the statement period has no XIRR (unknown cost). Under a year, only the gain is shown.
 
 **Net and gross.** Net counts hedged equity as cash-like. Gross is as reported. Funds missing from the
 bundle sit in the "Not classified" asset class (internally the `other` bucket, which also holds anything

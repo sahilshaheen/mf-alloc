@@ -1,5 +1,6 @@
 import { createContext, useContext } from 'react'
 import type { Portfolio } from './analysePortfolio'
+import type { Statement } from '../statement/types'
 import type { ExposureView } from './overviewModel'
 import type { LoadedBundle } from './types'
 
@@ -8,6 +9,8 @@ export interface PortfolioState {
   bundleError: Error | null
   portfolio: Portfolio | null
   statementDate: string | null
+  /** Transactions, when the statement was a Detailed one. */
+  history: Statement['history'] | null
   view: ExposureView
   setView: (view: ExposureView) => void
   openStatement: (file: File, password: string) => Promise<void>

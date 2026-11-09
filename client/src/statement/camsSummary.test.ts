@@ -3,7 +3,7 @@ import { parseCamsSummary } from './camsSummary'
 import { StatementParseError, UnsupportedStatementError } from './errors'
 import type { PageText, PositionedText } from './types'
 
-const at = (x: number, y: number, text: string): PositionedText => ({ text, x, y })
+const at = (x: number, y: number, text: string): PositionedText => ({ text, x, y, width: text.length * 4 })
 
 const header = (y: number): PageText => [
   at(29, y, 'Folio No.'),

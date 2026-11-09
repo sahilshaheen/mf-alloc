@@ -14,7 +14,7 @@ export async function extractPages(pdf: ArrayBuffer, password?: string): Promise
       const { items } = await (await document.getPage(number)).getTextContent()
       pages.push(
         items.flatMap((item) =>
-          'str' in item && item.str.trim() ? [{ text: item.str, x: item.transform[4], y: item.transform[5] }] : [],
+          'str' in item && item.str.trim() ? [{ text: item.str, x: item.transform[4], y: item.transform[5], width: item.width }] : [],
         ),
       )
     }

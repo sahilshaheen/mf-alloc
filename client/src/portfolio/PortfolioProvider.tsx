@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
+import { isCamsDetailed, parseCamsDetailed } from '../statement/camsDetailed'
 import { parseCamsSummary } from '../statement/camsSummary'
 import { extractPages } from '../statement/extract'
 import type { Statement } from '../statement/types'
@@ -32,7 +33,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
 
   const openStatement = useCallback(
     async (file: File, password: string) => {
-      open(parseCamsSummary(await extractPages(await file.arrayBuffer(), password || undefined)))
+      const pages = await extractPages(await file.arrayBuffer(), password || undefined)
+      open(isCamsDetailed(pages) ? parseCamsDetailed(pages) : parseCamsSummary(pages))
     },
     [open],
   )
@@ -59,6 +61,7 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
       bundleError,
       portfolio: opened?.portfolio ?? null,
       statementDate: opened?.statementDate ?? null,
+      history: opened?.statement.history ?? null,
       view,
       setView,
       openStatement,
