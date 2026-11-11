@@ -4,6 +4,7 @@ from . import (
     hdfc,
     icici,
     kotak,
+    mahindra,
     mirae,
     motilal,
     nippon,
@@ -30,5 +31,6 @@ ADAPTERS = {
         tata,
         hdfc,
         kotak,
+        mahindra,
     )
 }

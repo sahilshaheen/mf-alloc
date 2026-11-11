@@ -131,6 +131,20 @@ note = "Automated browsers get a Radware hCaptcha when the dropdown changes; a p
 last_period = "2026-09"
 last_schemes = 119
 
+[mahindra]
+name = "Mahindra Manulife"
+method = "browser"
+page = "https://www.mahindramanulife.com/downloads"
+files = "one workbook (a sheet per scheme, MMF01...), named by a GUID"
+steps = [
+  "Open the page in a browser and confirm 'I am not a US person/resident of Canada' (the downloads list stays empty until then).",
+  "Mandatory Disclosures -> Portfolio Disclosure -> Monthly Portfolio Disclosure.",
+  "Filter year and month, click 'Monthly Portfolio Disclosure - <Month>, <Year>'; save the xlsx into data/raw/mahindra/<YYYY-MM>/.",
+]
+note = "The site's API is encrypted front-end calls, so no script; the page itself works in a browser."
+last_period = "2026-09"
+last_schemes = 27
+
 [axis]
 name = "Axis Mutual Fund"
 method = "todo"

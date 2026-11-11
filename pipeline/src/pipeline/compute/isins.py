@@ -16,6 +16,7 @@ AMFI_HEADINGS = {
     "hdfc": "HDFC Mutual Fund",
     "icici": "ICICI Prudential Mutual Fund",
     "kotak": "Kotak Mahindra Mutual Fund",
+    "mahindra": "Mahindra Manulife Mutual Fund",
     "mirae": "Mirae Asset Mutual Fund",
     "motilal": "Motilal Oswal Mutual Fund",
     "nippon": "Nippon India Mutual Fund",

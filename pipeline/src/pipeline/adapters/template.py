@@ -43,7 +43,7 @@ _COMMODITY_FUT = re.compile(
 _REPO_SUB = re.compile(r"repo|treps|tri-?party", re.IGNORECASE)
 _GRAND = re.compile(r"^(grand total|total net assets|net assets)\b", re.IGNORECASE)
 _CASH = re.compile(
-    r"treps|tri-?party|repo\b|net (current|receivable)|receivable|cash\b|margin amount|margin deposit|collateral|^(rep|trp)\d*_\d",
+    r"treps|tri-?party|repo\b|net (current|receivable)|receivable|cash\b|margin amount|margin deposit|margin placed|collateral|^(rep|trp)\d*_\d",
     re.IGNORECASE,
 )
 _TOP = re.compile(
@@ -64,6 +64,8 @@ _HEDGED = re.compile(
     r"total\s*(%|percentage|%age)\s*of existing assets hedged through (equity )?futures",
     re.IGNORECASE,
 )
+# Kotak: "Futures"; Mahindra: "Index / Stock Futures"
+_FUT_SUB = re.compile(r"((index|stock)\s*/?\s*)*futures", re.IGNORECASE)
 _MASK = {"#", "^", "$", "*", "$$"}
 _EXPIRY = re.compile(r"(\d{1,2})[./](\d{1,2})[./](\d{4})\s*$")
 _EXPIRY_MON = re.compile(r"(\d{1,2})[- ]([A-Za-z]{3})[- ](\d{4})\s*$")
@@ -98,6 +100,9 @@ class Template:
     # whether the scheme's grand total already counts them.
     futures_heading: bool = False
     futures_heading_in_total: bool = False
+    # Mahindra follows "Margin placed with CCIL" and "Net Receivables / (Payables)" with a second
+    # "Net Receivables / (Payables)" line that is their sum; such a cash line is a subtotal, not a holding.
+    cash_subtotal_after: bool = False
 
 
 def _as_isin(x) -> str | None:
@@ -290,6 +295,8 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
     fcols = cols
     fut_kind = "stock_index"
     fcols_u: dict[str, int] = {}
+    # values of the consecutive cash lines just read, for cash_subtotal_after
+    cash_run: list[float] = []
 
     for idx in range(hdr_idx + 1, len(rows)):
         r = rows[idx]
@@ -347,7 +354,10 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                 )
                 mode = "after"
                 continue
-            if not label or low.startswith(("total", "sub total", "subtotal")):
+            if not label:
+                continue
+            if low.startswith(("total", "sub total", "subtotal")):
+                cash_run = []
                 continue
             if low.endswith(
                 " total"
@@ -365,6 +375,14 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                 )
                 and not _is_subtotal_heading(rows, idx, cols["mv"], cols["name"], mv)
             )
+            if (
+                t.cash_subtotal_after
+                and cash_item
+                and len(cash_run) >= 2
+                and abs(sum(cash_run) - mv) <= max(0.01, abs(mv) * 1e-6)
+            ):
+                cash_run = []
+                continue
             if isin is None and qty is None and not cash_item:
                 # heading (possibly carrying a section subtotal, as ICICI does)
                 if _TOP.match(label):
@@ -412,7 +430,7 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
             ind = clean(cell(r, cols["industry"])) or ""
             if (
                 t.futures_heading
-                and (sub or "").lower() == "futures"
+                and _FUT_SUB.fullmatch(sub or "")
                 and (isin is not None or qty is not None)
             ):
                 fp = num(cell(r, cols["pct"]))
@@ -461,6 +479,7 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
             )  # fmt: skip
             holdings[-1].yield_pct = yld  # raw for now
             raw_pct.append(pct)
+            cash_run = cash_run + [mv] if cash_item else []
             continue
 
         # after the grand total: futures tables
