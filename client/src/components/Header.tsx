@@ -1,25 +1,39 @@
 import { Link, NavLink } from 'react-router'
 import { useI18n } from '../i18n/useI18n'
+import { usePortfolio } from '../portfolio/usePortfolio'
 import type { TranslationKey } from '../i18n/translator'
 import { LanguageSwitch } from './LanguageSwitch'
 import { LogoMark } from './Logo'
 import './Header.css'
 
-const links: { to: string; label: TranslationKey }[] = [
+type NavItem = { to: string; label: TranslationKey }
+
+const reference: NavItem[] = [
+  { to: '/data-and-method', label: 'nav.dataMethod' },
+  { to: '/privacy', label: 'nav.privacy' },
+]
+const withPortfolio: NavItem[] = [
   { to: '/', label: 'nav.overview' },
   { to: '/breakdowns', label: 'nav.breakdowns' },
   { to: '/funds', label: 'nav.funds' },
   { to: '/returns', label: 'nav.returns' },
-  { to: '/data-and-method', label: 'nav.dataMethod' },
-  { to: '/privacy', label: 'nav.privacy' },
+  ...reference,
+]
+// The portfolio screens redirect to /welcome until a statement is open, so they are not offered before then.
+const withoutPortfolio: NavItem[] = [
+  { to: '/welcome', label: 'nav.open' },
+  { to: '/get-statement', label: 'nav.getStatement' },
+  ...reference,
 ]
 
 export function Header() {
   const { t } = useI18n()
+  const { portfolio } = usePortfolio()
+  const links = portfolio ? withPortfolio : withoutPortfolio
   return (
     <header className="site-header">
       <div className="site-header__inner">
-        <Link to="/" className="brand">
+        <Link to={portfolio ? '/' : '/welcome'} className="brand">
           <LogoMark />
           <span className="serif">TrueHold</span>
         </Link>

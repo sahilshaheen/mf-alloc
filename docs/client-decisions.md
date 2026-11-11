@@ -185,6 +185,8 @@ data has them, in English. Not available because the pipeline does not collect i
 maturity, foreign equity by country (shown as "no further breakdown yet", and listed on Data and method).
 Fund names here are not links yet (contributors carry no ISIN).
 
+**Navigation.** Before a statement is open the header offers Open statement, Get your statement, Data and method and Privacy; the portfolio screens (Overview, Breakdowns, Funds, Returns) appear only once one is open, since they redirect to `/welcome` without it. The guide asks for the Detailed statement (Specific Period from 01-Jan-1990, with zero-balance folios) and says Summary works without XIRR.
+
 **Layout.** Compact header below 1180px (nav scrolls, language switch on its own row on phones); content
 column is 960px. Controls must grow with their text and never use fixed heights that long Malayalam or
 Hindi can overflow. Hide text that does not fit with a container query instead of clipping it.
