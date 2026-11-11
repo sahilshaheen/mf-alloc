@@ -15,6 +15,7 @@ AMFI_HEADINGS = {
     "dsp": "DSP Mutual Fund",
     "hdfc": "HDFC Mutual Fund",
     "icici": "ICICI Prudential Mutual Fund",
+    "iti": "ITI Mutual Fund",
     "kotak": "Kotak Mahindra Mutual Fund",
     "mahindra": "Mahindra Manulife Mutual Fund",
     "mirae": "Mirae Asset Mutual Fund",
@@ -25,6 +26,7 @@ AMFI_HEADINGS = {
     "tata": "Tata Mutual Fund",
     "uti": "UTI Mutual Fund",
     "wealth": "The Wealth Company Mutual Fund",
+    "whiteoak": "WhiteOak Capital Mutual Fund",
 }
 _AMC_BY_HEADING = {heading: amc for amc, heading in AMFI_HEADINGS.items()}
 _PARENTHETICAL = re.compile(r"\([^)]*\)")

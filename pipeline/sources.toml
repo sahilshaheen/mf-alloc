@@ -145,6 +145,32 @@ note = "The site's API is encrypted front-end calls, so no script; the page itse
 last_period = "2026-09"
 last_schemes = 27
 
+[whiteoak]
+name = "WhiteOak Capital"
+method = "browser"
+page = "https://mf.whiteoakamc.com/regulatory-disclosures/scheme-portfolios"
+files = "one .xlsx per scheme (~22), e.g. 'WOC Largecap Fund_Sept 2026.xlsx'"
+steps = [
+  "Open the page in a browser (scripts get a CloudFront 403, on the site and on cms.whiteoakamc.com).",
+  "Click each scheme in 'Filter by Category' and download its '... Monthly Portfolio Disclosure - <date><Month><Year>' row, at human pace.",
+  "Save them into data/raw/whiteoak/<YYYY-MM>/. Skip the Half Yearly Financial Result tab; the Overnight Fund's list ends in 2022.",
+]
+last_period = "2026-09"
+last_schemes = 22
+
+[iti]
+name = "ITI Mutual Fund"
+method = "manual"
+page = "https://www.itimf.com/statutory-disclosure"
+files = "one workbook, 'ITIMF_Monthly_Portfolio_<DDMMYYYY>.xlsx' (a sheet per scheme)"
+steps = [
+  "Open the page in your own browser and download the monthly portfolio workbook for the month.",
+  "Save it into data/raw/iti/<YYYY-MM>/.",
+]
+note = "Cloudflare blocks scripts and the driven browser ('Attention Required'). Do not automate."
+last_period = "2026-09"
+last_schemes = 21
+
 [axis]
 name = "Axis Mutual Fund"
 method = "todo"

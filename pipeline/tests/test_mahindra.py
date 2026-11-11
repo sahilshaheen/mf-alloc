@@ -46,4 +46,6 @@ def test_short_futures_in_the_portfolio_are_futures_counted_in_the_grand_total()
     _, holdings, futures, issues = parse_sheet(mahindra.T, "MMF03", rows, "f.xlsx")
     assert not [i for i in issues if i.level == "error"]
     assert [h.market_value_lakhs for h in holdings] == [90.0, 1.0, 99.0]
-    assert [(f.side, f.notional_lakhs, f.pct_nav) for f in futures] == [("short", 90.0, 0.9)]
+    assert [(f.side, f.notional_lakhs, f.pct_nav) for f in futures] == [
+        ("short", 90.0, 0.9)
+    ]

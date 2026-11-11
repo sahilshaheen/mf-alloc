@@ -3,6 +3,7 @@ from . import (
     dsp,
     hdfc,
     icici,
+    iti,
     kotak,
     mahindra,
     mirae,
@@ -13,6 +14,7 @@ from . import (
     tata,
     uti,
     wealth,
+    whiteoak,
 )
 
 ADAPTERS = {
@@ -32,5 +34,7 @@ ADAPTERS = {
         hdfc,
         kotak,
         mahindra,
+        whiteoak,
+        iti,
     )
 }

@@ -55,10 +55,12 @@ _TYPE_CODE = re.compile(r"[A-Z]{2,6}")
 _LISTING = re.compile(
     r"^(\(?[a-z]\)|listed|unlisted|awaiting|privately|rated|unrated)", re.IGNORECASE
 )
-# A bare futures table heading ("Stock Futures", "Details of Stock Future / Index Future"), not the notes'
+# A bare futures table heading ("Stock Futures", "Details of Stock Future / Index Future", ITI's
+# "DERIVATIVES"), not the notes'
 # "Hedging Positions through Futures as on ..." sentences that repeat later with different columns.
 _FUT_HEADING = re.compile(
-    r"(details of )?((stock|index|commodity|currency)\s*/?\s*)+futures?", re.IGNORECASE
+    r"(details of )?(((stock|index|commodity|currency)\s*/?\s*)+futures?\s*/?\s*)+|derivatives",
+    re.IGNORECASE,
 )
 _HEDGED = re.compile(
     r"total\s*(%|percentage|%age)\s*of existing assets hedged through (equity )?futures",
@@ -115,7 +117,8 @@ def _cols(hdr: list, portfolio: bool) -> dict[str, int]:
     for j, v in enumerate(hdr):
         if not isinstance(v, str):
             continue
-        h = re.sub(r"\s+", " ", v.strip().lower())
+        # WhiteOak's futures table ends its headers with a period ("Quantity.")
+        h = re.sub(r"\s+", " ", v.strip().lower()).rstrip(" .")
         if h == "isin" or h.startswith("isin code"):
             cols["isin"] = j
         elif "name" in h and ("instrument" in h or "issuer" in h):
@@ -535,7 +538,7 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
             fq, fm = num(cell(r, fcols["qty"])), num(cell(r, fcols["mv"]))
             fname = clean(cell(r, fcols["name"]))
             if not fname or (fq is None and fm is None):
-                if re.search(r"future", hdr_text) and len(texts) <= 2:
+                if re.search(r"future|derivative", hdr_text) and len(texts) <= 2:
                     fut_kind = "commodity" if "commodity" in hdr_text else "stock_index"
                 continue
             side_cell = (clean(cell(r, fcols.get("side"))) or "").strip("() ").lower()
@@ -571,7 +574,7 @@ def parse_workbook(t: Template, path, skip_sheets: tuple[str, ...] = ("index",))
 
     schemes, holdings, futures, issues = [], [], [], []
     for sheet, rows in read_sheets(path).items():
-        if sheet.lower() in skip_sheets:
+        if sheet.strip().lower() in skip_sheets:
             continue
         try:
             s, h, f, i = parse_sheet(t, sheet, rows, path.name)

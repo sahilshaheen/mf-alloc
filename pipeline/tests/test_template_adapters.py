@@ -115,9 +115,11 @@ def test_futures_block_after_total_with_side_column_and_signed_notional():
             "Market value (Rs. in Lakhs)",
             "% to AUM",
         ],
+        ["Exchange Traded Commodity Derivatives"],
+        ["Gold 04.12.2026", "Long", None, 20, 2.0, 2.0],
         ["Stock Futures"],
         ["HDFC Bank Ltd. 27.10.2026", "Short", "Banks", -100, -99.5, -99.5],
-        ["Derivatives Total", None, None, None, -99.5, -99.5],
+        ["Derivatives Total", None, None, None, -97.5, -97.5],
         ["Hedging Positions through Futures as on 30-Sep-2026 :"],
         [
             "Underlying",
@@ -140,10 +142,16 @@ def test_futures_block_after_total_with_side_column_and_signed_notional():
     )
     # use the plain header; the derivative block carries its own header row
     _, _h, f, issues = run(rows)
-    assert len(f) == 1 and not errors(issues), (f, issues)
-    assert (f[0].side, f[0].quantity, f[0].notional_lakhs) == ("short", 100, 99.5)
-    assert f[0].pct_nav == pytest.approx(0.995)
-    assert str(f[0].expiry) == "2026-10-27"
+    assert len(f) == 2 and not errors(issues), (f, issues)
+    assert (f[0].kind, f[0].side, f[0].notional_lakhs) == ("commodity", "long", 2.0)
+    assert (f[1].kind, f[1].side, f[1].quantity, f[1].notional_lakhs) == (
+        "stock_index",
+        "short",
+        100,
+        99.5,
+    )
+    assert f[1].pct_nav == pytest.approx(0.995)
+    assert str(f[1].expiry) == "2026-10-27"
     assert hdr  # (kept to document the SBI header variant)
 
 
