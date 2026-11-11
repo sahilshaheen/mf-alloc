@@ -14,6 +14,7 @@ from . import (
     quant,
     sbi,
     tata,
+    union,
     uti,
     wealth,
     whiteoak,
@@ -40,5 +41,6 @@ ADAPTERS = {
         iti,
         axis,
         quant,
+        union,
     )
 }

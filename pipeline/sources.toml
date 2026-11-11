@@ -110,6 +110,14 @@ note = "One consolidated workbook per month, listed by the page's own method (di
 last_period = "2026-09"
 last_schemes = 31
 
+[union]
+name = "Union Mutual Fund"
+method = "script"
+page = "https://www.unionmf.com/about-us/downloads"
+note = "The downloads page script names one CMS folder per month (comment '//September 2026'); /api/downloads/documents lists its xlsx files, one per scheme."
+last_period = "2026-09"
+last_schemes = 32
+
 [hdfc]
 name = "HDFC Mutual Fund"
 method = "browser"

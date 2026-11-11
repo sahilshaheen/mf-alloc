@@ -26,6 +26,7 @@ AMFI_HEADINGS = {
     "quant": "quant Mutual Fund",
     "sbi": "SBI Mutual Fund",
     "tata": "Tata Mutual Fund",
+    "union": "Union Mutual Fund",
     "uti": "UTI Mutual Fund",
     "wealth": "The Wealth Company Mutual Fund",
     "whiteoak": "WhiteOak Capital Mutual Fund",

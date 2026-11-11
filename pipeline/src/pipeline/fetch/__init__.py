@@ -10,6 +10,7 @@ from . import (
     quant,
     sbi,
     tata,
+    union,
     uti,
     wealth,
 )
@@ -30,6 +31,7 @@ AMCS = {
         mirae,
         tata,
         quant,
+        union,
         amfi,
     )
 }
