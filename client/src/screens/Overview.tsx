@@ -181,7 +181,6 @@ export function Overview() {
       </section>
 
       <p className="overview__rounding">{t('overview.rounding')}</p>
-      <p className="overview__footer">{t('overview.noAdvice')}</p>
     </main>
   )
 }

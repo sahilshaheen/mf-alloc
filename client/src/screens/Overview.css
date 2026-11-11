@@ -258,14 +258,6 @@ ul.legend {
   color: var(--ink3);
 }
 
-.overview__footer {
-  margin: 72px 0 0;
-  padding-top: 16px;
-  border-top: 1px solid var(--edge);
-  font-size: 13px;
-  color: var(--ink3);
-}
-
 @media (max-width: 900px) {
   .overview {
     padding: 24px 24px 72px;

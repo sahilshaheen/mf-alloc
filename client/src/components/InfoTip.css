@@ -1,0 +1,42 @@
+.info-tip {
+  display: inline-grid;
+  place-items: center;
+  width: 16px;
+  height: 16px;
+  margin-inline-start: 5px;
+  padding: 0;
+  border: 1px solid currentColor;
+  border-radius: 50%;
+  background: none;
+  color: var(--ink3);
+  font: italic 600 10px/1 Georgia, serif;
+  vertical-align: 1px;
+  cursor: help;
+}
+
+.info-tip:hover {
+  background: var(--hover);
+  color: var(--ink);
+}
+
+.info-tip__bubble {
+  position: fixed;
+  z-index: 50;
+  width: max-content;
+  padding: 10px 12px;
+  border: 1px solid var(--edge);
+  border-radius: 8px;
+  background: var(--sheet);
+  box-shadow: var(--shadow);
+  color: var(--ink);
+  font-size: 13px;
+  font-weight: 400;
+  font-style: normal;
+  line-height: 1.5;
+  text-align: start;
+  white-space: normal;
+}
+
+.info-tip__bubble[hidden] {
+  display: none;
+}

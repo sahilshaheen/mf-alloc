@@ -61,6 +61,8 @@ relying on it**, and fix the fixtures to match.
 purchases, SIPs, switches in, stamp duty, STT and TDS as money in; redemptions, switches out, reversals
 and IDCW payouts as money out; reinvested IDCW as neither. Switches cancel in the portfolio total. A fund
 held before the statement period has no XIRR (unknown cost). Under a year, only the gain is shown.
+The explanations of Invested, Return, XIRR and Contribution sit in `InfoTip` tooltips next to those terms, not as
+paragraphs on the page; only the situational note about funds held before the statement starts is a footnote.
 
 **Capital gains facts (not built; rules for when it is).** Units of an equity-oriented fund bought before
 1 Feb 2018 have a grandfathered cost: the higher of actual cost and the lower of (fair market value on
@@ -129,7 +131,7 @@ reading; Unreadable for unreadable or unsupported files; Sealed), Privacy (Seale
 Funds search with no match (EmptyPortfolio). The favicon is the board's hand-tuned 16 px mark with a dark-mode
 variant. Not yet used: the bucket spot icons (I7) and a PWA/app icon (needs PNGs; with the PWA work).
 
-**Funds.** Rows are merged by ISIN (several folios of one fund become one row), sorted by value. The Net/Gross
+**Funds.** Rows are merged by ISIN (several folios of one fund become one row), sorted by value until a column header is clicked. The Net/Gross
 choice lives in the portfolio context, so Overview and Funds share it. The design's "category says vs
 look-through says" bar is replaced by the SEBI category line and its stated equity minimum (or "SEBI states no
 minimum"), then the look-through bar and a table by asset class for the selected view only (the panel follows the Net/Gross
@@ -186,6 +188,13 @@ maturity, foreign equity by country (shown as "no further breakdown yet", and li
 Fund names here are not links yet (contributors carry no ISIN).
 
 **Navigation.** Before a statement is open the header offers Open statement, Get your statement, Data and method and Privacy; the portfolio screens (Overview, Breakdowns, Funds, Returns) appear only once one is open, since they redirect to `/welcome` without it. The guide asks for the Detailed statement (Specific Period from 01-Jan-1990, with zero-balance folios) and says Summary works without XIRR.
+
+**Tables.** Data tables (Funds, Returns) sort by clicking any column header (`SortableHeader`, `sortRows`):
+text columns start A to Z, numbers largest first, a second click reverses, and missing values always sort last.
+Funds' look-through column sorts by equity share (domestic + foreign).
+
+**No advice disclaimer.** The "Describes your portfolio. It doesn't give advice." line was removed everywhere at
+the owner's request.
 
 **Layout.** Compact header below 1180px (nav scrolls, language switch on its own row on phones); content
 column is 960px. Controls must grow with their text and never use fixed heights that long Malayalam or

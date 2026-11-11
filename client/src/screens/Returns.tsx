@@ -1,9 +1,13 @@
 import { Link, Navigate } from 'react-router'
+import { InfoTip } from '../components/InfoTip'
+import { SortableHeader } from '../components/SortableHeader'
+import { useSort } from '../components/useSort'
 import { formatDate, formatInr, formatPercent } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import { annualReturns, type AnnualReturn } from '../portfolio/annualReturns'
-import { returnsModel } from '../portfolio/returnsModel'
+import { returnsModel, type FundReturn } from '../portfolio/returnsModel'
 import { usePortfolio } from '../portfolio/usePortfolio'
+import { sortRows, type SortValue } from '../sortRows'
 import './Returns.css'
 
 const signedInr = (amount: number): string => `${amount < 0 ? '−' : '+'}${formatInr(Math.abs(amount))}`
@@ -11,25 +15,44 @@ const signedPercent = (fraction: number): string => `${fraction < 0 ? '−' : '+
 const tone = (amount: number): string => (amount < 0 ? 'returns--loss' : 'returns--gain')
 const DAY_MS = 86_400_000
 
+type Column = 'fund' | 'invested' | 'value' | 'gain' | 'return' | 'xirr' | 'contribution'
+
+function shownRate(value: AnnualReturn | undefined, asOn: string): number | null {
+  if (value?.kind !== 'rate') return null
+  // A yearly rate over a few months exaggerates; under a year only the gain is shown.
+  return (Date.parse(asOn) - Date.parse(value.since)) / DAY_MS < 365 ? null : value.rate
+}
+
 function XirrText({ value, asOn }: { value: AnnualReturn | undefined; asOn: string }) {
   const { t } = useI18n()
-  if (!value || value.kind === 'unavailable') {
-    return <span title={value?.reason === 'openingBalance' ? t('returns.xirrOpeningShort') : undefined}>—</span>
-  }
-  // A yearly rate over a few months exaggerates; under a year only the gain is shown.
-  if ((Date.parse(asOn) - Date.parse(value.since)) / DAY_MS < 365) return <span title={t('returns.underYear')}>—</span>
-  return <span className={tone(value.rate)}>{signedPercent(value.rate)}</span>
+  const rate = shownRate(value, asOn)
+  if (rate !== null) return <span className={tone(rate)}>{signedPercent(rate)}</span>
+  const reason = value?.kind === 'rate' ? t('returns.underYear') : value?.reason === 'openingBalance' ? t('returns.xirrOpeningShort') : undefined
+  return <span title={reason}>—</span>
 }
 
 export function Returns() {
   const { t, language } = useI18n()
   const { portfolio, statementDate, history } = usePortfolio()
+  const { sort, sortBy } = useSort<Column>({ column: 'value', direction: 'descending' })
   if (!portfolio || !statementDate) return <Navigate to="/welcome" replace />
 
   const model = returnsModel(portfolio)
   const headlineKey = model.gain < 0 ? 'returns.headlineLoss' : 'returns.headlineGain'
   const yearly = history ? annualReturns(history, portfolio.positions.map((position) => position.holding), statementDate) : null
   const missingOpening = yearly !== null && [...yearly.byIsin.values(), yearly.total].some((value) => value.kind === 'unavailable' && value.reason === 'openingBalance')
+  const sortValue: Record<Column, (fund: FundReturn) => SortValue> = {
+    fund: (fund) => fund.name,
+    invested: (fund) => fund.invested,
+    value: (fund) => fund.value,
+    gain: (fund) => fund.gain,
+    return: (fund) => fund.absoluteReturn,
+    xirr: (fund) => shownRate(yearly?.byIsin.get(fund.isin), statementDate),
+    contribution: (fund) => fund.contribution,
+  }
+  const funds = sortRows(model.funds, sortValue[sort.column], sort.direction)
+  const about = (term: string) => t('returns.about', { term })
+  const header = { sort, onSort: sortBy, firstDirection: 'descending' } as const
 
   return (
     <main className="returns">
@@ -43,7 +66,10 @@ export function Returns() {
 
       <dl className="returns__figures">
         <div>
-          <dt>{t('returns.invested')}</dt>
+          <dt>
+            {t('returns.invested')}
+            <InfoTip label={about(t('returns.invested'))} text={t('returns.investedNote')} />
+          </dt>
           <dd className="serif num">{formatInr(model.invested)}</dd>
         </div>
         <div>
@@ -55,12 +81,18 @@ export function Returns() {
           <dd className={`serif num ${tone(model.gain)}`}>{signedInr(model.gain)}</dd>
         </div>
         <div>
-          <dt>{t('returns.return')}</dt>
+          <dt>
+            {t('returns.return')}
+            <InfoTip label={about(t('returns.return'))} text={t(yearly ? 'returns.absoluteNoteShort' : 'returns.absoluteNote')} />
+          </dt>
           <dd className={`serif num ${tone(model.gain)}`}>{model.absoluteReturn === null ? '—' : signedPercent(model.absoluteReturn)}</dd>
         </div>
         {yearly && (
           <div>
-            <dt>{t('returns.xirr')}</dt>
+            <dt>
+              {t('returns.xirr')}
+              <InfoTip label={about(t('returns.xirr'))} text={t('returns.xirrNote')} />
+            </dt>
             <dd className="serif num">
               <XirrText value={yearly.total} asOn={statementDate} />
             </dd>
@@ -68,30 +100,22 @@ export function Returns() {
         )}
       </dl>
 
-      <p className="returns__note">{t('returns.investedNote')}</p>
-      {yearly ? (
-        <>
-          <p className="returns__note">{t('returns.absoluteNoteShort')}</p>
-          <p className="returns__note">{t('returns.xirrNote')}</p>
-          {missingOpening && history && <p className="returns__note">{t('returns.xirrOpening', { date: formatDate(history.from, language) })}</p>}
-        </>
-      ) : (
-        <p className="returns__note">{t('returns.absoluteNote')}</p>
-      )}
 
       <h2 className="serif">{t('returns.byFund')}</h2>
       <div className="returns__scroll">
         <div role="table" aria-label={t('returns.byFund')} className={yearly ? 'returns__table returns__table--xirr' : 'returns__table'}>
           <div role="row" className="returns__row returns__row--head">
-            <span role="columnheader">{t('funds.colFund')}</span>
-            <span role="columnheader" className="returns__secondary">{t('returns.invested')}</span>
-            <span role="columnheader">{t('returns.value')} ↓</span>
-            <span role="columnheader">{t('returns.gain')}</span>
-            <span role="columnheader">{t('returns.return')}</span>
-            {yearly && <span role="columnheader">{t('returns.xirr')}</span>}
-            <span role="columnheader" className="returns__secondary">{t('returns.contribution')}</span>
+            <SortableHeader {...header} column="fund" label={t('funds.colFund')} firstDirection="ascending" />
+            <SortableHeader {...header} column="invested" label={t('returns.invested')} className="returns__secondary" />
+            <SortableHeader {...header} column="value" label={t('returns.value')} />
+            <SortableHeader {...header} column="gain" label={t('returns.gain')} />
+            <SortableHeader {...header} column="return" label={t('returns.return')} />
+            {yearly && <SortableHeader {...header} column="xirr" label={t('returns.xirr')} />}
+            <SortableHeader {...header} column="contribution" label={t('returns.contribution')} className="returns__secondary">
+              <InfoTip label={about(t('returns.contribution'))} text={t('returns.contributionNote')} />
+            </SortableHeader>
           </div>
-          {model.funds.map((fund) => (
+          {funds.map((fund) => (
             <div role="row" key={fund.isin} className="returns__row">
               <span role="cell" className="returns__name" lang="en">
                 <Link to={`/funds/${fund.isin}`}>{fund.name}</Link>
@@ -112,9 +136,7 @@ export function Returns() {
           ))}
         </div>
       </div>
-      <p className="returns__note returns__secondary">{t('returns.contributionNote')}</p>
-
-      <p className="returns__footer">{t('overview.noAdvice')}</p>
+      {missingOpening && history && <p className="returns__footnote">{t('returns.xirrOpening', { date: formatDate(history.from, language) })}</p>}
     </main>
   )
 }

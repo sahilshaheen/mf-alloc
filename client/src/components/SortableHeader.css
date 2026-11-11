@@ -1,0 +1,30 @@
+.sortable-header {
+  display: inline-flex;
+  gap: 4px;
+  align-items: baseline;
+  padding: 2px 4px;
+  margin: -2px -4px;
+  border: 0;
+  border-radius: 4px;
+  background: none;
+  color: inherit;
+  font: inherit;
+  text-align: inherit;
+  cursor: pointer;
+}
+
+.sortable-header:hover {
+  background: var(--hover);
+}
+
+[aria-sort] > .sortable-header {
+  color: var(--ink);
+}
+
+.sortable-header__arrow {
+  opacity: 0.45;
+}
+
+[aria-sort] > .sortable-header .sortable-header__arrow {
+  opacity: 1;
+}

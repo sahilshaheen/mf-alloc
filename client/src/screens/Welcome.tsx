@@ -133,7 +133,6 @@ export function Welcome() {
 
       <footer className="welcome__foot">
         <span>{t('welcome.tagline')}</span>
-        <span>{t('overview.noAdvice')}</span>
       </footer>
     </main>
   )
