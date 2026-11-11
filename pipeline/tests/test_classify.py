@@ -3,7 +3,7 @@ from datetime import date
 import openpyxl
 import pytest
 
-from pipeline.classify import Classifier, load_cap_list, load_rules
+from pipeline.classify import Classifier, load_cap_list, load_rules, sector_by_isin
 from pipeline.fetch import amfi
 from pipeline.fetch.model import Period
 
@@ -44,11 +44,24 @@ def test_unlisted_or_new_equity_is_cap_unknown_not_small(clf):
     assert (c["bucket"], c["cap"]) == ("equity_domestic", "unknown")
 
 
-def test_sector_placeholders_become_none(clf):
+@pytest.mark.parametrize("placeholder", ["Not Applicable", "N.A."])
+def test_sector_placeholders_become_none(clf, placeholder):
     c = clf.classify(
-        h(isin="INE111A01011", section="EQUITY", industry_or_rating="Not Applicable")
+        h(isin="INE111A01011", section="EQUITY", industry_or_rating=placeholder)
     )
     assert c["sector"] is None and c["cap"] == "small"
+
+
+def test_missing_sector_comes_from_what_other_fund_houses_call_the_same_share():
+    disclosed = [
+        h(isin="INE111A01011", industry_or_rating="Banks"),
+        h(isin="INE111A01011", industry_or_rating="Banks"),
+        h(isin="INE111A01011", industry_or_rating="Finance"),
+        h(isin="INE111A01011", industry_or_rating="N.A."),
+    ]
+    clf = Classifier(CAPS, sectors=sector_by_isin(disclosed))
+    row = h("quant", isin="INE111A01011", section="EQUITY", industry_or_rating="N.A.")
+    assert clf.classify(row)["sector"] == "Banks"
 
 
 def test_net_receivables_printed_under_equity_is_cash(clf):
@@ -350,6 +363,76 @@ def test_bonds_issued_by_a_reit_stay_debt(clf):
                 "subsection": "OPTIONS",
             },
             "other",
+        ),
+        # Every fund house holds the one Corporate Debt Market Development Fund, under many names
+        (
+            {
+                "name": "SBI ALTERNATIVE INVESTMENT FUND",
+                "isin": "INF0RQ622028",
+                "section": "Mutual Fund Units",
+            },
+            "debt",
+        ),
+        # Kotak gives overseas funds placeholder ISINs
+        (
+            {
+                "name": "CI Emerging Markets Fund I - 974",
+                "isin": "INE123456987",
+                "section": "Mutual Fund Units",
+                "subsection": "Overseas Mutual Fund Units",
+            },
+            "equity_foreign",
+        ),
+        (
+            {
+                "name": "Schroder ISF Greater China Class X Acc",
+                "isin": "LU2289884996",
+                "section": "Others",
+                "subsection": "International Mutual Fund Units",
+            },
+            "equity_foreign",
+        ),
+        # HDFC files overseas funds under a plain heading; only the ISIN says so
+        (
+            {
+                "name": "UBS (Irl) ETF plc - MSCI USA NSL UCITS ETF",
+                "isin": "IE000OULL4R4",
+                "section": "Mutual Fund Units",
+            },
+            "equity_foreign",
+        ),
+        (
+            {
+                "name": "ISHARES MSCI EAFE ETF",
+                "listing": "International Exchange Traded Funds",
+            },
+            "equity_foreign",
+        ),
+        (
+            {
+                "name": "iShares USD Treasury Bond 7-10yr UCITS ETF",
+                "isin": "IE00B3VWN518",
+                "section": "Others",
+                "subsection": "International Exchange Traded Funds",
+            },
+            "debt",
+        ),
+        # An Indian fund's units resolve through look-through, whatever heading they sit under
+        (
+            {
+                "name": "Nippon India ETF Hang Seng BeES",
+                "isin": "INF204KB19I1",
+                "section": "Mutual Fund Units",
+                "subsection": "Overseas Mutual Fund Units",
+            },
+            "fund_unit",
+        ),
+        (
+            {
+                "name": "Margin placed with CCIL & ARCL",
+                "section": "Alternative Investment Fund Units",
+            },
+            "cash_like",
         ),
     ],
 )

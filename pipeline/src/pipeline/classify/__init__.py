@@ -21,7 +21,7 @@ BUCKETS = {
     "equity_domestic", "equity_foreign", "debt", "cash_like", "commodities",
     "real_assets", "other", "fund_unit",
 }  # fmt: skip
-_NO_SECTOR = {"not applicable", "miscellaneous"}
+_NO_SECTOR = {"not applicable", "miscellaneous", "n.a."}
 _FIELDS = ("amc", "section", "subsection", "listing", "name", "isin")
 
 
@@ -64,9 +64,33 @@ def load_cap_list(path: Path) -> dict[str, str]:
     return out
 
 
+def _sector(h: dict) -> str | None:
+    industry = (h.get("industry_or_rating") or "").strip()
+    return industry if industry and industry.lower() not in _NO_SECTOR else None
+
+
+def sector_by_isin(holdings: list[dict]) -> dict[str, str]:
+    """isin -> the sector most fund houses print for it, for files that give none (quant)."""
+    votes: dict[str, Counter[str]] = {}
+    for h in holdings:
+        sector = _sector(h)
+        if h.get("isin") and sector:
+            votes.setdefault(h["isin"], Counter())[sector] += 1
+    return {
+        isin: min(counts, key=lambda sector: (-counts[sector], sector))
+        for isin, counts in votes.items()
+    }
+
+
 class Classifier:
-    def __init__(self, caps: dict[str, str], rules: list[Rule] | None = None):
+    def __init__(
+        self,
+        caps: dict[str, str],
+        rules: list[Rule] | None = None,
+        sectors: dict[str, str] | None = None,
+    ):
         self.caps = caps
+        self.sectors = sectors or {}
         self.rules = rules or load_rules()
         # A face-value split reissues the ISIN with a new serial (last three characters) after the
         # half-yearly cap list was published; issuer + security type identify the same share.
@@ -87,8 +111,7 @@ class Classifier:
         if bucket == "equity_domestic":
             isin = h.get("isin") or ""
             cap = self.caps.get(isin) or self._cap_by_prefix.get(isin[:9], "unknown")
-            ind = (h.get("industry_or_rating") or "").strip()
-            sector = ind if ind and ind.lower() not in _NO_SECTOR else None
+            sector = _sector(h) or self.sectors.get(isin)
         return {
             "amc": h["amc"], "scheme_key": h["scheme_key"], "source_row": h["source_row"],
             "bucket": bucket, "cap": cap, "sector": sector, "rule": rule_id,

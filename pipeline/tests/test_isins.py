@@ -3,6 +3,7 @@ from datetime import date
 import pytest
 
 from pipeline.compute.isins import (
+    closest_names,
     match_schemes,
     normalise,
     parse_nav_all,
@@ -76,6 +77,21 @@ def test_override_points_a_scheme_at_its_amfi_name():
         overrides={("hdfc", "B"): "HDFC Top 100 Fund"},
     )
     assert matched[("hdfc", "B")] >= {"INF179K01AA1"} and unmatched == []
+
+
+def test_unmatched_scheme_gets_the_closest_amfi_names_of_its_own_amc():
+    nav = {
+        ("mahindra", "mahindramanulife banking and financial services fund"): {"A"},
+        ("mahindra", "mahindra manulife liquid fund"): {"B"},
+        ("sbi", "sbi banking and financial services fund"): {"C"},
+    }
+    found = closest_names(
+        "mahindra", "Mahindra Manulife Banking & Financial Services Fund", nav
+    )
+    assert found == [
+        "mahindramanulife banking and financial services fund",
+        "mahindra manulife liquid fund",
+    ]
 
 
 def test_categories_come_from_the_heading_above_each_isin():

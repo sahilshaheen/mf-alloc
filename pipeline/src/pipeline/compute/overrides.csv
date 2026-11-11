@@ -5,14 +5,17 @@ absl,CIGAPR33,Aditya Birla Sun Life CRISIL IBX Gilt April 2033 Index Fund
 absl,SILVRFOF,Aditya Birla Sun Life Silver ETF FOF
 axis,AXISCIB,Axis CRISIL IBX 50:50 Gilt Plus SDL June 2028 Index Fund
 axis,AXISCIG,Axis Crisil IBX 50:50 Gilt Plus SDL September 2027 Index Fund
-dsp,MIDCAP,DSP Midcap Fund
 dsp,MIDCAP 150 Q50 IDX,DSP Nifty Midcap 150 Quality 50 Index Fund
+dsp,MIDCAP,DSP Midcap Fund
 icici,ICICI Prudential Nifty PSU Bond Plus SDL Sep 2027 4060 Index Fund,ICICI Prudential Nifty PSU Bond Plus SDL Sep 2027 40:60 Index Fund
 icici,ICICI Prudential Passive Multi-Asset Fund of Funds,ICICI Prudential Passive Multi-Asset Fund of Funds
+mahindra,MMF26,MahindraManulife Banking & Financial Services Fund
 motilal,YO08,Motilal Oswal Flexi Cap Fund
 motilal,YO27,Motilal Oswal Asset Allocation Fund of Fund Conservative
 motilal,YO59,Motilal Oswal Nifty MidSmall Financial Services Index Fund
 motilal,YO88,Motilal Oswal Diversified Equity Flexicap Passive Fund of Funds
+nippon,MT,Nippon India Nifty 500 Momentum 50 Index Fund
+nippon,RN,Nippon India Nifty Realty Index Fund
 nippon,SO,Nippon India Silver ETF FOF
 sbi,CRIIBXSDLIndexJune34,SBI CRISIL IBX SDL Index June 2034 Index Fund
 sbi,Nifty200Value30,SBI Nifty200 Value 30 ETF

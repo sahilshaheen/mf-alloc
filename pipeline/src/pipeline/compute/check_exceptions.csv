@@ -1,0 +1,10 @@
+amc,scheme_key,check,reason
+absl,GOLDETF,equity_index,AMFI files this gold ETF under Equity ETF
+absl,SILVRETF,equity_index,AMFI files this silver ETF under Equity ETF
+hdfc,HBSEREITCF,equity_index,"An index of REITs; REIT units are real assets here, not equity"
+hdfc,HDFCMETFOF,looked_through,"AMFI publishes no ISIN for HDFC Nifty Metal ETF, so its units cannot be resolved"
+icici,ICICI Prudential Diversified Equity All Cap Omni FOF,looked_through,"Holds funds of houses not covered: Bandhan, Helios, PGIM"
+icici,ICICI Prudential Global Advantage Fund (FOF),looked_through,Holds Franklin Asian Equity Fund; Franklin is not covered
+motilal,YO97,equity_fund,As in the workbook: 40.3% is cash and receivables
+wealth,WCAR,arbitrage,"Futures are published without notional, so the hedge is not netted (flag hedge_notional_missing)"
+whiteoak,WODYF,equity_fund,"As in the workbook: REIT units sub total 57.45%, InvIT units 7.72%"
