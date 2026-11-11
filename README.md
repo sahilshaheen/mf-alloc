@@ -61,7 +61,7 @@ From the statement:
 4. **Active SIPs (an indication):** recurring SIP purchases grouped by folio, scheme and amount, called active if the last instalment is recent. Shows the next expected date and the monthly total. Same logic for STPs and SWPs.
 5. **Money in and out:** invested, redeemed and dividends received, by month; stamp duty and STT paid.
 6. **ELSS lock-in:** amount unlocking on each date, from purchase dates.
-7. **Capital gains facts:** realised gains this financial year and unrealised gains, split short- and long-term by holding period per lot. No suggestions to book or harvest gains.
+7. **Capital gains facts:** realised gains this financial year and unrealised gains, split short- and long-term by holding period per lot, with the grandfathered cost for equity-fund units bought before 1 Feb 2018 (Income-tax Act, 2025, s.90(7)) from AMFI's NAVs for 31 Jan 2018. Where that NAV is not available (ETFs, ISINs changed since 2018), the figure says so. No suggestions to book or harvest gains.
 
 With the exposure bundle:
 
@@ -77,7 +77,6 @@ Later, each needs a new data source:
 - **Index comparison:** what the user's own cash flows, on the same dates, would be worth in an index (needs index or index-fund NAV history).
 - **Sector and market-cap concentration** against a benchmark (needs benchmark constituents).
 - **The user's own expense ratios** and their yearly cost in ₹ (needs AMFI's TER file; revisit item 13's stance first).
-- **Grandfathered cost for units bought before 1 Feb 2018** in capital gains facts (needs NAVs as of 31 Jan 2018).
 
 Full UI and UX spec: [docs/design-spec.md](docs/design-spec.md).
 
@@ -117,6 +116,7 @@ uv run pipeline adapt all    --period $P
 uv run pipeline classify all --period $P
 uv run pipeline compute      --period $P
 uv run pipeline publish      --period $P
+uv run pipeline grandfathering               # once: AMFI's NAVs for 31 Jan 2018, by ISIN
 ```
 
 The full monthly runbook, including AMCs that need a browser or hand download, is in [pipeline/README.md](pipeline/README.md).
@@ -130,7 +130,7 @@ mkdir -p public/data && cp ../pipeline/data/out/* public/data/
 npm run dev          # npm test, npm run lint, npm run build
 ```
 
-Only the CAMS Summary statement is read so far; other statement types are rejected with a clear message. The statement is parsed in the browser by pdf.js and is never sent anywhere.
+CAMS Summary and Detailed statements are read (Detailed not yet verified on a real file); other statement types are rejected with a clear message. The statement is parsed in the browser by pdf.js and is never sent anywhere.
 
 ## Data sources and coverage
 

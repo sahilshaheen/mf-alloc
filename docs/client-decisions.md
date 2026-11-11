@@ -62,6 +62,23 @@ purchases, SIPs, switches in, stamp duty, STT and TDS as money in; redemptions, 
 and IDCW payouts as money out; reinvested IDCW as neither. Switches cancel in the portfolio total. A fund
 held before the statement period has no XIRR (unknown cost). Under a year, only the gain is shown.
 
+**Capital gains facts (not built; rules for when it is).** Units of an equity-oriented fund bought before
+1 Feb 2018 have a grandfathered cost: the higher of actual cost and the lower of (fair market value on
+31 Jan 2018, sale value). Income-tax Act, 2025, s.90(7); fair market value for an unlisted unit is its NAV on
+31 Jan 2018, s.90(8)(b)(iii) (read from a reproduction of the Act; the official site refused the fetch, so
+re-check against incometaxindia.gov.in before shipping). The NAVs are in the pipeline's
+`nav-2018-01-31.json`, by ISIN, from AMFI's NAV history report for that day (three spot-checked against
+mfapi.in). It is never applied by guess, and every gain it cannot apply to says so next to the figure:
+- **ISIN not in the file** (a scheme merged or changed ISIN since 2018, or the file dropped it as malformed
+  or conflicting): no grandfathered cost; the gain is shown on actual cost and marked "31 Jan 2018 value
+  not available for this fund".
+- **ETFs and other listed units**: the Act uses the exchange's highest price on 31 Jan 2018, which we do not
+  have; same marking.
+- **"Equity-oriented"** is a tax test on what the fund holds, not its SEBI category; a fund whose category does
+  not settle it (hybrids, fund-of-funds) is marked rather than assumed.
+- A standing note on the page: these are facts from the statement and published NAVs, not tax payable, and
+  the user's own tax filing may differ.
+
 **Net and gross.** Net counts hedged equity as cash-like. Gross is as reported. Funds missing from the
 bundle sit in the "Not classified" asset class (internally the `other` bucket, which also holds anything
 the pipeline could not classify) and as "Not in our data" under Level 1. They are never called "Other",

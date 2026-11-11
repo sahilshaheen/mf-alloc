@@ -36,6 +36,12 @@ uv run pipeline publish --period YYYY-MM
 
 Builds the public bundle in `data/out/`: `exposure-<YYYY-MM>.json` (schemes without an ISIN are left out; `isins` maps every plan/option ISIN to an index into `schemes`) and `manifest.json`, whose `latest` entry gives the newest period's file, sha256 and size. Upload both to the data host; the build does not.
 
+```
+uv run pipeline grandfathering
+```
+
+Run once; the data does not change. Downloads AMFI's NAV history report for 31 Jan 2018 into `data/raw/amfi/2018-01/` (with a manifest) and writes `data/out/nav-2018-01-31.json`: NAV by ISIN, the source URL and sha256, and the ISINs dropped because the file gives them two different NAVs or a malformed code. It feeds the grandfathered cost of equity-fund units bought before 1 Feb 2018 (Income-tax Act, 2025, s.90(7) and (8)(b)(iii)). Upload it with the bundle.
+
 ## Monthly run (next month's disclosures)
 
 `sources.toml` is the manifest of where every AMC's file comes from and how. `pipeline status` reads it.

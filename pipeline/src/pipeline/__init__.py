@@ -48,6 +48,12 @@ def main() -> int:
     pb.add_argument("--period", required=True, help="portfolio as-of month, YYYY-MM")
     pb.add_argument("--computed", type=Path, default=Path("data/computed"))
     pb.add_argument("--out", type=Path, default=Path("data/out"))
+    gf = sub.add_parser(
+        "grandfathering",
+        help="fetch AMFI's NAVs for 31 Jan 2018 and publish them by ISIN",
+    )
+    gf.add_argument("--raw", type=Path, default=DEFAULT_ROOT)
+    gf.add_argument("--out", type=Path, default=Path("data/out"))
     st = sub.add_parser(
         "status", help="per-AMC state for a month, plus what is left to do by hand"
     )
@@ -75,6 +81,8 @@ def main() -> int:
         return _compute(args)
     if args.cmd == "publish":
         return _publish(args)
+    if args.cmd == "grandfathering":
+        return _grandfathering(args)
 
     period = Period.parse(args.period)
     names = list(AMCS) if args.amc == "all" else [args.amc]
@@ -311,4 +319,38 @@ def _publish(args) -> int:
         f"{args.out / entry['file']}: {entry['schemes']} schemes, {len(bundle['isins'])} ISINs, "
         f"{entry['bytes']:,} bytes ({gzipped:,} gzipped)"
     )
+    return 0
+
+
+def _grandfathering(args) -> int:
+    import json
+
+    from .compute.grandfathering import DATE, SOURCE_URL, build_navs
+    from .fetch.model import Entry
+
+    entry = Entry(
+        "amfi", Period(2018, 1), SOURCE_URL, "nav_history_2018-01-31.txt",
+        title=f"AMFI NAV history, {DATE}",
+    )  # fmt: skip
+    with make_client() as client:
+        download_entries(client, [entry], args.raw)
+    raw_dir = args.raw / "amfi" / "2018-01"
+    record = json.loads((raw_dir / "manifest.json").read_text())["files"][
+        entry.filename
+    ]
+    if record["status"] != "ok":
+        print(f"{SOURCE_URL}: {record['status']}", file=sys.stderr)
+        return 1
+    navs = build_navs((raw_dir / entry.filename).read_text())
+    body = {
+        "date": "2018-01-31",
+        "source": SOURCE_URL,
+        "source_sha256": record["sha256"],
+        **navs,
+    }
+    args.out.mkdir(parents=True, exist_ok=True)
+    out = args.out / "nav-2018-01-31.json"
+    out.write_text(json.dumps(body, separators=(",", ":")) + "\n")
+    dropped = sum(map(len, navs["dropped"].values()))
+    print(f"{out}: {len(navs['navs']):,} ISINs, {dropped} dropped {navs['dropped']}")
     return 0
