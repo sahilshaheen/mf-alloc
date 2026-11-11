@@ -149,7 +149,7 @@ Cap and sector are gross, before hedges, so they do not follow the toggle (the p
 
 Deferred from the design: row selection with an aggregate bar, Category/AMC/Group filters, Columns and density
 controls, the holdings-as-of column, CSV export, AMC display names (the bundle holds only AMC codes), and the
-mobile card layout (phones show name, ISIN, value and flags only).
+mobile card layout (phones show name, ISIN, value, return and flags only).
 
 **Privacy page.** Every claim on it is something the code does today, checked by reading the code and by
 inspecting the page's own request list in a browser (all requests same-origin, none carrying the file).
@@ -188,6 +188,12 @@ maturity, foreign equity by country (shown as "no further breakdown yet", and li
 Fund names here are not links yet (contributors carry no ISIN).
 
 **Navigation.** Before a statement is open the header offers Open statement, Get your statement, Data and method and Privacy; the portfolio screens (Overview, Breakdowns, Funds, Returns) appear only once one is open, since they redirect to `/welcome` without it. The guide asks for the Detailed statement (Specific Period from 01-Jan-1990, with zero-balance folios) and says Summary works without XIRR.
+
+**Funds return column.** Return (gain over the statement's cost value) with the rupee gain beneath, from
+`returnsModel`, so it matches the Returns screen. XIRR stays on Returns.
+
+**Overview bar.** Facts on the left as plain text (portfolio line, then fund-data date); the two actions (Save on
+this device, Open another statement) on the right as matching outlined buttons of equal weight.
 
 **Tables.** Data tables (Funds, Returns) sort by clicking any column header (`SortableHeader`, `sortRows`):
 text columns start A to Z, numbers largest first, a second click reverses, and missing values always sort last.

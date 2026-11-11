@@ -2,7 +2,7 @@ import { Link, Navigate } from 'react-router'
 import { InfoTip } from '../components/InfoTip'
 import { SortableHeader } from '../components/SortableHeader'
 import { useSort } from '../components/useSort'
-import { formatDate, formatInr, formatPercent } from '../format'
+import { formatDate, formatInr, formatSignedInr, formatSignedPercent, toneClass } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import { annualReturns, type AnnualReturn } from '../portfolio/annualReturns'
 import { returnsModel, type FundReturn } from '../portfolio/returnsModel'
@@ -10,9 +10,6 @@ import { usePortfolio } from '../portfolio/usePortfolio'
 import { sortRows, type SortValue } from '../sortRows'
 import './Returns.css'
 
-const signedInr = (amount: number): string => `${amount < 0 ? '−' : '+'}${formatInr(Math.abs(amount))}`
-const signedPercent = (fraction: number): string => `${fraction < 0 ? '−' : '+'}${formatPercent(Math.abs(fraction))}`
-const tone = (amount: number): string => (amount < 0 ? 'returns--loss' : 'returns--gain')
 const DAY_MS = 86_400_000
 
 type Column = 'fund' | 'invested' | 'value' | 'gain' | 'return' | 'xirr' | 'contribution'
@@ -26,7 +23,7 @@ function shownRate(value: AnnualReturn | undefined, asOn: string): number | null
 function XirrText({ value, asOn }: { value: AnnualReturn | undefined; asOn: string }) {
   const { t } = useI18n()
   const rate = shownRate(value, asOn)
-  if (rate !== null) return <span className={tone(rate)}>{signedPercent(rate)}</span>
+  if (rate !== null) return <span className={toneClass(rate)}>{formatSignedPercent(rate)}</span>
   const reason = value?.kind === 'rate' ? t('returns.underYear') : value?.reason === 'openingBalance' ? t('returns.xirrOpeningShort') : undefined
   return <span title={reason}>—</span>
 }
@@ -78,14 +75,14 @@ export function Returns() {
         </div>
         <div>
           <dt>{t('returns.gain')}</dt>
-          <dd className={`serif num ${tone(model.gain)}`}>{signedInr(model.gain)}</dd>
+          <dd className={`serif num ${toneClass(model.gain)}`}>{formatSignedInr(model.gain)}</dd>
         </div>
         <div>
           <dt>
             {t('returns.return')}
             <InfoTip label={about(t('returns.return'))} text={t(yearly ? 'returns.absoluteNoteShort' : 'returns.absoluteNote')} />
           </dt>
-          <dd className={`serif num ${tone(model.gain)}`}>{model.absoluteReturn === null ? '—' : signedPercent(model.absoluteReturn)}</dd>
+          <dd className={`serif num ${toneClass(model.gain)}`}>{model.absoluteReturn === null ? '—' : formatSignedPercent(model.absoluteReturn)}</dd>
         </div>
         {yearly && (
           <div>
@@ -122,16 +119,16 @@ export function Returns() {
               </span>
               <span role="cell" className="num returns__secondary">{formatInr(fund.invested)}</span>
               <span role="cell" className="num">{formatInr(fund.value)}</span>
-              <span role="cell" className={`num ${tone(fund.gain)}`}>{signedInr(fund.gain)}</span>
-              <span role="cell" className={`num ${tone(fund.gain)}`}>
-                {fund.absoluteReturn === null ? '—' : signedPercent(fund.absoluteReturn)}
+              <span role="cell" className={`num ${toneClass(fund.gain)}`}>{formatSignedInr(fund.gain)}</span>
+              <span role="cell" className={`num ${toneClass(fund.gain)}`}>
+                {fund.absoluteReturn === null ? '—' : formatSignedPercent(fund.absoluteReturn)}
               </span>
               {yearly && (
                 <span role="cell" className="num">
                   <XirrText value={yearly.byIsin.get(fund.isin)} asOn={statementDate} />
                 </span>
               )}
-              <span role="cell" className="num returns__secondary">{signedPercent(fund.contribution)}</span>
+              <span role="cell" className="num returns__secondary">{formatSignedPercent(fund.contribution)}</span>
             </div>
           ))}
         </div>

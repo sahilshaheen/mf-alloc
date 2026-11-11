@@ -53,13 +53,13 @@ export function Overview() {
       <div className="overview__bar">
         <p className="num">
           {t('overview.portfolioLine', { total: formatInr(portfolio.total), date: formatDate(statementDate, language) })}
+          <span className="overview__data-date">{t('overview.dataAsOf', { date: formatDate(bundle.as_of, language) })}</span>
         </p>
-        <div className="overview__chips">
-          <span className="chip num">{t('overview.dataAsOf', { date: formatDate(bundle.as_of, language) })}</span>
-          <Link className={savedAt ? 'chip' : 'chip chip--primary'} to="/save">
+        <div className="overview__actions">
+          <Link className="overview__action" to="/save">
             {savedAt ? t('overview.savedLink') : t('overview.saveLink')}
           </Link>
-          <Link className="chip" to="/welcome?new">
+          <Link className="overview__action" to="/welcome?new">
             {t('sv.openAnother')}
           </Link>
         </div>

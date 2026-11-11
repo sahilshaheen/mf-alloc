@@ -45,6 +45,14 @@ a {
   text-underline-offset: 3px;
 }
 
+.tone-gain {
+  color: var(--gain);
+}
+
+.tone-loss {
+  color: var(--loss);
+}
+
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 3px;

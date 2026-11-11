@@ -37,14 +37,6 @@
   font-size: 28px;
 }
 
-.returns--gain {
-  color: var(--gain);
-}
-
-.returns--loss {
-  color: var(--loss);
-}
-
 .returns__figures dt .info-tip {
   vertical-align: 0;
 }
