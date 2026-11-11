@@ -1,5 +1,6 @@
 from . import (
     absl,
+    axis,
     dsp,
     hdfc,
     icici,
@@ -36,5 +37,6 @@ ADAPTERS = {
         mahindra,
         whiteoak,
         iti,
+        axis,
     )
 }

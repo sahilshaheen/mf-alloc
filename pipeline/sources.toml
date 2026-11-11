@@ -173,8 +173,17 @@ last_schemes = 21
 
 [axis]
 name = "Axis Mutual Fund"
-method = "todo"
-note = "Files behind a token-based, encrypted API. A person can download by hand; needs a sample file to write the adapter."
+method = "browser"
+page = "https://www.axismf.com/statutory-disclosures"
+files = "one workbook, 'Monthly_Portfolio_DD_MM_YYYY_<hash>.xlsx' (Index sheet plus a sheet per scheme)"
+steps = [
+  "Open the page in a browser; dismiss the notification prompt ('No thanks').",
+  "Expand '8. Portfolios' -> '1. Monthly Scheme Portfolios'; pick the year and month, keep scheme 'Consolidated'.",
+  "Download 'Monthly Portfolio DD-MM-YYYY' (not the weekly/fortnightly/adhoc files) into data/raw/axis/<YYYY-MM>/.",
+]
+note = "The file API is encrypted front-end calls: no script, but the page works in a browser."
+last_period = "2026-09"
+last_schemes = 87
 
 [bandhan]
 name = "Bandhan"

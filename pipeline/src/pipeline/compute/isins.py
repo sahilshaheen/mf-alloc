@@ -12,6 +12,7 @@ SchemeId = tuple[str, str]
 
 AMFI_HEADINGS = {
     "absl": "Aditya Birla Sun Life Mutual Fund",
+    "axis": "Axis Mutual Fund",
     "dsp": "DSP Mutual Fund",
     "hdfc": "HDFC Mutual Fund",
     "icici": "ICICI Prudential Mutual Fund",

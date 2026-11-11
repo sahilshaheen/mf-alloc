@@ -66,8 +66,8 @@ _HEDGED = re.compile(
     r"total\s*(%|percentage|%age)\s*of existing assets hedged through (equity )?futures",
     re.IGNORECASE,
 )
-# Kotak: "Futures"; Mahindra: "Index / Stock Futures"
-_FUT_SUB = re.compile(r"((index|stock)\s*/?\s*)*futures", re.IGNORECASE)
+# Kotak: "Futures"; Mahindra: "Index / Stock Futures"; Axis: "(a) Index / Stock Futures"
+_FUT_SUB = re.compile(r"(\([a-z]\)\s*)?((index|stock)\s*/?\s*)*futures", re.IGNORECASE)
 _MASK = {"#", "^", "$", "*", "$$"}
 _EXPIRY = re.compile(r"(\d{1,2})[./](\d{1,2})[./](\d{4})\s*$")
 _EXPIRY_MON = re.compile(r"(\d{1,2})[- ]([A-Za-z]{3})[- ](\d{4})\s*$")
@@ -97,6 +97,9 @@ class Template:
     futures_name_marker: str | None = None
     # Tata lists interest-rate swaps (at notional) under an "IRS"/"swaps" heading; its totals exclude them.
     skip_swaps: bool = False
+    # Axis lists interest-rate swaps at mark-to-market (no ISIN or quantity) under an "Interest Rate Swaps"
+    # heading; its totals count them, so they are holdings.
+    swaps_in_total: bool = False
     # Kotak lists futures in the portfolio under a bare "Futures" sub-heading (underlying ISIN, signed
     # quantity, market value = quantity x price, i.e. a real notional). futures_heading_in_total says
     # whether the scheme's grand total already counts them.
@@ -386,11 +389,18 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
             ):
                 cash_run = []
                 continue
-            if isin is None and qty is None and not cash_item:
+            swap_item = (
+                t.swaps_in_total
+                and isin is None
+                and qty is None
+                and mv is not None
+                and re.match(r"(irs|interest rate swaps?)\b", (sub or "").lower())
+            )
+            if isin is None and qty is None and not cash_item and not swap_item:
                 # heading (possibly carrying a section subtotal, as ICICI does)
                 if _TOP.match(label):
                     top, sub, listing = label, None, None
-                elif _LISTING.match(label):
+                elif _LISTING.match(label) and not _FUT_SUB.fullmatch(label):
                     listing = label
                 else:
                     sub = label
