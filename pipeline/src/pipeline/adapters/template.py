@@ -102,9 +102,11 @@ class Template:
     swaps_in_total: bool = False
     # Kotak lists futures in the portfolio under a bare "Futures" sub-heading (underlying ISIN, signed
     # quantity, market value = quantity x price, i.e. a real notional). futures_heading_in_total says
-    # whether the scheme's grand total already counts them.
+    # whether the scheme's grand total already counts them; None decides per sheet, taking whichever reading
+    # lands nearer the grand total (quant mixes both conventions in one workbook). The reconciliation that
+    # follows still has to hold exactly.
     futures_heading: bool = False
-    futures_heading_in_total: bool = False
+    futures_heading_in_total: bool | None = False
     # Mahindra follows "Margin placed with CCIL" and "Net Receivables / (Payables)" with a second
     # "Net Receivables / (Payables)" line that is their sum; such a cash line is a subtotal, not a holding.
     cash_subtotal_after: bool = False
@@ -342,6 +344,17 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
                 scale = 100.0 if gp is not None and gp > 1.5 else 1.0
                 for h, p in zip(holdings, raw_pct, strict=True):
                     h.pct_nav = p / scale if p is not None else None
+                if any(counted is None for *_, counted in inline_fut):
+                    held = sum(h.market_value_lakhs or 0.0 for h in holdings)
+                    fut = sum(v for _, v, _, counted in inline_fut if counted is None)
+                    in_total = abs(held + fut - (mv or 0.0)) < abs(held - (mv or 0.0))
+                    scheme.notes["futures_in_grand_total"] = (
+                        "counted" if in_total else "excluded"
+                    )
+                    inline_fut = [
+                        (fp, v, k, in_total if counted is None else counted)
+                        for fp, v, k, counted in inline_fut
+                    ]
                 extra_mv = extra_pct = 0.0
                 for fp, v, k, counted in inline_fut:
                     if fp is not None:
@@ -578,8 +591,14 @@ def parse_sheet(t: Template, key: str, rows: list[list], source_file: str):
     return [scheme], holdings, futures, issues
 
 
-def parse_workbook(t: Template, path, skip_sheets: tuple[str, ...] = ("index",)):
-    """Parse every scheme sheet of a workbook (one sheet per scheme), skipping non-scheme sheets."""
+def parse_workbook(
+    t: Template,
+    path,
+    skip_sheets: tuple[str, ...] = ("index",),
+    prepare: Callable[[list[list]], list[list]] | None = None,
+):
+    """Parse every scheme sheet of a workbook (one sheet per scheme), skipping non-scheme sheets.
+    `prepare` rewrites a sheet's rows first (it must keep their count, so source rows stay true)."""
     from .sheets import read_sheets
 
     schemes, holdings, futures, issues = [], [], [], []
@@ -587,7 +606,9 @@ def parse_workbook(t: Template, path, skip_sheets: tuple[str, ...] = ("index",))
         if sheet.strip().lower() in skip_sheets:
             continue
         try:
-            s, h, f, i = parse_sheet(t, sheet, rows, path.name)
+            s, h, f, i = parse_sheet(
+                t, sheet, prepare(rows) if prepare else rows, path.name
+            )
         except LayoutError as e:
             if "ISIN header not found" in str(e):
                 issues.append(

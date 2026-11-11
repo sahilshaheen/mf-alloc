@@ -3,6 +3,7 @@ cash_nca,,,,,"net receivable|net current (asset|liabilit)|margin deposit|^(rep|t
 commodity_heading,,,^(gold|silver)$,,,,commodities,Physical gold/silver bars sit under a bare heading
 commodity_section,,^(gold|silver|commodities)\b,,,,,commodities,Gold/silver as a top-level section (ICICI, SBI, ABSL)
 commodity_listing,,,,^(\(?\w\)\s*)?(gold|silver)$,,,commodities,
+commodity_physical_listing,,,,physical commodit,,,commodities,quant files physical silver under "(a) Physical Commodities"
 commodity_name,,,,,^(gold|silver) (\d|bullion),,commodities,Bars with no heading (Wealth Company)
 commodity_physical,,,,,^(gold|silver) physical\b,,commodities,Tata files physical gold/silver bars under its equity section
 real_asset_isin,,,,,,^INE.{4}2[35],real_assets,"ISIN security type 23 = InvIT units, 25 = REIT units; AMCs file them under debt, money-market or derivatives headings and some name the sponsor instead of the trust. Bonds a trust issues have a debt type code and stay debt"

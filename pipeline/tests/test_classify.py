@@ -181,6 +181,9 @@ def test_fund_units_are_marked_for_lookthrough_and_commodities(clf):
         clf.classify(h("wealth", name="GOLD 999 Finnese - 100 gms"))["bucket"]
         == "commodities"
     )
+    silver = h("quant", name="SILVER", isin="IDIA00269689", section="OTHERS",
+               listing="(a) Physical Commodities")  # fmt: skip
+    assert clf.classify(silver)["bucket"] == "commodities"
 
 
 def test_unmatched_falls_back_to_explicit_other(clf):

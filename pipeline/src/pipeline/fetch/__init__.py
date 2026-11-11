@@ -7,6 +7,7 @@ from . import (
     motilal,
     nippon,
     ppfas,
+    quant,
     sbi,
     tata,
     uti,
@@ -28,6 +29,7 @@ AMCS = {
         ppfas,
         mirae,
         tata,
+        quant,
         amfi,
     )
 }

@@ -11,6 +11,7 @@ from . import (
     motilal,
     nippon,
     ppfas,
+    quant,
     sbi,
     tata,
     uti,
@@ -38,5 +39,6 @@ ADAPTERS = {
         whiteoak,
         iti,
         axis,
+        quant,
     )
 }

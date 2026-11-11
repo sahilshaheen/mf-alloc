@@ -23,6 +23,7 @@ AMFI_HEADINGS = {
     "motilal": "Motilal Oswal Mutual Fund",
     "nippon": "Nippon India Mutual Fund",
     "ppfas": "PPFAS Mutual Fund",
+    "quant": "quant Mutual Fund",
     "sbi": "SBI Mutual Fund",
     "tata": "Tata Mutual Fund",
     "uti": "UTI Mutual Fund",

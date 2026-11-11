@@ -102,6 +102,14 @@ page = "https://www.wealthcompanyamc.in"
 last_period = "2026-09"
 last_schemes = 12
 
+[quant]
+name = "quant Mutual Fund"
+method = "script"
+page = "https://www.quantmutual.com/statutory-disclosures"
+note = "One consolidated workbook per month, listed by the page's own method (displaydisclouser2). Equity Savings and Arbitrage sheets repeat rows and leave futures out of the grand total; the adapter handles both."
+last_period = "2026-09"
+last_schemes = 31
+
 [hdfc]
 name = "HDFC Mutual Fund"
 method = "browser"
@@ -201,6 +209,6 @@ method = "todo"
 note = "403 to scripts; not yet tried in a real browser."
 
 [others]
-name = "Invesco, HSBC, Franklin, quant, Sundaram and the rest"
+name = "Invesco, HSBC, Franklin, Sundaram and the rest"
 method = "todo"
 note = "Reachable but not built; each needs page discovery and a sample file."
