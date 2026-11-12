@@ -32,7 +32,7 @@ Your statement is parsed in the browser and never leaves your device. You can op
 2. **adapt**: one adapter per AMC turns its spreadsheet layout into canonical records (schemes, holdings, futures). Every scheme must reconcile to the sheet's own grand total, otherwise the run fails.
 3. **classify**: assigns each holding an asset-class bucket (`equity_domestic`, `equity_foreign`, `debt`, `cash_like`, `commodities`, `real_assets`, `other`, plus `fund_unit` for MF/ETF units), and market cap and sector for domestic equity, using first-match-wins rules in `classify/rules.csv`.
 4. **compute**: matches schemes to ISINs (AMFI's NAV file), then builds net and gross exposure vectors per scheme with hedge netting from futures and look-through for fund-of-funds. Hedges without a disclosed notional are flagged, not guessed; fund units it cannot resolve stay in `fund_unit`.
-5. **publish**: a static, versioned exposure bundle (`exposure-<YYYY-MM>.json` plus `manifest.json`), keyed by ISIN. It is built locally; uploading it to the data host is manual.
+5. **publish**: a static, versioned exposure bundle (`exposure-<YYYY-MM>.json` plus `manifest.json`), keyed by ISIN. It is built locally and committed to `client/public/data/`, which deploys with the app.
 
 **Client (private, per user)** *(in progress)*
 
@@ -121,12 +121,13 @@ uv run pipeline grandfathering               # once: AMFI's NAVs for 31 Jan 2018
 
 The full monthly runbook, including AMCs that need a browser or hand download, is in [pipeline/README.md](pipeline/README.md).
 
-To run the client against the bundle you just built:
+To publish the bundle you just built, copy it into the client and commit it; the deploy verifies each
+file against the manifest's sha256:
 
 ```sh
+cp pipeline/data/out/* client/public/data/
 cd client
 npm install
-mkdir -p public/data && cp ../pipeline/data/out/* public/data/
 npm run dev          # npm test, npm run lint, npm run build
 ```
 
