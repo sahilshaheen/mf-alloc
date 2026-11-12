@@ -22,20 +22,24 @@ interface SegmentedBarProps {
 }
 
 const GAP = 2
+const MIN_PART_WIDTH = 4
+const CORNER = 4
 const LABEL_CHAR_WIDTH = 8.5
 const LABEL_PADDING = 20
 
 export function SegmentedBar({ parts, size, label, activeKey, onActivate }: SegmentedBarProps) {
   const { ref, width } = useWidth<HTMLDivElement>()
   const drawn = parts.filter((part) => part.value > 0)
-  const boxes = width > 0 ? segmentLayout(drawn.map((part) => part.value), width, GAP) : []
+  const boxes = width > 0 ? segmentLayout(drawn.map((part) => part.value), Math.floor(width), GAP, MIN_PART_WIDTH) : []
 
   return (
     <div ref={ref} className={`segbar segbar--${size}`} role={onActivate ? 'group' : 'img'} aria-label={label}>
       {boxes.map((box, index) => {
         const part = drawn[index]
         const fits = part.label !== undefined && box.width >= part.label.length * LABEL_CHAR_WIDTH + LABEL_PADDING
-        const style = { left: box.left, width: box.width, background: part.fill, color: part.lightText ? '#ffffff' : '#1b2422' }
+        // Full corners on a sliver only a few pixels wide turn it into a pill that reads as a dot.
+        const borderRadius = Math.min(CORNER, Math.floor(box.width / 4))
+        const style = { left: box.left, width: box.width, borderRadius, background: part.fill, color: part.lightText ? '#ffffff' : '#1b2422' }
         const text = size === 'tall' && fits ? part.label : null
         return onActivate ? (
           <button
