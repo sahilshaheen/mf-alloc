@@ -67,6 +67,17 @@ button,
     color var(--dur-fast) var(--ease);
 }
 
+main {
+  animation: page-in var(--dur-sheet) var(--ease) both;
+}
+
+@keyframes page-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

@@ -41,6 +41,7 @@ export function Welcome() {
   const [password, setPassword] = useState('')
   const [problem, setProblem] = useState<Problem | null>(null)
   const [reading, setReading] = useState(false)
+  const [progress, setProgress] = useState<{ page: number; pages: number } | null>(null)
 
   async function submit(event: FormEvent) {
     event.preventDefault()
@@ -49,12 +50,13 @@ export function Welcome() {
     setProblem(null)
     try {
       if (unlockMode) await unlockSaved(passphrase)
-      else await openStatement(file!, password)
+      else await openStatement(file!, password, (page, pages) => setProgress({ page, pages }))
       navigate('/')
     } catch (error) {
       setProblem(toProblem(error))
     } finally {
       setReading(false)
+      setProgress(null)
     }
   }
 
@@ -87,6 +89,12 @@ export function Welcome() {
             <button type="submit" disabled={(unlockMode ? !passphrase : !file) || !bundle || reading}>
               {reading ? t(unlockMode ? 'welcome.unlocking' : 'welcome.reading') : t(unlockMode ? 'welcome.unlock' : 'welcome.open')}
             </button>
+            {progress && (
+              <p className="welcome__progress num" role="status">
+                <progress value={progress.page} max={progress.pages} />
+                {t('welcome.readingPage', { page: String(progress.page), pages: String(progress.pages) })}
+              </p>
+            )}
             {unlockMode && savedAt && (
               <p className="welcome__saved">
                 {t('welcome.savedOn', { date: formatDate(savedAt, language) })} <Link to="/welcome?new">{t('welcome.openNew')}</Link>

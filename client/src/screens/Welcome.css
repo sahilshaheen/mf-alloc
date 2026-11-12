@@ -263,3 +263,36 @@
   color: var(--err);
   font-size: 14px;
 }
+
+.welcome__progress {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin: 12px 0 0;
+  font-size: 13.5px;
+  color: var(--ink2);
+}
+
+.welcome__progress progress {
+  flex: 1 1 auto;
+  height: 4px;
+  border: 0;
+  border-radius: 2px;
+  overflow: hidden;
+  appearance: none;
+  background: var(--sunk);
+}
+
+.welcome__progress progress::-webkit-progress-bar {
+  background: var(--sunk);
+}
+
+.welcome__progress progress::-webkit-progress-value {
+  background: var(--ink);
+  transition: width var(--dur-base) var(--ease);
+}
+
+.welcome__progress progress::-moz-progress-bar {
+  background: var(--ink);
+}
+

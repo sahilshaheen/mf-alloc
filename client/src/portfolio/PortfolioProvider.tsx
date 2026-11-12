@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from 'react'
 import { isCamsDetailed, parseCamsDetailed } from '../statement/camsDetailed'
 import { parseCamsSummary } from '../statement/camsSummary'
-import { extractPages } from '../statement/extract'
+import { extractPages, type PageProgress } from '../statement/extract'
 import type { Statement } from '../statement/types'
 import { analysePortfolio, type Portfolio } from './analysePortfolio'
 import { loadBundle } from './loadBundle'
@@ -32,8 +32,8 @@ export function PortfolioProvider({ children }: { children: ReactNode }) {
   )
 
   const openStatement = useCallback(
-    async (file: File, password: string) => {
-      const pages = await extractPages(await file.arrayBuffer(), password || undefined)
+    async (file: File, password: string, onPage?: PageProgress) => {
+      const pages = await extractPages(await file.arrayBuffer(), password || undefined, onPage)
       open(isCamsDetailed(pages) ? parseCamsDetailed(pages) : parseCamsSummary(pages))
     },
     [open],

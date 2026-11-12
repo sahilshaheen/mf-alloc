@@ -3,14 +3,14 @@
 }
 
 .returns__table {
-  min-width: 640px;
+  min-width: 760px;
   margin-bottom: 16px;
   font-size: 14.5px;
 }
 
 .returns__row {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) 104px 104px 104px 76px 120px;
+  grid-template-columns: minmax(200px, 1fr) 104px 104px 104px 110px 76px 120px;
   gap: 0 12px;
   align-items: center;
   padding: 12px 8px;
@@ -19,7 +19,7 @@
 }
 
 .returns__table--xirr .returns__row {
-  grid-template-columns: minmax(200px, 1fr) 104px 104px 104px 76px 76px 120px;
+  grid-template-columns: minmax(200px, 1fr) 104px 104px 104px 110px 76px 76px 120px;
 }
 
 .returns__row--head {
@@ -78,7 +78,8 @@
     grid-template-columns: minmax(0, 1fr) 96px 88px 64px 64px;
   }
 
-  .returns__secondary {
+  .returns__secondary,
+  .returns__bar {
     display: none;
   }
 }

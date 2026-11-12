@@ -2,7 +2,9 @@ import { getDocument, PasswordResponses } from 'pdfjs-dist/legacy/build/pdf.mjs'
 import { IncorrectPasswordError, PasswordRequiredError } from './errors'
 import type { PageText } from './types'
 
-export async function extractPages(pdf: ArrayBuffer, password?: string): Promise<PageText[]> {
+export type PageProgress = (page: number, pages: number) => void
+
+export async function extractPages(pdf: ArrayBuffer, password?: string, onPage?: PageProgress): Promise<PageText[]> {
   const loading = getDocument({ data: new Uint8Array(pdf.slice(0)), password })
   const document = await loading.promise.catch((error: unknown) => {
     throw translatePasswordError(error)
@@ -17,6 +19,7 @@ export async function extractPages(pdf: ArrayBuffer, password?: string): Promise
           'str' in item && item.str.trim() ? [{ text: item.str, x: item.transform[4], y: item.transform[5], width: item.width }] : [],
         ),
       )
+      onPage?.(number, document.numPages)
     }
     return pages
   } finally {

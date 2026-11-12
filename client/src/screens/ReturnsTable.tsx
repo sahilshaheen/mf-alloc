@@ -1,4 +1,6 @@
 import { Link } from 'react-router'
+import { extent } from 'd3-array'
+import { GainBar } from '../components/GainBar'
 import { InfoTip } from '../components/InfoTip'
 import { SortableHeader } from '../components/SortableHeader'
 import { useSort } from '../components/useSort'
@@ -33,6 +35,7 @@ export function ReturnsTable({ funds, yearly, asOn, selectedIsin, fundLink, onOp
     xirr: (fund) => shownRate(yearly?.byIsin.get(fund.isin), asOn),
     contribution: (fund) => fund.contribution,
   }
+  const [leastGain = 0, mostGain = 0] = extent(funds, (fund) => fund.gain)
   const header = { sort, onSort: sortBy, firstDirection: 'descending' } as const
 
   return (
@@ -43,6 +46,7 @@ export function ReturnsTable({ funds, yearly, asOn, selectedIsin, fundLink, onOp
           <SortableHeader {...header} column="invested" label={t('returns.invested')} className="returns__secondary" />
           <SortableHeader {...header} column="value" label={t('returns.value')} />
           <SortableHeader {...header} column="gain" label={t('returns.gain')} />
+          <span className="returns__bar" aria-hidden="true" />
           <SortableHeader {...header} column="return" label={t('returns.return')} />
           {yearly && <SortableHeader {...header} column="xirr" label={t('returns.xirr')} />}
           <SortableHeader {...header} column="contribution" label={t('returns.contribution')} className="returns__secondary">
@@ -70,6 +74,9 @@ export function ReturnsTable({ funds, yearly, asOn, selectedIsin, fundLink, onOp
             </span>
             <span role="cell" className={`num ${toneClass(fund.gain)}`}>
               {formatSignedInr(fund.gain)}
+            </span>
+            <span className="returns__bar">
+              <GainBar value={fund.gain} extent={[leastGain, mostGain]} />
             </span>
             <span role="cell" className={`num ${toneClass(fund.gain)}`}>
               {fund.absoluteReturn === null ? '—' : formatSignedPercent(fund.absoluteReturn)}

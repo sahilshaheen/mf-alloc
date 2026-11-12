@@ -31,21 +31,16 @@ Malayalam (longest strings), with the redacted statement.
 - `.github/`, `deploy/` and `docs/fetching-statements.md` belong to someone else; leave them untracked and untouched.
 - Say plainly when something was not verified, and do not claim a number is right without a source.
 
-## Agreed plan (12 Nov 2026)
+## Agreed plan (12 Nov 2026) and its status
 
-In order. Phase 1 is done; the rest is not started.
-
-1. **Pipeline correctness** (done): overseas funds as foreign equity, sector fallback for quant, CDMDF as debt,
-   category plausibility checks, override candidates. Still open: run October 2026 and add a month-over-month diff.
-2. **Information architecture.** Nav becomes Overview, Allocation, Funds, plus an About dropdown (Get your
-   statement, Data and method, Privacy); Save and Open another move to a statement menu in the header.
-   Overview becomes a true overview (value, invested, gain, return or XIRR; look-through bar; equity makeup; top
-   funds and contributors; data-quality line). Allocation is Breakdowns renamed and takes Level 1 and the full
-   asset-class table. Returns merges into Funds as a Holdings/Returns column switch; `/returns` redirects.
-3. **Data visualisation** with d3 (added with `npm install`; d3 computes scales and shapes, React renders):
-   interactive strata bar, Net/Gross morph with a callout, contribution chart, in-cell bars.
-4. **Motion**: staged progress while reading, bundle skeleton, first-render grow-in, route cross-fades, all under
-   the reduced-motion rule.
+1. **Pipeline correctness**: done (overseas funds as foreign equity, sector fallback for quant, CDMDF as debt,
+   category plausibility checks, override candidates). Open: run October 2026; add a month-over-month diff.
+2. **Information architecture**: done. See Navigation, Overview and Funds below.
+3. **Data visualisation**: done for the Overview bar, market-cap bar and the gain bars in the returns table.
+   Open: the Allocation screen still draws its market-cap stack and row bars the old way.
+4. **Motion**: done for page fade-in, bar grow-in and Net/Gross morph, the count-up on the portfolio value, and
+   page-by-page progress while a PDF is read. Not built: a skeleton for the fund-data download (no portfolio
+   screen can show before it has loaded, so there is nothing to put a skeleton in).
 5. Checking the Detailed parser on a real statement is the owner's job, not part of this plan.
 
 ## Decisions
@@ -97,6 +92,20 @@ mfapi.in). It is never applied by guess, and every gain it cannot apply to says 
   not settle it (hybrids, fund-of-funds) is marked rather than assumed.
 - A standing note on the page: these are facts from the statement and published NAVs, not tax payable, and
   the user's own tax filing may differ.
+
+**Overview** (rebuilt 12 Nov 2026). A true overview, in this order: a context line (statement date, fund-data
+date, matched share); the portfolio value with invested, gain, return and XIRR (`ReturnFigures`); the look-through
+as one 28 px segmented bar with the asset classes listed beside it and the three largest funds behind the chosen
+class; then two summaries, domestic equity (market-cap bar, five largest sectors) and the five largest funds with
+the funds that gained most and least. Each block links to its detail screen. Asset classes that would print as
+0.0% are left out here; Allocation lists all of them. Level 1 (fund categories) moved to the foot of Allocation
+(`CategoryLevels`); the Overview shows only the look-through.
+
+**Charts.** `d3-scale` and `d3-array` compute layouts; React renders plain elements (`SegmentedBar`, `GainBar`).
+Rules followed, from the dataviz guidance: a 2 px gap between parts, no opacity fade, a share printed inside a
+part only when it fits, a marker under the chosen part so the choice is not colour alone, and every value also
+readable in the list beside the bar. The asset-class palette was checked for colour-blind separation in light and
+dark and kept. The portfolio value stays in the serif face, a house choice.
 
 **Net and gross.** Net counts hedged equity as cash-like. Gross is as reported. Funds missing from the
 bundle sit in the "Not classified" asset class (internally the `other` bucket, which also holds anything
@@ -205,7 +214,9 @@ data has them, in English. Not available because the pipeline does not collect i
 maturity, foreign equity by country (shown as "no further breakdown yet", and listed on Data and method).
 Fund names here are not links yet (contributors carry no ISIN).
 
-**Navigation.** Before a statement is open the header offers Open statement, Get your statement, Data and method and Privacy; the portfolio screens (Overview, Breakdowns, Funds, Returns) appear only once one is open, since they redirect to `/welcome` without it. The guide asks for the Detailed statement (Specific Period from 01-Jan-1990, with zero-balance folios) and says Summary works without XIRR.
+**Navigation.** Before a statement is open the header offers Open statement, Get your statement, Data and method and Privacy. Once one is open it offers Overview, Allocation and Funds, an About menu (the guide, Data and method, Privacy) and a Statement menu (Save on this device, Open another statement). `/breakdowns` became `/allocation`; `/returns` redirects to `/funds?view=returns`. The guide asks for the Detailed statement (Specific Period from 01-Jan-1990, with zero-balance folios) and says Summary works without XIRR.
+
+**Funds and returns are one screen.** A Holdings/Returns switch changes the columns; Returns adds invested, gain with a bar from a shared zero line, return, XIRR and contribution. The fund panel shows the same figures for one fund.
 
 **Funds return column.** Return (gain over the statement's cost value) with the rupee gain beneath, from
 `returnsModel`, so it matches the Returns screen. XIRR stays on Returns.

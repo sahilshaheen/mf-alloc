@@ -1,0 +1,64 @@
+.segbar {
+  position: relative;
+  animation: segbar-in var(--dur-first) var(--ease) both;
+}
+
+.segbar--tall {
+  height: 28px;
+}
+
+.segbar--thin {
+  height: 8px;
+}
+
+.segbar__part {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  padding: 0 0 0 8px;
+  border: 0;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  transition:
+    left var(--dur-first) var(--ease),
+    width var(--dur-first) var(--ease),
+    filter var(--dur-fast) var(--ease);
+}
+
+.segbar--thin .segbar__part {
+  padding: 0;
+  border-radius: 4px;
+}
+
+button.segbar__part {
+  cursor: pointer;
+}
+
+button.segbar__part:hover {
+  filter: brightness(1.08);
+}
+
+/* A marker under the chosen part, so the choice never depends on colour alone. */
+button.segbar__part[aria-pressed='true']::after {
+  content: '';
+  position: absolute;
+  inset: auto 0 -7px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--ink);
+}
+
+@keyframes segbar-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+
+  to {
+    clip-path: inset(0 0 -10px 0);
+  }
+}
