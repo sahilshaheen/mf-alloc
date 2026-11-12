@@ -40,6 +40,13 @@ input {
   color: inherit;
 }
 
+/* iOS Safari zooms the page when focusing an input under 16px. */
+@media (pointer: coarse) {
+  input {
+    font-size: max(1em, 16px);
+  }
+}
+
 a {
   color: var(--link);
   text-underline-offset: 3px;

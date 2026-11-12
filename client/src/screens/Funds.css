@@ -45,7 +45,6 @@
   border: 1px solid var(--edge);
   border-radius: 8px;
   background: var(--sheet);
-  font-size: 14px;
 }
 
 .funds__scroll {
