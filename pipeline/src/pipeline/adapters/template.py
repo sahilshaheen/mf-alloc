@@ -29,13 +29,13 @@ from .common import LayoutError, clean, finish_block, num
 
 _ISIN = re.compile(r"^[A-Z]{2}[A-Z0-9]{9}\d$")
 _AS_ON = re.compile(
-    r"as\s+on\s*:?\s*([A-Za-z]+)\s+(\d{1,2})\s*,?\s*(\d{4})", re.IGNORECASE
+    r"as\s+o[nf]\s*:?\s*([A-Za-z]+)\s+(\d{1,2})\s*,?\s*(\d{4})", re.IGNORECASE
 )
 _AS_ON_NUM = re.compile(
-    r"as\s+on\s*:?\s*(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})", re.IGNORECASE
+    r"as\s+o[nf]\s*:?\s*(\d{1,2})[-/.](\d{1,2})[-/.](\d{2,4})", re.IGNORECASE
 )
 _AS_ON_DMY = re.compile(
-    r"as\s+on\s*:?\s*(\d{1,2})[-\s]([A-Za-z]{3,9})[-\s,]+(\d{4})", re.IGNORECASE
+    r"as\s+o[nf]\s*:?\s*(\d{1,2})[-\s]([A-Za-z]{3,9})[-\s,]+(\d{4})", re.IGNORECASE
 )
 _COMMODITY_FUT = re.compile(
     r"\b(gold|silver|crude|copper|natural gas|zinc|aluminium)\b", re.IGNORECASE
@@ -43,7 +43,7 @@ _COMMODITY_FUT = re.compile(
 _REPO_SUB = re.compile(r"repo|treps|tri-?party", re.IGNORECASE)
 _GRAND = re.compile(r"^(grand total|total net assets|net assets)\b", re.IGNORECASE)
 _CASH = re.compile(
-    r"treps|tri-?party|repo\b|net (current|receivable)|receivable|cash\b|margin amount|margin deposit|margin placed|collateral|^(rep|trp)\d*_\d",
+    r"treps|tri-?party|repos?\b|net (current|receivable)|receivable|cash\b|margin amount|margin deposit|margin placed|collateral|^(rep|trp)\d*_\d",
     re.IGNORECASE,
 )
 _TOP = re.compile(
@@ -138,7 +138,7 @@ def _cols(hdr: list, portfolio: bool) -> dict[str, int]:
             or h.startswith("mkt val")
         ):
             cols["mv"] = j
-        elif h.startswith(("% to", "% of")):
+        elif h.startswith(("% to", "% of", "percentage to")):
             cols["pct"] = j
         elif h.startswith("ytm") or (h.startswith("yield") and "yield" not in cols):
             cols.setdefault("yield", j)

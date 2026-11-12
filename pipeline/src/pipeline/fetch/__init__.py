@@ -2,6 +2,7 @@ from . import (
     absl,
     amfi,
     dsp,
+    hsbc,
     icici,
     mirae,
     motilal,
@@ -32,6 +33,7 @@ AMCS = {
         tata,
         quant,
         union,
+        hsbc,
         amfi,
     )
 }

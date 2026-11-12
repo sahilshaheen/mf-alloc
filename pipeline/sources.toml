@@ -118,6 +118,14 @@ note = "The downloads page script names one CMS folder per month (comment '//Sep
 last_period = "2026-09"
 last_schemes = 32
 
+[hsbc]
+name = "HSBC Mutual Fund"
+method = "script"
+page = "https://www.assetmanagement.hsbc.co.in/en/mutual-funds/investor-resources/information-library"
+note = "The information-library page links every month's per-scheme xlsx under portfolios/document-<DDMMYYYY of month-end>/. Futures are only in each workbook's Notes sheet."
+last_period = "2026-09"
+last_schemes = 45
+
 [hdfc]
 name = "HDFC Mutual Fund"
 method = "browser"
@@ -217,6 +225,6 @@ method = "todo"
 note = "403 to scripts; not yet tried in a real browser."
 
 [others]
-name = "Invesco, HSBC, Franklin, Sundaram and the rest"
+name = "Invesco, Franklin, Sundaram and the rest"
 method = "todo"
 note = "Reachable but not built; each needs page discovery and a sample file."
