@@ -154,3 +154,9 @@ Not covered: Edelweiss, Canara Robeco and Bandhan. Their sites block non-browser
 ## Disclaimer
 
 For information only. This is not investment advice, and figures come from AMC disclosures that can be stale or incomplete. Check against the source files.
+
+## License
+
+Copyright (C) 2026 Sahil Shaheen. Licensed under the GNU Affero General Public License v3.0 ([LICENSE](LICENSE)). If you run a modified version as a network service, you must offer its source to its users.
+
+The exposure bundle in `client/public/data/` is covered by the same license only as far as this project's own work goes: the parsing, classification and computed exposures. The underlying holdings come from the AMCs' public monthly portfolio disclosures and AMFI's NAV data, and stay subject to their publishers' terms. The bundle is provided without warranty (see the Disclaimer above).
