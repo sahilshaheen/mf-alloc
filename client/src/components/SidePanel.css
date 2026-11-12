@@ -58,6 +58,8 @@
     position: fixed;
     inset: 0;
     z-index: 10;
+    /* align-self applies to fixed boxes too; flex-start would size the sheet to its content, past the screen. */
+    align-self: stretch;
     height: auto;
     padding: 20px 16px 40px;
     animation-name: sheet-in;

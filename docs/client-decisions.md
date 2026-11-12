@@ -45,7 +45,9 @@ Malayalam (longest strings), with the redacted statement.
 
 ## Decisions
 
-**Stack.** Vite, React 19, TypeScript, `react-router`, plain React state. No UI or i18n library.
+**Stack.** Vite, React 19, TypeScript, `react-router`, plain React state. No i18n library. Headless Radix primitives
+for interactions whose edge cases are easy to get wrong (focus, scroll lock, dismissal): `@radix-ui/react-dialog`
+backs `SidePanel`. `Menu` and `InfoTip` are still hand-rolled; move them to Radix too when next touched.
 
 **i18n.** Hand-rolled typed dictionary. `hi` and `ml` must define every key `en` does, enforced by the
 type. Hindi and Malayalam text is machine-drafted and needs review by fluent speakers.
@@ -101,7 +103,8 @@ the funds that gained most and least. Each block links to its detail screen. Ass
 0.0% are left out here; Allocation lists all of them.
 
 **Charts.** `d3-scale` and `d3-array` compute layouts; React renders plain elements (`SegmentedBar`, `GainBar`).
-Rules followed, from the dataviz guidance: a 2 px gap between parts, no opacity fade, a share printed inside a
+Rules followed, from the dataviz guidance: a 2 px gap between parts (edges snapped to whole pixels so gaps render
+equal, every part at least 4 px wide, corners shrunk on slivers so they do not read as dots), no opacity fade, a share printed inside a
 part only when it fits, a marker under the chosen part so the choice is not colour alone, and every value also
 readable in the list beside the bar. The asset-class palette was checked for colour-blind separation in light and
 dark and kept. The portfolio value stays in the serif face, a house choice.
@@ -235,7 +238,8 @@ Hindi can overflow. Hide text that does not fit with a container query instead o
 ## Motion and interaction
 
 Minimum in place: side panels (fund detail on Funds, funds-behind on Breakdowns) share one `SidePanel`
-component and slide in from the right over 200 ms (a full-width sheet below 1100 px); every clickable item
+component and slide in from the right over 200 ms (a full-width modal sheet below 1100 px, portalled to `body` with the page
+behind scroll-locked; beside the page and non-modal above it, so clicking another row swaps the panel); every clickable item
 gets the `--hover` background shade with a 120 ms fade (rows, tabs, nav, buttons, legend rows); whole Funds rows
 are clickable, not only the name. Reduced motion turns it all off (global rule in `base.css`). Panels animate in
 only; closing is instant. Use the tokens (`--dur-*`, `--ease`) for anything new, transform and opacity only.
