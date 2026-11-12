@@ -8,8 +8,8 @@ Your statement is parsed in the browser and never leaves your device. You can op
 
 | Component | State |
 |---|---|
-| `pipeline/` fetch, adapt, classify, compute, publish | Working. 13 AMCs, about 77% of industry AUM (Sep 2026 disclosures); bundle is 1,148 schemes, about 165 KB gzipped |
-| `client/` web app | In progress. Reads a CAMS Consolidated Account Summary or Detailed statement in the browser (Detailed not yet verified on a real file), joins it to the bundle, and renders Overview, Breakdowns, Funds, Returns, Data and method and Privacy (English, Hindi, Malayalam; Hindi and Malayalam are drafts awaiting native review). The PWA shell is still a placeholder. Status and design decisions: [docs/client-decisions.md](docs/client-decisions.md) |
+| `pipeline/` fetch, adapt, classify, compute, publish | Working. 19 AMCs, about 84% of industry average AUM for Jul-Sep 2026 (Sep 2026 disclosures); bundle is 1,369 schemes, about 200 KB gzipped |
+| `client/` web app | In progress. Reads a CAMS Consolidated Account Summary or Detailed statement in the browser (Detailed not yet verified on a real file), joins it to the bundle, and renders Overview, Allocation, Funds (with returns), Data and method, Privacy and a guide to getting a statement (English, Hindi, Malayalam; Hindi and Malayalam are drafts awaiting native review). The PWA shell is still a placeholder. Status and design decisions: [docs/client-decisions.md](docs/client-decisions.md) |
 
 ## How it works
 
@@ -38,10 +38,7 @@ Your statement is parsed in the browser and never leaves your device. You can op
 
 A PWA that reads the statement locally, matches folios to schemes by ISIN, joins them against the exposure bundle, and renders allocation by asset class, fund, market cap and sector, with a "how is this calculated?" trail behind every number. No statement data is uploaded, stored on a server, or sent to analytics.
 
-The Overview shows two separate levels and does not compare them:
-
-- **Level 1, fund categories:** how SEBI files each fund (equity, hybrid, debt, index/ETF/fund-of-funds), with the least equity those categories require (SEBI's stated floors; categories with none count as zero). Rules are in `client/src/portfolio/fundCategory.ts`, cited to SEBI circular HO/24/13/15(2)2026-IMD-RAC4/I/5764/2026 (26 Feb 2026).
-- **Level 2, look-through:** what the funds actually hold, net and gross, by asset class. This is the headline.
+Portfolio views show the look-through only: what the funds actually hold, net and gross, by asset class. A fund's SEBI category, and the least equity that category requires, appear per fund; they are never compared with the look-through. Category rules are in `client/src/portfolio/fundCategory.ts`, cited to SEBI circular HO/24/13/15(2)2026-IMD-RAC4/I/5764/2026 (26 Feb 2026).
 
 ### Design principles
 
@@ -51,13 +48,13 @@ The Overview shows two separate levels and does not compare them:
 
 ## Roadmap
 
-Analyses planned on top of the exposure bundle and the user's statement, roughly in build order. All are descriptive: they state facts about the user's own money and never recommend an action.
+Analyses on top of the exposure bundle and the user's statement, roughly in build order. All are descriptive: they state facts about the user's own money and never recommend an action. Items 1 to 3 are built.
 
 From the statement:
 
-1. **Gain and loss:** invested, current value, gain in ₹ and absolute %, per fund and in total, and each fund's share of the total gain. The Summary CAS already carries cost value.
-2. **Detailed CAS parser** (CAMS/KFintech), needed by items 3 to 7. The NSDL/CDSL CAS is holdings-only.
-3. **XIRR** per fund and for the portfolio, with a plain-language explainer next to absolute return. Switches and STPs are internal moves; IDCW payouts are inflows; under a year shows absolute return.
+1. **Gain and loss** (built): invested, current value, gain in ₹ and absolute %, per fund and in total, and each fund's share of the total gain. The Summary CAS already carries cost value.
+2. **Detailed CAS parser** (CAMS built, not yet verified on a real file; KFintech not built), needed by items 3 to 7. The NSDL/CDSL CAS is holdings-only.
+3. **XIRR** (built) per fund and for the portfolio, with a plain-language explainer next to absolute return. Switches and STPs are internal moves; IDCW payouts are inflows; under a year shows absolute return.
 4. **Active SIPs (an indication):** recurring SIP purchases grouped by folio, scheme and amount, called active if the last instalment is recent. Shows the next expected date and the monthly total. Same logic for STPs and SWPs.
 5. **Money in and out:** invested, redeemed and dividends received, by month; stamp duty and STT paid.
 6. **ELSS lock-in:** amount unlocking on each date, from purchase dates.
@@ -92,10 +89,15 @@ pipeline/            Python 3.13, managed with uv
     compute/         ISIN matching, exposure vectors, bundle build
     sources.py       manifest, `status` and `register` commands
   tests/
-  data/              raw/ and staged/ are git-ignored
-client/              Vite + React + TypeScript app (Overview, Breakdowns, Funds, Data and method and Privacy built; PWA pending)
+  data/              raw/, staged/, computed/ and out/ are git-ignored
+client/              Vite + React + TypeScript app (PWA pending)
+  public/data/       the published exposure bundle, committed; deploys with the app
+tools/redact/        strips personal details from a real statement for local testing
+deploy/              Cloudflare Pages headers (CSP, caching)
+.github/workflows/   CI on pull requests; deploy on push to main
 docs/design-spec.md  UI/UX design spec
 docs/client-decisions.md  client status and design decisions, updated as they change
+docs/fetching-statements.md  how to get a CAMS statement
 ```
 
 ## Getting started
@@ -133,11 +135,15 @@ npm run dev          # npm test, npm run lint, npm run build
 
 CAMS Summary and Detailed statements are read (Detailed not yet verified on a real file); other statement types are rejected with a clear message. The statement is parsed in the browser by pdf.js and is never sent anywhere.
 
+## Deployment
+
+The site is static and deploys to Cloudflare Pages from GitHub Actions on every push to `main`: lint, test and build the client, check each file in `client/public/data/` against the manifest's sha256, add `deploy/_headers`, then `wrangler pages deploy`. Pull requests run lint, test and build only. The repository needs the secrets `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` and the variable `CLOUDFLARE_PAGES_PROJECT`. There is no `_redirects` file: Pages already serves `index.html` for unknown paths when a site has no `404.html`.
+
 ## Data sources and coverage
 
-Covered for 2026-09, each scheme reconciling to its own grand total: Nippon, UTI, Motilal Oswal, The Wealth Company, SBI, ICICI Prudential, Aditya Birla Sun Life, DSP, PPFAS, Mirae Asset, Tata, HDFC, Kotak.
+Covered for 2026-09, each scheme reconciling to its own grand total: Nippon, UTI, Motilal Oswal, The Wealth Company, SBI, ICICI Prudential, Aditya Birla Sun Life, DSP, PPFAS, Mirae Asset, Tata, HDFC, Kotak, Mahindra Manulife, WhiteOak Capital, ITI, Axis, quant, Union. Together about 84% of the industry's average AUM for Jul-Sep 2026 (AMFI's fund-house-wise average AUM, as tabulated by Cafemutual, 6 Oct 2026). Some are fetched from a real browser session or by hand; [pipeline/README.md](pipeline/README.md) says which.
 
-Not covered: Edelweiss, Canara Robeco, Axis and Bandhan. Their sites block non-browser clients or use token-based APIs, and the pipeline does not try to get around bot protection. Option positions are not parsed (files report only expired or exercised hedging activity).
+Not covered: Edelweiss, Canara Robeco and Bandhan. Their sites block non-browser clients or use token-based APIs, and the pipeline does not try to get around bot protection. Option positions are not parsed (files report only expired or exercised hedging activity).
 
 ## Privacy and data handling
 
