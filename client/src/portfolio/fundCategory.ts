@@ -1,8 +1,6 @@
 import type { BundleScheme } from './types'
 
-export type LabelGroup = 'equity' | 'hybrid' | 'debt' | 'other' | 'notMatched'
-
-export const LABEL_GROUPS: readonly LabelGroup[] = ['equity', 'hybrid', 'debt', 'other', 'notMatched']
+export type LabelGroup = 'equity' | 'hybrid' | 'debt' | 'other'
 
 export interface FundCategory {
   group: LabelGroup
@@ -45,8 +43,7 @@ const VAGUE_INDEX_CATEGORY = /^other scheme - (index funds|other\s+etfs)/i
 const NOT_EQUITY_NAME = /gold|silver|gilt|bond|sdl|g-sec|liquid|debt|treasury|money market|overnight|t-bill|maturity|income|credit/i
 const EQUITY_NAME = /nifty|sensex|bse|equity|midcap|smallcap|momentum|quality|low volatility|dividend/i
 
-export function fundCategory(scheme: BundleScheme | null): FundCategory {
-  if (!scheme) return { group: 'notMatched', minEquity: 0 }
+export function fundCategory(scheme: BundleScheme): FundCategory {
   const category = scheme.category ?? ''
   const group = GROUP_RULES.find(([pattern]) => pattern.test(category))?.[1] ?? 'other'
   return { group, minEquity: minEquity(group, category, scheme.name) }
@@ -59,9 +56,19 @@ function minEquity(group: LabelGroup, category: string, name: string): number {
   return 0
 }
 
+// AMFI files some gold and silver ETFs under "Equity ETF", so the name can overrule an equity category.
 function isEquityIndex(category: string, name: string): boolean {
-  if (EQUITY_INDEX_CATEGORY.test(category)) return true
-  return VAGUE_INDEX_CATEGORY.test(category) && !NOT_EQUITY_NAME.test(name) && EQUITY_NAME.test(name)
+  if (NOT_EQUITY_NAME.test(name)) return false
+  return EQUITY_INDEX_CATEGORY.test(category) || (VAGUE_INDEX_CATEGORY.test(category) && EQUITY_NAME.test(name))
+}
+
+const SCHEME_FAMILY_PREFIX = /^(equity|hybrid|debt|income\/debt oriented|solution oriented|other) schemes?( \*\*)? - /i
+
+/** AMFI's category text without the scheme family it repeats in two spellings ("Equity Scheme - ", "Equity Schemes - "). */
+export function categoryLabel(category: string): string {
+  const [family, ...rest] = category.split(' - ')
+  const label = rest.join(' - ') === family ? family : category.replace(SCHEME_FAMILY_PREFIX, '')
+  return label.replace(/\s+/g, ' ')
 }
 
 function floorFor(rules: [RegExp, number][], category: string): number {

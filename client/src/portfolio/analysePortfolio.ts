@@ -1,5 +1,4 @@
 import type { StatementHolding } from '../statement/types'
-import { fundCategory, LABEL_GROUPS, type LabelGroup } from './fundCategory'
 import { BUCKETS, type Bucket, type BundleScheme, type ExposureBundle, type Vector } from './types'
 
 export interface Position {
@@ -12,8 +11,6 @@ export interface Portfolio {
   positions: Position[]
   net: Record<Bucket, number>
   gross: Record<Bucket, number>
-  labelled: Record<LabelGroup, number>
-  guaranteedEquity: number
   matchedShare: number
 }
 
@@ -27,20 +24,15 @@ export function analysePortfolio(holdings: StatementHolding[], bundle: ExposureB
 
   const net = emptyTotals()
   const gross = emptyTotals()
-  const labelled = Object.fromEntries(LABEL_GROUPS.map((group) => [group, 0])) as Record<LabelGroup, number>
   let total = 0
   let matched = 0
-  let guaranteedEquity = 0
   for (const { holding, scheme } of positions) {
     total += holding.marketValue
     if (scheme) matched += holding.marketValue
-    const category = fundCategory(scheme)
-    labelled[category.group] += holding.marketValue
-    guaranteedEquity += holding.marketValue * category.minEquity
     addWeighted(net, holding.marketValue, scheme?.net ?? NOT_IN_DATA)
     addWeighted(gross, holding.marketValue, scheme?.gross ?? NOT_IN_DATA)
   }
-  return { total, positions, net, gross, labelled, guaranteedEquity, matchedShare: total === 0 ? 0 : matched / total }
+  return { total, positions, net, gross, matchedShare: total === 0 ? 0 : matched / total }
 }
 
 function emptyTotals(): Record<Bucket, number> {

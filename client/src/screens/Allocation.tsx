@@ -11,7 +11,7 @@ import { BUCKETS, type Bucket } from '../portfolio/types'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import type { Portfolio } from '../portfolio/analysePortfolio'
 import { bucketFill, capFill } from './bucketStyle'
-import './Breakdowns.css'
+import './Allocation.css'
 
 const TABS: readonly Bucket[] = BUCKETS.filter((bucket) => bucket !== 'fund_unit')
 const TOP_SECTORS = 10
@@ -83,7 +83,7 @@ function EquityDetail({
   )
 }
 
-export function Breakdowns() {
+export function Allocation() {
   const { t } = useI18n()
   const { portfolio, view } = usePortfolio()
   const { bucket: param } = useParams()
@@ -92,7 +92,7 @@ export function Breakdowns() {
 
   if (!portfolio) return <Navigate to="/welcome" replace />
   const bucket = (param ?? 'equity_domestic') as Bucket
-  if (!TABS.includes(bucket)) return <Navigate to="/breakdowns" replace />
+  if (!TABS.includes(bucket)) return <Navigate to="/allocation" replace />
 
   const bucketName = (b: Bucket) => t(`bucket.${b}` as TranslationKey)
   const totals = portfolio[view]
@@ -113,7 +113,7 @@ export function Breakdowns() {
 
         <nav className="bd__tabs" aria-label={t('bd.tabs')}>
           {TABS.map((tab) => (
-            <NavLink key={tab} to={`/breakdowns/${tab}`} onClick={closePanel} className={tab === bucket ? 'active' : undefined}>
+            <NavLink key={tab} to={`/allocation/${tab}`} onClick={closePanel} className={tab === bucket ? 'active' : undefined}>
               <span className="bd__swatch" style={{ background: bucketFill(tab) }} />
               {bucketName(tab)}
               <span className="num">{formatPercent(valueOf(tab) / portfolio.total)}</span>
@@ -139,6 +139,7 @@ export function Breakdowns() {
           )}
           {value > 0 && bucket !== 'equity_domestic' && <p className="bd__note">{t('bd.noDetail')}</p>}
         </section>
+
       </main>
 
       {panel && (

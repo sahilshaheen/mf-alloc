@@ -42,6 +42,7 @@ export function FundBreakdown({ row, zoom, onZoom }: { row: FundRow; zoom: Bucke
           const zoomed = zoom === bucket
           const hidden = zoom !== null && !zoomed
           const share = weight(row, bucket)
+          const showsParts = zoomed && barParts.length > 0
           return (
             <button
               key={bucket}
@@ -49,16 +50,17 @@ export function FundBreakdown({ row, zoom, onZoom }: { row: FundRow; zoom: Bucke
               className={`zoom__seg${zoomed ? ' zoom__seg--zoomed' : ''}${hidden ? ' zoom__seg--hidden' : ''}`}
               style={{
                 flex: hidden ? '0 1 0' : zoom ? '1 1 0' : `${share} 1 0`,
-                background: bucketFill(bucket),
+                // The parts' gaps must show the panel behind the bar, as the unzoomed gaps do.
+                background: showsParts ? 'transparent' : bucketFill(bucket),
                 color: WHITE_TEXT_BUCKETS.has(bucket) ? '#ffffff' : '#1b2422',
               }}
               aria-pressed={zoomed}
               aria-label={`${bucketName(bucket)} ${formatPercent(share)}`}
-              title={`${bucketName(bucket)} ${formatPercent(share)}`}
+              title={zoomed ? undefined : `${bucketName(bucket)} ${formatPercent(share)}`}
               tabIndex={hidden ? -1 : 0}
               onClick={() => onZoom(zoomed ? null : bucket)}
             >
-              {zoomed && barParts.length > 0 ? (
+              {showsParts ? (
                 <span className="zoom__parts" aria-hidden="true">
                   {barParts.map((part, rank) => (
                     <span key={part.key} style={{ flex: `${part.share} 1 0`, background: partFill(part.key, rank) }}>

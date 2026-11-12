@@ -174,7 +174,7 @@ def _classify(args) -> int:
     import collections
     import json
 
-    from .classify import Classifier, load_cap_list
+    from .classify import Classifier, load_cap_list, sector_by_isin
 
     period = Period.parse(args.period)
     cap_files = sorted((args.raw / "amfi" / str(period)).glob("market_cap_*.xlsx"))
@@ -184,7 +184,15 @@ def _classify(args) -> int:
             file=sys.stderr,
         )
         return 1
-    clf = Classifier(load_cap_list(cap_files[-1]))
+    staged_holdings = {
+        d.name: _read_jsonl(d / str(period) / "holdings.jsonl")
+        for d in sorted(args.staged.iterdir())
+        if (d / str(period) / "holdings.jsonl").exists()
+    }
+    clf = Classifier(
+        load_cap_list(cap_files[-1]),
+        sectors=sector_by_isin([h for hs in staged_holdings.values() for h in hs]),
+    )
     names = list(ADAPTERS) if args.amc == "all" else [args.amc]
     by_bucket: dict[str, float] = collections.defaultdict(float)
     by_rule: dict[str, float] = collections.defaultdict(float)
@@ -192,9 +200,7 @@ def _classify(args) -> int:
     fallback: dict[tuple, float] = collections.defaultdict(float)
     for amc in names:
         d = args.staged / amc / str(period)
-        holdings = [
-            json.loads(x) for x in (d / "holdings.jsonl").read_text().splitlines()
-        ]
+        holdings = staged_holdings[amc]
         with (d / "classified.jsonl").open("w") as out:
             for h in holdings:
                 c = clf.classify(h)
@@ -233,8 +239,10 @@ def _compute(args) -> int:
     import json
     from datetime import date
 
+    from .compute.checks import failed_checks, load_exceptions
     from .compute.exposure import compute_exposures
     from .compute.isins import (
+        closest_names,
         load_overrides,
         match_schemes,
         parse_nav_all,
@@ -257,13 +265,10 @@ def _compute(args) -> int:
         ]
 
     schemes = load("schemes")
-    matched, unmatched = match_schemes(
-        schemes,
-        parse_nav_all(
-            nav_file.read_text(), live_since=date(month.year, month.month, 1)
-        ),
-        load_overrides(),
+    nav = parse_nav_all(
+        nav_file.read_text(), live_since=date(month.year, month.month, 1)
     )
+    matched, unmatched = match_schemes(schemes, nav, load_overrides())
     categories = parse_nav_categories(nav_file.read_text())
     isin_to_scheme = {i: sid for sid, isins in matched.items() for i in isins}
     exposures = compute_exposures(
@@ -277,6 +282,9 @@ def _compute(args) -> int:
     out_dir = args.out / period
     out_dir.mkdir(parents=True, exist_ok=True)
     flagged: dict[str, int] = {}
+    exceptions = load_exceptions()
+    explained = 0
+    unexplained: list[str] = []
     with (out_dir / "exposures.jsonl").open("w") as fh:
         for s in schemes:
             sid = (s["amc"], s["scheme_key"])
@@ -292,16 +300,32 @@ def _compute(args) -> int:
                 "gross": dict(e.gross), "net": dict(e.net), "cap": dict(e.cap), "sector": dict(e.sector),
             }  # fmt: skip
             fh.write(json.dumps(row, sort_keys=True) + "\n")
+            for check, message in failed_checks(row):
+                if (s["amc"], s["scheme_key"], check) in exceptions:
+                    explained += 1
+                else:
+                    unexplained.append(
+                        f"  CHECK {check}: {s['amc']} {s['scheme_key']} {s['scheme_name']} "
+                        f"[{row['category']}]: {message}"
+                    )
     names = {(s["amc"], s["scheme_key"]): s["scheme_name"] for s in schemes}
     print(
         f"{period}: {len(exposures)} schemes, {len(matched)} with ISINs, flags {flagged} -> {out_dir}"
     )
     for amc, key in unmatched:
         print(f"  no ISIN: {amc} {key} {names[(amc, key)]}", file=sys.stderr)
+        for candidate in closest_names(amc, names[(amc, key)], nav):
+            print(f"      AMFI has: {candidate}", file=sys.stderr)
+    for line in unexplained:
+        print(line, file=sys.stderr)
+    print(
+        f"plausibility: {len(unexplained)} to look at, {explained} explained in check_exceptions.csv",
+        file=sys.stderr,
+    )
     if len(unmatched) > args.max_unmatched * len(schemes):
         print(f"{len(unmatched)} of {len(schemes)} schemes unmatched", file=sys.stderr)
         return 1
-    return 0
+    return 1 if unexplained else 0
 
 
 def _publish(args) -> int:

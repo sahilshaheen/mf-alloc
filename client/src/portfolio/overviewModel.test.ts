@@ -1,12 +1,10 @@
 import { describe, expect, it } from 'vitest'
 import { BUCKETS, type Bucket } from './types'
-import { LABEL_GROUPS, type LabelGroup } from './fundCategory'
 import type { Portfolio } from './analysePortfolio'
 import { overviewModel, topContributors } from './overviewModel'
 import type { BundleScheme } from './types'
 
 const totals = (values: Partial<Record<Bucket, number>>) => Object.fromEntries(BUCKETS.map((b) => [b, values[b] ?? 0])) as Record<Bucket, number>
-const labelled = (values: Partial<Record<LabelGroup, number>>) => Object.fromEntries(LABEL_GROUPS.map((g) => [g, values[g] ?? 0])) as Record<LabelGroup, number>
 
 const portfolio: Portfolio = {
   total: 1000,
@@ -14,8 +12,6 @@ const portfolio: Portfolio = {
   matchedShare: 1,
   net: totals({ equity_domestic: 400, equity_foreign: 100, debt: 300, cash_like: 150, other: 30, fund_unit: 20 }),
   gross: totals({ equity_domestic: 600, equity_foreign: 100, debt: 300, cash_like: 0, other: 0 }),
-  labelled: labelled({ equity: 800, debt: 200 }),
-  guaranteedEquity: 640,
 }
 
 describe('overviewModel', () => {
@@ -31,8 +27,8 @@ describe('overviewModel', () => {
     ])
   })
 
-  it('reports true equity and the equity the fund categories guarantee, as shares of the portfolio', () => {
-    expect(overviewModel(portfolio, 'net')).toMatchObject({ equityShare: 0.5, guaranteedEquityShare: 0.64 })
+  it('reports equity as a share of the portfolio', () => {
+    expect(overviewModel(portfolio, 'net').equityShare).toBe(0.5)
     expect(overviewModel(portfolio, 'gross').equityShare).toBe(0.7)
   })
 })

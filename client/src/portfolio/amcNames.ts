@@ -33,6 +33,7 @@ const AMC_LOGOS: Record<string, AmcLogo> = {
   dsp: { file: 'dsp.svg' },
   hdfc: { file: 'hdfc.svg' },
   icici: { file: 'icici.svg' },
+  iti: { file: 'iti.jpeg' },
   kotak: { file: 'kotak.png' },
   mahindra: { file: 'mahindra.svg' },
   mirae: { file: 'mirae.jpg' },

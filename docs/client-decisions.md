@@ -31,6 +31,18 @@ Malayalam (longest strings), with the redacted statement.
 - `.github/`, `deploy/` and `docs/fetching-statements.md` belong to someone else; leave them untracked and untouched.
 - Say plainly when something was not verified, and do not claim a number is right without a source.
 
+## Agreed plan (12 Nov 2026) and its status
+
+1. **Pipeline correctness**: done (overseas funds as foreign equity, sector fallback for quant, CDMDF as debt,
+   category plausibility checks, override candidates). Open: run October 2026; add a month-over-month diff.
+2. **Information architecture**: done. See Navigation, Overview and Funds below.
+3. **Data visualisation**: done for the Overview bar, market-cap bar and the gain bars in the returns table.
+   Open: the Allocation screen still draws its market-cap stack and row bars the old way.
+4. **Motion**: done for page fade-in, bar grow-in and Net/Gross morph, the count-up on the portfolio value, and
+   page-by-page progress while a PDF is read. Not built: a skeleton for the fund-data download (no portfolio
+   screen can show before it has loaded, so there is nothing to put a skeleton in).
+5. Checking the Detailed parser on a real statement is the owner's job, not part of this plan.
+
 ## Decisions
 
 **Stack.** Vite, React 19, TypeScript, `react-router`, plain React state. No UI or i18n library.
@@ -81,18 +93,29 @@ mfapi.in). It is never applied by guess, and every gain it cannot apply to says 
 - A standing note on the page: these are facts from the statement and published NAVs, not tax payable, and
   the user's own tax filing may differ.
 
+**Overview** (rebuilt 12 Nov 2026). A true overview, in this order: a context line (statement date, fund-data
+date, matched share); the portfolio value with invested, gain, return and XIRR (`ReturnFigures`); the look-through
+as one 28 px segmented bar with the asset classes listed beside it and the three largest funds behind the chosen
+class; then two summaries, domestic equity (market-cap bar, five largest sectors) and the five largest funds with
+the funds that gained most and least. Each block links to its detail screen. Asset classes that would print as
+0.0% are left out here; Allocation lists all of them.
+
+**Charts.** `d3-scale` and `d3-array` compute layouts; React renders plain elements (`SegmentedBar`, `GainBar`).
+Rules followed, from the dataviz guidance: a 2 px gap between parts, no opacity fade, a share printed inside a
+part only when it fits, a marker under the chosen part so the choice is not colour alone, and every value also
+readable in the list beside the bar. The asset-class palette was checked for colour-blind separation in light and
+dark and kept. The portfolio value stays in the serif face, a house choice.
+
 **Net and gross.** Net counts hedged equity as cash-like. Gross is as reported. Funds missing from the
 bundle sit in the "Not classified" asset class (internally the `other` bucket, which also holds anything
-the pipeline could not classify) and as "Not in our data" under Level 1. They are never called "Other",
-because we do not know what they hold.
+the pipeline could not classify). They are never called "Other", because we do not know what they hold.
 
 **No comparison narrative.** We do not compare "what labels say" with "what funds hold". The labels give
 only floors, so the comparison depended on an arbitrary choice of which labels count as equity. The
-Overview has two separate levels:
-
-- **Level 1, fund categories:** how SEBI files each fund, plus the equity those categories require at
-  least (the floors below).
-- **Level 2, look-through:** what the funds actually hold. This is the headline.
+portfolio screens show only the look-through: what the funds actually hold. A portfolio-wide category
+breakdown (with the summed equity floor) was removed on 12 Nov 2026: it was a weaker restatement of the
+look-through and invited the comparison above. Categories appear per fund only, in the Funds table and on
+each fund's page with its equity floor.
 
 **Fund categories and floors.** Source: SEBI circular HO/24/13/15(2)2026-IMD-RAC4/I/5764/2026, 26 Feb 2026,
 clause 2.6.3 (sources on the Data and method screen). Implemented in `client/src/portfolio/fundCategory.ts`.
@@ -105,6 +128,7 @@ clause 2.6.3 (sources on the Data and method screen). Implemented in `client/src
   survives hedging or allocation, so they count as 0.
 - Index funds and ETFs must hold 95% in their index. Vague AMFI categories are read by fund name.
 - Fund-of-funds and overseas funds are "Other Schemes" with no equity floor.
+- A fund whose name says gold, silver, bond and the like gets no equity floor even under an equity index category: AMFI files ABSL's gold and silver ETFs under "Equity ETF".
 - Mapping uses AMFI's category text, not each scheme's offer document. A few funds may sit in a
   different SEBI category than AMFI shows.
 
@@ -113,11 +137,11 @@ InvITs (clause 2.6.3.3). Cash and REIT lines inside equity funds were traced to 
 are real, not pipeline bugs. Whether REITs count as equity-related from 1 Jan 2026 comes from secondary
 summaries only. It is not confirmed against SEBI's own circular.
 
-**Naming.** "Level 1" and "Level 2" are client terms: Level 1 is fund categories, Level 2 is look-through.
-The pipeline's per-holding labels are called asset-class buckets, so the two do not clash.
+**Naming.** The pipeline's per-holding labels are called asset-class buckets; "category" always means the
+SEBI/AMFI fund category.
 
 **Data and method.** Follows the design board: hero with the calendar scene, worked net-versus-gross example, the
-category explanation (Level 1), a data-sources table, a table of fund houses covered, known limits, a Terms entry
+category explanation, a data-sources table, a table of fund houses covered, known limits, a Terms entry
 (Regular and Direct plans, stated neutrally), numbered sources with links, and the data-bundle version and hash
 with Copy. Every claim must have a source in the list or be checkable in the repository; add a source whenever a
 new rule is added. Differences from the board, on purpose: the board's month-by-month freshness strip is a
@@ -137,8 +161,8 @@ look-through says" bar is replaced by the SEBI category line and its stated equi
 minimum"), then the look-through bar and a table by asset class for the selected view only (the panel follows the Net/Gross
 toggle; it never shows both at once). The bundle has no per-holding
 data, so the calculation shows only what the gross and net vectors support. Flags: hedged (gross equity
-exceeds net by more than 0.5% of the fund), partial look-through (`unresolved_fund_units`), not in our data,
-and holdings more than two months older than the statement date.
+exceeds net by more than 0.5% of the fund), hedge of unpublished size (`hedge_notional_missing`: Net equals Gross for that fund), partial look-through (more than 0.5% of the fund left in `fund_unit`; the pipeline's flag is not used because it fires on any amount), not in our data,
+and holdings more than two months older than the statement date. Categories are shown without AMFI's scheme-family prefix (`categoryLabel`), since AMFI spells it two ways.
 Per-fund breakdown in the panel: the look-through bar is interactive. Selecting an asset-class segment zooms it
 (the segment grows to fill the bar and the others collapse, 200 ms, with the parts fading in; "← All asset
 classes" reverses it). Domestic equity offers market cap or sector, shown as shares of the equity the fund holds
@@ -187,7 +211,9 @@ data has them, in English. Not available because the pipeline does not collect i
 maturity, foreign equity by country (shown as "no further breakdown yet", and listed on Data and method).
 Fund names here are not links yet (contributors carry no ISIN).
 
-**Navigation.** Before a statement is open the header offers Open statement, Get your statement, Data and method and Privacy; the portfolio screens (Overview, Breakdowns, Funds, Returns) appear only once one is open, since they redirect to `/welcome` without it. The guide asks for the Detailed statement (Specific Period from 01-Jan-1990, with zero-balance folios) and says Summary works without XIRR.
+**Navigation.** Before a statement is open the header offers Open statement, Get your statement, Data and method and Privacy. Once one is open it offers Overview, Allocation and Funds, an About menu (the guide, Data and method, Privacy) and a Statement menu (Save on this device, Open another statement). `/breakdowns` became `/allocation`; `/returns` redirects to `/funds?view=returns`. The guide asks for the Detailed statement (Specific Period from 01-Jan-1990, with zero-balance folios) and says Summary works without XIRR.
+
+**Funds and returns are one screen.** A Holdings/Returns switch changes the columns; Returns adds invested, gain with a bar from a shared zero line, return, XIRR and contribution. The fund panel shows the same figures for one fund.
 
 **Funds return column.** Return (gain over the statement's cost value) with the rupee gain beneath, from
 `returnsModel`, so it matches the Returns screen. XIRR stays on Returns.

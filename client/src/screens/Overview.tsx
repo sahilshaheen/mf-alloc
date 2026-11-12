@@ -1,27 +1,34 @@
+import { max } from 'd3-array'
 import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router'
-import { formatDate, formatInr, formatPercent } from '../format'
+import { ReturnFigures } from '../components/ReturnFigures'
+import { SegmentedBar } from '../components/SegmentedBar'
+import { useCountUp } from '../components/useCountUp'
 import { ViewToggle } from '../components/ViewToggle'
+import { formatDate, formatInr, formatPercent, formatSignedInr, formatSignedPercent, toneClass } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
-import { LABEL_GROUPS, type LabelGroup } from '../portfolio/fundCategory'
+import { CAP_ORDER, equityBreakdown } from '../portfolio/breakdownModel'
 import { overviewModel, topContributors } from '../portfolio/overviewModel'
-import { BUCKETS, type Bucket } from '../portfolio/types'
+import { gainExtremes, returnsModel } from '../portfolio/returnsModel'
+import { sectorName } from '../portfolio/sector'
+import type { Bucket } from '../portfolio/types'
+import { useAnnualReturns } from '../portfolio/useAnnualReturns'
 import { usePortfolio } from '../portfolio/usePortfolio'
-import { bucketFill, WHITE_TEXT_BUCKETS } from './bucketStyle'
+import { bucketFill, capFill, WHITE_TEXT_BUCKETS } from './bucketStyle'
 import './Overview.css'
 
-const SHOWN_BUCKETS = BUCKETS.filter((bucket) => bucket !== 'fund_unit')
-// Greys, so that the colours stay reserved for asset classes in Level 2.
-const CATEGORY_SHADE: Record<LabelGroup, number> = { equity: 80, hybrid: 56, debt: 36, other: 22, notMatched: 10 }
-const MIN_SHARE_FOR_BAR_LABEL = 0.08
-
-const categoryFill = (group: LabelGroup): string => `color-mix(in srgb, var(--ink) ${CATEGORY_SHADE[group]}%, transparent)`
+// A class that would print as 0.0% is left out of the overview; Allocation lists every class.
+const MIN_SHOWN_SHARE = 0.0005
+const TOP_SECTORS = 5
+const TOP_FUNDS = 5
 
 export function Overview() {
   const { t, language } = useI18n()
-  const { portfolio, statementDate, bundle, view, setView, savedAt } = usePortfolio()
+  const { portfolio, statementDate, bundle, view, setView } = usePortfolio()
+  const yearly = useAnnualReturns()
   const [focus, setFocus] = useState<Bucket>('equity_domestic')
+  const shownTotal = useCountUp(portfolio?.total ?? 0)
 
   useEffect(() => {
     const toggle = (event: KeyboardEvent) => {
@@ -37,148 +44,184 @@ export function Overview() {
 
   const bucketName = (bucket: Bucket) => t(`bucket.${bucket}` as TranslationKey)
   const model = overviewModel(portfolio, view)
-  const valueOf = (bucket: Bucket) => model.segments.find((segment) => segment.bucket === bucket)?.value ?? 0
-  const focusValue = valueOf(focus)
-  const contributors = topContributors(portfolio, view, focus, 3)
-  const categories = LABEL_GROUPS.filter((group) => portfolio.labelled[group] > 0)
+  const returns = returnsModel(portfolio)
+  const segments = model.segments.filter((segment) => segment.share >= MIN_SHOWN_SHARE)
+  const focused = segments.find((segment) => segment.bucket === focus) ?? segments[0]
+  const contributors = topContributors(portfolio, view, focused.bucket, 3)
+  const describe = (name: string, share: number, value: number) => `${name} · ${formatPercent(share)} · ${formatInr(value)}`
+
   const grossShift = portfolio.gross.equity_domestic - portfolio.net.equity_domestic
-  const shiftPoints = (Math.abs(grossShift) / portfolio.total * 100).toFixed(1)
+  const shiftPoints = ((Math.abs(grossShift) / portfolio.total) * 100).toFixed(1)
   const grossNote =
     shiftPoints === '0.0'
       ? t('overview.grossNoteSame')
       : t(grossShift > 0 ? 'overview.grossNote' : 'overview.grossNoteAdded', { points: shiftPoints, amount: formatInr(Math.abs(grossShift)) })
 
+  const caps = equityBreakdown(portfolio, 'cap').sort((a, b) => CAP_ORDER.indexOf(a.key) - CAP_ORDER.indexOf(b.key))
+  const capName = (key: string) => (CAP_ORDER.includes(key) ? t(`bd.cap.${key}` as TranslationKey) : key)
+  const sectors = equityBreakdown(portfolio, 'sector').slice(0, TOP_SECTORS)
+  const largestSector = max(sectors, (sector) => sector.value) ?? 1
+  const topFunds = returns.funds.slice(0, TOP_FUNDS)
+  const extremes = gainExtremes(returns.funds)
+
   return (
     <main className="overview">
-      <div className="overview__bar">
-        <p className="num">
-          {t('overview.portfolioLine', { total: formatInr(portfolio.total), date: formatDate(statementDate, language) })}
-          <span className="overview__data-date">{t('overview.dataAsOf', { date: formatDate(bundle.as_of, language) })}</span>
+      <header className="overview__hero">
+        <p className="overview__context num">
+          <span>{t('overview.statementLine', { date: formatDate(statementDate, language) })}</span>
+          <span>{t('overview.dataAsOf', { date: formatDate(bundle.as_of, language) })}</span>
+          <span>{t('overview.matched', { pct: formatPercent(portfolio.matchedShare) })}</span>
         </p>
-        <div className="overview__actions">
-          <Link className="overview__action" to="/save">
-            {savedAt ? t('overview.savedLink') : t('overview.saveLink')}
-          </Link>
-          <Link className="overview__action" to="/welcome?new">
-            {t('sv.openAnother')}
-          </Link>
+        <h1>
+          <span className="overview__label">{t('overview.valueLabel')}</span>
+          <span className="serif overview__value" aria-label={formatInr(portfolio.total)}>
+            {formatInr(shownTotal)}
+          </span>
+        </h1>
+        <ReturnFigures invested={returns.invested} gain={returns.gain} absoluteReturn={returns.absoluteReturn} yearly={yearly} asOn={statementDate} />
+        {model.unmatchedCount > 0 && (
+          <p className="overview__note">{model.unmatchedCount === 1 ? t('overview.unmatchedOne') : t('overview.unmatchedMany', { count: String(model.unmatchedCount) })}</p>
+        )}
+      </header>
+
+      <section aria-labelledby="holds">
+        <div className="overview__heading">
+          <h2 id="holds" className="serif">
+            {t('overview.headline', { equity: `${Math.round(model.equityShare * 100)}%` })}
+          </h2>
+          <ViewToggle />
         </div>
-      </div>
 
-      <h1 className="serif overview__headline">{t('overview.headline', { equity: `${Math.round(model.equityShare * 100)}%` })}</h1>
-      <p className="overview__matched num">
-        {t('overview.matched', { pct: formatPercent(portfolio.matchedShare) })}{' '}
-        {model.unmatchedCount === 1
-          ? t('overview.unmatchedOne')
-          : model.unmatchedCount > 1
-            ? t('overview.unmatchedMany', { count: String(model.unmatchedCount) })
-            : ''}
-      </p>
+        <SegmentedBar
+          size="tall"
+          label={t('overview.fundsHold')}
+          activeKey={focused.bucket}
+          onActivate={(key) => setFocus(key as Bucket)}
+          parts={segments.map((segment) => ({
+            key: segment.bucket,
+            value: segment.value,
+            fill: bucketFill(segment.bucket),
+            title: describe(bucketName(segment.bucket), segment.share, segment.value),
+            label: formatPercent(segment.share),
+            lightText: WHITE_TEXT_BUCKETS.has(segment.bucket),
+          }))}
+        />
 
-      <section aria-labelledby="level1">
-        <h2 id="level1" className="serif">
-          {t('overview.level1Title')}
-        </h2>
-        <p className="overview__intro">{t('overview.level1Intro')}</p>
-        <div className="categories" aria-hidden="true">
-          {categories.map((group) => (
-            <div key={group} style={{ flex: `${portfolio.labelled[group]} 1 0`, background: categoryFill(group) }} />
-          ))}
-        </div>
-        <ul className="legend">
-          {categories.map((group) => (
-            <li key={group} className="legend__row legend__row--static">
-              <span className="legend__swatch" style={{ background: categoryFill(group) }} />
-              <span>{t(`label.${group}`)}</span>
-              <span className="serif num legend__pct">{formatPercent(portfolio.labelled[group] / portfolio.total)}</span>
-              <span className="num legend__value">{formatInr(portfolio.labelled[group])}</span>
-            </li>
-          ))}
-        </ul>
-        <p className="overview__note num">{t('overview.guaranteed', { pct: formatPercent(model.guaranteedEquityShare) })}</p>
-      </section>
-
-      <section aria-labelledby="level2">
-        <h2 id="level2" className="serif">
-          {t('overview.level2Title')}
-        </h2>
-        <p className="overview__intro">{t('overview.level2Intro')}</p>
-        <ViewToggle />
-
-        <figure className="overview__figure" aria-label={t('overview.fundsHold')}>
-          <div className="overview__caption-row">
-            <span>{t('overview.fundsHold')}</span>
-            <span className="num">{t('overview.actuallyEquity', { pct: formatPercent(model.equityShare) })}</span>
-          </div>
-          <div className="strata">
-            {model.segments.map((segment, index) => (
-              <div
+        <div className="overview__split">
+          <div role="group" className="classes" aria-label={t('overview.byAssetClass')}>
+            {segments.map((segment) => (
+              <button
                 key={segment.bucket}
-                className="strata__segment"
-                style={{
-                  flex: `${segment.value} 1 0`,
-                  background: bucketFill(segment.bucket),
-                  color: WHITE_TEXT_BUCKETS.has(segment.bucket) ? '#ffffff' : '#1b2422',
-                  opacity: focus === segment.bucket ? 1 : 0.42,
-                  borderRadius: index === 0 ? '10px 0 0 10px' : index === model.segments.length - 1 ? '0 10px 10px 0' : 0,
-                }}
-                onMouseEnter={() => setFocus(segment.bucket)}
+                type="button"
+                className="classes__row"
+                aria-pressed={focused.bucket === segment.bucket}
+                onClick={() => setFocus(segment.bucket)}
+                onFocus={() => setFocus(segment.bucket)}
+                onPointerEnter={(event) => event.pointerType === 'mouse' && setFocus(segment.bucket)}
               >
-                <span className="serif num">{segment.share >= MIN_SHARE_FOR_BAR_LABEL ? formatPercent(segment.share) : ''}</span>
-              </div>
+                <span className="classes__swatch" style={{ background: bucketFill(segment.bucket) }} />
+                <span>
+                  {bucketName(segment.bucket)}
+                  {segment.bucket === 'cash_like' && view === 'net' && model.hedgedEquity > 0 && (
+                    <span className="classes__note">{t('overview.cashHedged', { amount: formatInr(model.hedgedEquity) })}</span>
+                  )}
+                  {segment.bucket === 'other' && model.unmatchedCount > 0 && (
+                    <span className="classes__note">{t('overview.notMatchedCount', { count: String(model.unmatchedCount) })}</span>
+                  )}
+                </span>
+                <span className="num classes__pct">{formatPercent(segment.share)}</span>
+                <span className="num classes__value">{formatInr(segment.value)}</span>
+              </button>
             ))}
           </div>
-          <figcaption className="num">
-            <b>
-              {bucketName(focus)} · {formatPercent(focusValue / portfolio.total)} · {formatInr(focusValue)}
-            </b>
+
+          <aside className="overview__focus num" aria-live="polite">
+            <b>{describe(bucketName(focused.bucket), focused.share, focused.value)}</b>
             <ul>
-              {contributors.map((c) => (
-                <li key={c.name}>
-                  {c.name} {formatInr(c.value)}
+              {contributors.map((contributor) => (
+                <li key={contributor.name}>
+                  <span lang="en">{contributor.name}</span>
+                  <span>{formatInr(contributor.value)}</span>
                 </li>
               ))}
             </ul>
-          </figcaption>
-        </figure>
+            <Link to={`/allocation/${focused.bucket}`}>{t('overview.fullAllocation')} →</Link>
+          </aside>
+        </div>
 
         <p className="overview__note num">{view === 'gross' ? grossNote : t('overview.netNote')}</p>
-
-        <h3 className="serif">{t('overview.byAssetClass')}</h3>
-        <div role="group" className="legend" aria-label={t('overview.byAssetClass')}>
-          {SHOWN_BUCKETS.map((bucket) => {
-            const value = valueOf(bucket)
-            return (
-              <button
-                key={bucket}
-                type="button"
-                aria-pressed={focus === bucket}
-                className="legend__row"
-                style={{ color: value === 0 ? 'var(--ink3)' : 'var(--ink)' }}
-                onClick={() => setFocus(bucket)}
-                onFocus={() => setFocus(bucket)}
-                onMouseEnter={() => setFocus(bucket)}
-              >
-                <span className="legend__swatch" style={{ background: bucketFill(bucket) }} />
-                <span>
-                  {bucketName(bucket)}
-                  <span className="legend__note">
-                    {value === 0
-                      ? t('overview.noneHeld')
-                      : bucket === 'cash_like' && view === 'net' && model.hedgedEquity > 0
-                        ? t('overview.cashHedged', { amount: formatInr(model.hedgedEquity) })
-                        : bucket === 'other' && model.unmatchedCount > 0
-                          ? t('overview.notMatchedCount', { count: String(model.unmatchedCount) })
-                          : ''}
-                  </span>
-                </span>
-                <span className="serif num legend__pct">{formatPercent(value / portfolio.total)}</span>
-                <span className="num legend__value">{formatInr(value)}</span>
-              </button>
-            )
-          })}
-        </div>
       </section>
+
+      <div className="overview__cards">
+        {caps.length > 0 && (
+          <section className="overview__card" aria-labelledby="equity">
+            <h2 id="equity" className="serif">
+              {t('overview.equityTitle')}
+            </h2>
+            <SegmentedBar
+              size="thin"
+              label={t('bd.byCap')}
+              parts={caps.map((cap) => ({ key: cap.key, value: cap.value, fill: capFill(cap.key), title: describe(capName(cap.key), cap.value / portfolio.total, cap.value) }))}
+            />
+            <ul className="caps">
+              {caps.map((cap) => (
+                <li key={cap.key}>
+                  <span className="classes__swatch" style={{ background: capFill(cap.key) }} />
+                  {capName(cap.key)}
+                  <span className="num">{formatPercent(cap.value / portfolio.total)}</span>
+                </li>
+              ))}
+            </ul>
+
+            <h3>{t('overview.topSectors')}</h3>
+            <ul className="meters">
+              {sectors.map((sector) => (
+                <li key={sector.key}>
+                  <span>{sectorName(t, sector.key)}</span>
+                  <span className="meters__track" aria-hidden="true">
+                    <span style={{ width: `${(sector.value / largestSector) * 100}%` }} />
+                  </span>
+                  <span className="num">{formatPercent(sector.value / portfolio.total)}</span>
+                </li>
+              ))}
+            </ul>
+            <Link to="/allocation/equity_domestic">{t('overview.equityLink')} →</Link>
+          </section>
+        )}
+
+        <section className="overview__card" aria-labelledby="funds">
+          <h2 id="funds" className="serif">
+            {t('overview.fundsTitle')}
+          </h2>
+          <ul className="top-funds">
+            {topFunds.map((fund) => (
+              <li key={fund.isin}>
+                <Link to={`/funds/${fund.isin}`} lang="en">
+                  {fund.name}
+                </Link>
+                <span className="num">{formatInr(fund.value)}</span>
+                <span className={`num ${toneClass(fund.gain)}`}>{fund.absoluteReturn === null ? '—' : formatSignedPercent(fund.absoluteReturn)}</span>
+              </li>
+            ))}
+          </ul>
+          {extremes && (
+            <dl className="extremes num">
+              {[
+                { label: t('overview.gainedMost'), fund: extremes.best },
+                { label: t(extremes.worst.gain < 0 ? 'overview.lostMost' : 'overview.gainedLeast'), fund: extremes.worst },
+              ].map(({ label, fund }) => (
+                <div key={label}>
+                  <dt>{label}</dt>
+                  <dd>
+                    <span lang="en">{fund.name}</span> <span className={toneClass(fund.gain)}>{formatSignedInr(fund.gain)}</span>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          )}
+          <Link to="/funds?view=returns">{t('overview.allFunds', { count: String(returns.funds.length) })} →</Link>
+        </section>
+      </div>
 
       <p className="overview__rounding">{t('overview.rounding')}</p>
     </main>

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { Portfolio } from './analysePortfolio'
-import { returnsModel } from './returnsModel'
+import { gainExtremes, returnsModel } from './returnsModel'
 
 const position = (isin: string, schemeName: string, costValue: number, marketValue: number) => ({
   holding: { isin, schemeName, costValue, marketValue } as Portfolio['positions'][number]['holding'],
@@ -37,5 +37,13 @@ describe('returnsModel', () => {
     const bonusOnly = returnsModel({ positions: [position('INF9', 'Bonus units', 0, 5_000)] } as Portfolio)
     expect(bonusOnly.funds[0].absoluteReturn).toBeNull()
     expect(bonusOnly.absoluteReturn).toBeNull()
+  })
+})
+
+describe('gainExtremes', () => {
+  it('names the funds that gained most and least, and nothing when there is only one fund', () => {
+    const { funds } = returnsModel(portfolio)
+    expect(gainExtremes(funds)).toMatchObject({ best: { isin: 'INF1', gain: 40_000 }, worst: { isin: 'INF2', gain: -10_000 } })
+    expect(gainExtremes(funds.slice(0, 1))).toBeNull()
   })
 })

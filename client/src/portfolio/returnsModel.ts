@@ -42,6 +42,13 @@ export function returnsModel(portfolio: Portfolio): ReturnsModel {
   }
 }
 
+/** The funds that gained most and least; null when there are not two funds to compare. */
+export function gainExtremes(funds: FundReturn[]): { best: FundReturn; worst: FundReturn } | null {
+  if (funds.length < 2) return null
+  const byGain = [...funds].sort((a, b) => b.gain - a.gain)
+  return { best: byGain[0], worst: byGain[byGain.length - 1] }
+}
+
 function ratio(part: number, whole: number): number | null {
   return whole === 0 ? null : part / whole
 }

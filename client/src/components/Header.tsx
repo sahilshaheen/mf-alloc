@@ -1,34 +1,31 @@
-import { Link, NavLink } from 'react-router'
+import { Link, NavLink, useLocation } from 'react-router'
 import { useI18n } from '../i18n/useI18n'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import type { TranslationKey } from '../i18n/translator'
 import { LanguageSwitch } from './LanguageSwitch'
 import { LogoMark } from './Logo'
+import { Menu } from './Menu'
 import './Header.css'
 
 type NavItem = { to: string; label: TranslationKey }
 
-const reference: NavItem[] = [
+const about: NavItem[] = [
+  { to: '/get-statement', label: 'nav.getStatement' },
   { to: '/data-and-method', label: 'nav.dataMethod' },
   { to: '/privacy', label: 'nav.privacy' },
 ]
 const withPortfolio: NavItem[] = [
   { to: '/', label: 'nav.overview' },
-  { to: '/breakdowns', label: 'nav.breakdowns' },
+  { to: '/allocation', label: 'nav.allocation' },
   { to: '/funds', label: 'nav.funds' },
-  { to: '/returns', label: 'nav.returns' },
-  ...reference,
 ]
 // The portfolio screens redirect to /welcome until a statement is open, so they are not offered before then.
-const withoutPortfolio: NavItem[] = [
-  { to: '/welcome', label: 'nav.open' },
-  { to: '/get-statement', label: 'nav.getStatement' },
-  ...reference,
-]
+const withoutPortfolio: NavItem[] = [{ to: '/welcome', label: 'nav.open' }, ...about]
 
 export function Header() {
   const { t } = useI18n()
-  const { portfolio } = usePortfolio()
+  const { portfolio, savedAt } = usePortfolio()
+  const { pathname } = useLocation()
   const links = portfolio ? withPortfolio : withoutPortfolio
   return (
     <header className="site-header">
@@ -37,14 +34,29 @@ export function Header() {
           <LogoMark />
           <span className="serif">TrueHold</span>
         </Link>
-        <nav aria-label={t('nav.label')}>
+        <nav aria-label={t('nav.label')} className={portfolio ? 'site-header__nav--short' : undefined}>
           {links.map(({ to, label }) => (
             <NavLink key={to} to={to} end={to === '/'}>
               {t(label)}
             </NavLink>
           ))}
+          {portfolio && (
+            <Menu label={t('nav.about')} active={about.some(({ to }) => to === pathname)}>
+              {about.map(({ to, label }) => (
+                <NavLink key={to} to={to}>
+                  {t(label)}
+                </NavLink>
+              ))}
+            </Menu>
+          )}
         </nav>
         <div className="site-header__tools">
+          {portfolio && (
+            <Menu label={t('nav.statement')} align="end">
+              <Link to="/save">{savedAt ? t('overview.savedLink') : t('overview.saveLink')}</Link>
+              <Link to="/welcome?new">{t('sv.openAnother')}</Link>
+            </Menu>
+          )}
           <LanguageSwitch />
           <Link to="/privacy" className="stamp">
             <svg width="13" height="13" viewBox="0 0 16 16" aria-hidden="true">

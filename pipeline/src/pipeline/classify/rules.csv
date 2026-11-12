@@ -1,5 +1,5 @@
 id,amc,section,subsection,listing,name,isin,bucket,note
-cash_nca,,,,,"net receivable|net current (asset|liabilit)|margin deposit|^(rep|trp)\d*_\d|other current asset|margin amount|cash (&|and) cash eq|^cash( margin\b.*)?$|tri-?party|treps|reverse repo|corporate bond repo|^(\(?\w{1,3}\)\s*)?repo\b",,cash_like,Cash and repo lines are reported under whatever section precedes them (Motilal prints them after the last section)
+cash_nca,,,,,"net receivable|net current (asset|liabilit)|margin deposit|^(rep|trp)\d*_\d|other current asset|margin amount|margin placed|cash (&|and) cash eq|^cash( margin\b.*)?$|tri-?party|treps|reverse repo|corporate bond repo|^(\(?\w{1,3}\)\s*)?repo\b",,cash_like,Cash and repo lines are reported under whatever section precedes them (Motilal prints them after the last section)
 commodity_heading,,,^(gold|silver)$,,,,commodities,Physical gold/silver bars sit under a bare heading
 commodity_section,,^(gold|silver|commodities)\b,,,,,commodities,Gold/silver as a top-level section (ICICI, SBI, ABSL)
 commodity_listing,,,,^(\(?\w\)\s*)?(gold|silver)$,,,commodities,
@@ -10,7 +10,12 @@ real_asset_isin,,,,,,^INE.{4}2[35],real_assets,"ISIN security type 23 = InvIT un
 equity_share_isin,,,,,,^INE\w{4}01\w{3}$,equity_domestic,"Equity-share ISIN (security type 01). Ahead of heading rules: stale headings (DSP ARBITRAGE after Foreign Securities, Nippon REIT, written-off SBI/ABSL stocks) otherwise mislabel Indian shares"
 tbill_isin,,,,,,^IN002\d{3}[A-Z],cash_like,"T-bill / cash management bill (letter in the ISIN marks the tenor), whatever heading it sits under (Tata files them under DEBT)"
 govt_bond_isin,,,,,,^IN[0-4]\d,debt,"Dated G-secs, STRIPS and state development loans are debt even when filed under a money-market heading (UTI, ABSL, SBI)"
+cdmdf_isin,,,,,,^INF0RQ622028$,debt,"The one Corporate Debt Market Development Fund, which every fund house must hold and each names differently; it holds corporate bonds and G-secs (judgement call)"
 fund_unit_isin,,,,,,^INF,fund_unit,INF ISINs are MF/ETF units; resolved by fund-of-funds look-through in compute
+foreign_bond_fund,,,,,treasury bond,^(?!IN),debt,Overseas bond funds and ETFs (Axis US Treasury FoF); ahead of the rules that read every other overseas fund as equity
+foreign_subsection,,,overseas|foreign|international,,,,equity_foreign,"Overseas fund and ETF units are not looked through; they count as foreign equity unless a rule above says otherwise. Kotak gives them placeholder INE ISINs, SBI none"
+foreign_listing,,^equity|^$,,foreign|overseas|international,,,equity_foreign,
+foreign_isin,,,,,,^(IE|LU|US|HK)[A-Z0-9]{9}\d$,equity_foreign,HDFC files overseas funds under a plain Mutual Fund Units heading; only the ISIN country says so
 options_subsection,,,^options$,,,,other,HDFC prints written options after its Mutual Fund Units block; options have no disclosed notional
 fund_unit_heading,,,exchange traded fund|mutual fund unit,,,,fund_unit,
 fund_unit_listing,,,,exchange traded fund|mutual fund unit,,,fund_unit,
@@ -22,8 +27,6 @@ real_asset_name,,^(equity|others),,,\b(infrastructure investment trust|real esta
 cdmdf,,,,,corporate debt market development fund,,debt,CDMDF holds corporate bonds and G-secs; treated as debt (judgement call)
 foreign_heading,,^equity,foreign|overseas|international,,,,equity_foreign,Nippon overseas ETFs carry IN ISINs so the heading decides
 foreign_section,,foreign|overseas,,,,,equity_foreign,Foreign securities as a top-level section (ICICI, SBI)
-foreign_subsection,,,overseas|foreign,,,,equity_foreign,Overseas fund units without an INF ISIN (SBI Others / Overseas Mutual Fund)
-foreign_listing,,^equity|^$,,foreign|overseas|international,,,equity_foreign,
 foreign_no_isin_motilal,^motilal$,^equity,,,,^$,equity_foreign,Motilal's US stocks have no ISIN. UTI's no-ISIN equity rows are suspended Indian stocks with dummy ISINs
 alt_fund,,,alternative investment fund,,alternative investment fund,,other,AIF units: not looked through in v1
 swap,,^derivatives$,interest rate swap,,,,other,Swaps have no disclosed notional; excluded from exposure

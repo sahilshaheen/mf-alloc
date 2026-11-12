@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import csv
+import difflib
 import re
 from collections import defaultdict
 from datetime import date, datetime
@@ -108,3 +109,11 @@ def match_schemes(
                 raise ValueError(f"{isin} claimed by both {owner[isin]} and {sid}")
         matched[sid] = isins
     return matched, unmatched
+
+
+def closest_names(
+    amc: str, scheme_name: str, nav: dict[tuple[str, str], set[str]], limit: int = 3
+) -> list[str]:
+    """AMFI names of the same AMC nearest an unmatched scheme: candidates for overrides.csv."""
+    names = [name for nav_amc, name in nav if nav_amc == amc]
+    return difflib.get_close_matches(normalise(scheme_name), names, n=limit, cutoff=0.6)

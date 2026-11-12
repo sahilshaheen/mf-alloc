@@ -12,6 +12,14 @@ export interface AnnualReturns {
   byIsin: Map<string, AnnualReturn>
 }
 
+const DAY_MS = 86_400_000
+
+/** The yearly rate to show, or null. A yearly rate over a few months exaggerates, so under a year only the gain is shown. */
+export function shownRate(value: AnnualReturn | undefined, asOn: string): number | null {
+  if (value?.kind !== 'rate') return null
+  return (Date.parse(asOn) - Date.parse(value.since)) / DAY_MS < 365 ? null : value.rate
+}
+
 export function annualReturns(history: NonNullable<Statement['history']>, holdings: StatementHolding[], asOn: string): AnnualReturns {
   const valueByIsin = new Map<string, number>()
   for (const holding of holdings) valueByIsin.set(holding.isin, (valueByIsin.get(holding.isin) ?? 0) + holding.marketValue)

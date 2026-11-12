@@ -1,65 +1,16 @@
-.returns {
-  max-width: 960px;
-  margin: 0 auto;
-  padding: 28px 40px 80px;
-}
-
-.returns__bar {
-  margin: 0 0 56px;
-  font-size: 14px;
-  color: var(--ink2);
-}
-
-.returns__headline {
-  margin: 0 0 32px;
-  font-size: 44px;
-  font-weight: 500;
-  line-height: 1.12;
-  letter-spacing: -0.015em;
-}
-
-.returns__figures {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px 24px;
-  margin: 0 0 24px;
-  padding: 20px 0;
-  border-block: 1px solid var(--edge);
-}
-
-.returns__figures dt {
-  font-size: 13px;
-  color: var(--ink2);
-}
-
-.returns__figures dd {
-  margin: 4px 0 0;
-  font-size: 28px;
-}
-
-.returns__figures dt .info-tip {
-  vertical-align: 0;
-}
-
-.returns h2 {
-  margin: 48px 0 12px;
-  font-size: 26px;
-  font-weight: 500;
-}
-
 .returns__scroll {
   overflow-x: auto;
 }
 
 .returns__table {
-  min-width: 640px;
+  min-width: 760px;
   margin-bottom: 16px;
   font-size: 14.5px;
 }
 
 .returns__row {
   display: grid;
-  grid-template-columns: minmax(200px, 1fr) 104px 104px 104px 76px 120px;
+  grid-template-columns: minmax(200px, 1fr) 104px 104px 104px 110px 76px 120px;
   gap: 0 12px;
   align-items: center;
   padding: 12px 8px;
@@ -68,7 +19,7 @@
 }
 
 .returns__table--xirr .returns__row {
-  grid-template-columns: minmax(200px, 1fr) 104px 104px 104px 76px 76px 120px;
+  grid-template-columns: minmax(200px, 1fr) 104px 104px 104px 110px 76px 76px 120px;
 }
 
 .returns__row--head {
@@ -77,6 +28,16 @@
   border-bottom-color: var(--ink);
   font-size: 13px;
   color: var(--ink2);
+}
+
+.returns__row:not(.returns__row--head, [aria-selected='true']):hover {
+  background: var(--hover);
+  cursor: pointer;
+}
+
+.returns__row[aria-selected='true'] {
+  background: var(--sheet);
+  box-shadow: inset 3px 0 0 var(--ink);
 }
 
 .returns__row > :first-child {
@@ -105,10 +66,6 @@
 }
 
 @media (max-width: 900px) {
-  .returns {
-    padding: 24px 24px 64px;
-  }
-
   .returns__table {
     min-width: 0;
   }
@@ -121,24 +78,13 @@
     grid-template-columns: minmax(0, 1fr) 96px 88px 64px 64px;
   }
 
-  .returns__secondary {
+  .returns__secondary,
+  .returns__bar {
     display: none;
   }
 }
 
 @media (max-width: 600px) {
-  .returns {
-    padding: 20px 16px 64px;
-  }
-
-  .returns__headline {
-    font-size: 34px;
-  }
-
-  .returns__figures dd {
-    font-size: 24px;
-  }
-
   .returns__row {
     grid-template-columns: minmax(0, 1fr) 88px 64px;
   }

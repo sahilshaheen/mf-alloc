@@ -23,9 +23,8 @@ const bundle: ExposureBundle = {
   schemes: [
     scheme('Hedged Equity', 'Hybrid Schemes - Arbitrage Fund', { equity_domestic: 0.1, cash_like: 0.9 }, { equity_domestic: 0.8, cash_like: 0.2 }),
     scheme('Bond Fund', 'Debt Scheme - Gilt Fund', { debt: 1 }, { debt: 1 }),
-    scheme('Midcap', 'Equity Scheme - Mid Cap Fund', { equity_domestic: 0.9, cash_like: 0.1 }, { equity_domestic: 0.9, cash_like: 0.1 }),
   ],
-  isins: { INF000000001: 0, INF000000002: 1, INF000000003: 2 },
+  isins: { INF000000001: 0, INF000000002: 1 },
 }
 
 const holding = (isin: string, marketValue: number): StatementHolding => ({
@@ -50,20 +49,12 @@ describe('analysePortfolio', () => {
     expect(portfolio.gross).toMatchObject({ equity_domestic: 800, cash_like: 200, debt: 500 })
   })
 
-  it('totals the value by SEBI category group, and the equity those categories guarantee', () => {
-    const withMidcap = analysePortfolio([...holdings, holding('INF000000003', 2000)], bundle)
-
-    expect(withMidcap.labelled).toMatchObject({ hybrid: 1000, debt: 500, equity: 2000, other: 0 })
-    expect(withMidcap.guaranteedEquity).toBe(1300)
-  })
-
   it('counts a fund missing from the data as Other and reports it', () => {
     const withUnknown = analysePortfolio([holding('INF000000002', 750), holding('INF999999999', 250)], bundle)
 
     expect(withUnknown.net.other).toBe(250)
     expect(withUnknown.gross.other).toBe(250)
     expect(withUnknown.matchedShare).toBe(0.75)
-    expect(withUnknown.labelled.notMatched).toBe(250)
     expect(withUnknown.positions.filter((position) => !position.scheme).map((position) => position.holding.isin)).toEqual(['INF999999999'])
   })
 })

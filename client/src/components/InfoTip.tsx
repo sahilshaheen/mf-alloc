@@ -1,11 +1,13 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
+import { createPortal } from 'react-dom'
 import './InfoTip.css'
 
 const GAP = 6
 const EDGE = 8
 const MAX_WIDTH = 300
 
-// Fixed positioning, so the bubble is not clipped by a scrolling table around the button.
+// Portalled to <body> with fixed positioning: ancestors' transform animations (fill-mode: both) would
+// otherwise become the containing block, and scrolling containers would clip the bubble.
 function bubblePosition(anchor: DOMRect): CSSProperties {
   const width = Math.min(MAX_WIDTH, window.innerWidth - 2 * EDGE)
   const left = Math.max(EDGE, Math.min(anchor.left - EDGE, window.innerWidth - EDGE - width))
@@ -50,9 +52,12 @@ export function InfoTip({ label, text }: { label: string; text: string }) {
       >
         i
       </button>
-      <span role="tooltip" id={id} className="info-tip__bubble" hidden={!anchor} style={anchor ? bubblePosition(anchor) : undefined}>
-        {text}
-      </span>
+      {createPortal(
+        <span role="tooltip" id={id} className="info-tip__bubble" hidden={!anchor} style={anchor ? bubblePosition(anchor) : undefined}>
+          {text}
+        </span>,
+        document.body,
+      )}
     </>
   )
 }
