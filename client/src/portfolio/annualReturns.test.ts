@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { SchemeHistory, StatementHolding, Transaction, TransactionKind } from '../statement/types'
-import { annualReturns } from './annualReturns'
+import { annualReturns, shownRate } from './annualReturns'
 
 const t = (date: string, kind: TransactionKind, amount: number, units: number | null = null): Transaction => ({
   date,
@@ -50,5 +50,13 @@ describe('annualReturns', () => {
     const result = annualReturns(history, [holding('INF1', 20_000)], '2024-06-01')
     expect(result.byIsin.get('INF1')).toEqual({ kind: 'unavailable', reason: 'openingBalance' })
     expect(result.total).toEqual({ kind: 'unavailable', reason: 'openingBalance' })
+  })
+})
+
+describe('shownRate', () => {
+  it('shows a yearly rate only for money invested a year or more ago', () => {
+    expect(shownRate({ kind: 'rate', rate: 0.12, since: '2025-11-08' }, '2026-11-08')).toBe(0.12)
+    expect(shownRate({ kind: 'rate', rate: 0.9, since: '2026-08-01' }, '2026-11-08')).toBeNull()
+    expect(shownRate({ kind: 'unavailable', reason: 'openingBalance' }, '2026-11-08')).toBeNull()
   })
 })

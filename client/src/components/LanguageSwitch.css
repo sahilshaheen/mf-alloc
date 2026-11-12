@@ -26,7 +26,8 @@
   background: var(--hover);
 }
 
-.segmented button[aria-pressed='true'] {
+.segmented button[aria-pressed='true'],
+.segmented button[aria-checked='true'] {
   background: var(--sheet);
   box-shadow: var(--shadow);
   font-weight: 600;

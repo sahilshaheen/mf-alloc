@@ -7,12 +7,6 @@
   font-weight: 400;
 }
 
-.view-toggle button[aria-checked='true'] {
-  background: var(--sheet);
-  box-shadow: var(--shadow);
-  font-weight: 600;
-}
-
 @media (max-width: 600px) {
   .view-toggle button {
     flex: 1 1 0;

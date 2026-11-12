@@ -1,20 +1,22 @@
 import { useCallback, useState } from 'react'
-import { Link, Navigate, useNavigate, useParams } from 'react-router'
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router'
 import { SortableHeader } from '../components/SortableHeader'
 import { useSort } from '../components/useSort'
 import { ViewToggle } from '../components/ViewToggle'
-import { formatInr, formatPercent, formatSignedInr, formatSignedPercent, toneClass } from '../format'
+import { formatDate, formatInr, formatPercent, formatSignedInr, formatSignedPercent, toneClass } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
 import { categoryLabel } from '../portfolio/fundCategory'
 import { filterRows, fundRows, type FundRow } from '../portfolio/fundsModel'
 import { returnsModel, type FundReturn } from '../portfolio/returnsModel'
 import { BUCKETS, type Bucket } from '../portfolio/types'
+import { useAnnualReturns } from '../portfolio/useAnnualReturns'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import { sortRows, type SortValue } from '../sortRows'
 import { bucketFill } from './bucketStyle'
 import { EmptyPortfolio } from '../illustrations/Scenes'
 import { FundDetail } from './FundDetail'
+import { ReturnsTable } from './ReturnsTable'
 import './Funds.css'
 
 const FLAGS: { key: 'hedged' | 'hedgeSizeUnknown' | 'partialLookThrough' | 'unmatched' | 'stale'; label: TranslationKey; path: string }[] = [
@@ -24,6 +26,11 @@ const FLAGS: { key: 'hedged' | 'hedgeSizeUnknown' | 'partialLookThrough' | 'unma
   { key: 'unmatched', label: 'funds.flagUnmatched', path: 'M3.5 9a5.5 5.5 0 1 0 11 0 5.5 5.5 0 1 0-11 0M13 13l4 4M7 7l4 4' },
   { key: 'stale', label: 'funds.flagStale', path: 'M3 10a7 7 0 1 0 14 0 7 7 0 1 0-14 0M10 6v4l3 2' },
 ]
+
+const COLUMN_SETS = [
+  { id: 'holdings', label: 'funds.viewHoldings' },
+  { id: 'returns', label: 'funds.viewReturns' },
+] as const satisfies readonly { id: string; label: TranslationKey }[]
 
 type Column = 'fund' | 'value' | 'share' | 'return' | 'category' | 'lookThrough' | 'flags'
 
@@ -67,18 +74,25 @@ function ReturnCell({ fund }: { fund: FundReturn | undefined }) {
 }
 
 export function Funds() {
-  const { t } = useI18n()
-  const { portfolio, statementDate, view } = usePortfolio()
+  const { t, language } = useI18n()
+  const { portfolio, statementDate, view, history } = usePortfolio()
+  const yearly = useAnnualReturns()
   const { isin } = useParams()
+  const [params, setParams] = useSearchParams()
   const navigate = useNavigate()
   const [query, setQuery] = useState('')
   const { sort, sortBy } = useSort<Column>({ column: 'value', direction: 'descending' })
-  const closeDetail = useCallback(() => navigate('/funds'), [navigate])
+  const columns = params.get('view') === 'returns' ? 'returns' : 'holdings'
+  const search = columns === 'returns' ? '?view=returns' : ''
+  const fundLink = useCallback((fundIsin: string) => `/funds/${fundIsin}${search}`, [search])
+  const closeDetail = useCallback(() => navigate(`/funds${search}`), [navigate, search])
 
   if (!portfolio || !statementDate) return <Navigate to="/welcome" replace />
 
   const allRows = fundRows(portfolio, view, statementDate)
-  const returns = new Map(returnsModel(portfolio).funds.map((fund) => [fund.isin, fund]))
+  const fundReturns = returnsModel(portfolio).funds
+  const returns = new Map(fundReturns.map((fund) => [fund.isin, fund]))
+  const missingOpening = yearly !== null && [...yearly.byIsin.values(), yearly.total].some((value) => value.kind === 'unavailable' && value.reason === 'openingBalance')
   const rows = sortRows(filterRows(allRows, query), sortValues(returns)[sort.column], sort.direction)
   const selected = isin ? allRows.find((row) => row.isin === isin) : undefined
   if (isin && !selected) return <Navigate to="/funds" replace />
@@ -104,9 +118,26 @@ export function Funds() {
             value={query}
             onChange={(event) => setQuery(event.target.value)}
           />
-          <ViewToggle />
+          <div role="radiogroup" aria-label={t('funds.viewLabel')} className="segmented">
+            {COLUMN_SETS.map(({ id, label }) => (
+              <button key={id} type="button" role="radio" aria-checked={columns === id} onClick={() => setParams(id === 'returns' ? { view: id } : {}, { replace: true })}>
+                {t(label)}
+              </button>
+            ))}
+          </div>
+          {columns === 'holdings' && <ViewToggle />}
         </div>
 
+        {columns === 'returns' ? (
+          <ReturnsTable
+            funds={filterRows(fundReturns, query)}
+            yearly={yearly}
+            asOn={statementDate}
+            selectedIsin={isin}
+            fundLink={fundLink}
+            onOpen={(fundIsin) => navigate(fundLink(fundIsin))}
+          />
+        ) : (
         <div className="funds__scroll">
           <div role="table" aria-label={t('funds.title')} className="funds__table">
             <div role="row" className="funds__row funds__row--head">
@@ -125,11 +156,11 @@ export function Funds() {
                 className="funds__row"
                 aria-selected={row.isin === isin}
                 onClick={(event) => {
-                  if (!(event.target as HTMLElement).closest('a')) navigate(`/funds/${row.isin}`)
+                  if (!(event.target as HTMLElement).closest('a')) navigate(fundLink(row.isin))
                 }}
               >
                 <span role="cell" className="funds__name">
-                  <Link to={`/funds/${row.isin}`} lang="en" aria-current={row.isin === isin ? 'true' : undefined}>
+                  <Link to={fundLink(row.isin)} lang="en" aria-current={row.isin === isin ? 'true' : undefined}>
                     {row.name}
                   </Link>
                   <span className="num" lang="en">
@@ -161,6 +192,7 @@ export function Funds() {
             ))}
           </div>
         </div>
+        )}
         {rows.length === 0 && (
           <div className="funds__empty">
             <div aria-hidden="true">
@@ -169,10 +201,13 @@ export function Funds() {
             <p>{t('funds.noMatch', { query: query.trim() })}</p>
           </div>
         )}
+        {columns === 'returns' && missingOpening && history && (
+          <p className="returns__footnote">{t('returns.xirrOpening', { date: formatDate(history.from, language) })}</p>
+        )}
         <p className="funds__rounding">{t('funds.rounding')}</p>
       </main>
 
-      {selected && <FundDetail row={selected} onClose={closeDetail} />}
+      {selected && <FundDetail row={selected} fundReturn={returns.get(selected.isin)} yearly={yearly} asOn={statementDate} onClose={closeDetail} />}
     </div>
   )
 }

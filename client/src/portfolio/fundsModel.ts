@@ -47,7 +47,7 @@ export function fundRows(portfolio: Portfolio, view: ExposureView, statementDate
     .sort((a, b) => b.value - a.value)
 }
 
-export function filterRows(rows: FundRow[], query: string): FundRow[] {
+export function filterRows<Row extends { name: string; isin: string }>(rows: Row[], query: string): Row[] {
   const needle = query.trim().toLowerCase()
   if (!needle) return rows
   return rows.filter((row) => row.name.toLowerCase().includes(needle) || row.isin.toLowerCase().includes(needle))

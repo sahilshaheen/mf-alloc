@@ -1,10 +1,13 @@
 import { useState } from 'react'
+import { ReturnFigures } from '../components/ReturnFigures'
 import { SidePanel } from '../components/SidePanel'
 import { formatDate, formatInr, formatPercent } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
 import { categoryLabel, fundCategory } from '../portfolio/fundCategory'
+import type { AnnualReturns } from '../portfolio/annualReturns'
 import type { FundRow } from '../portfolio/fundsModel'
+import type { FundReturn } from '../portfolio/returnsModel'
 import { BUCKETS, type Bucket, type Vector } from '../portfolio/types'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import { FundBreakdown } from './FundBreakdown'
@@ -14,7 +17,15 @@ const SHOWN_BUCKETS = BUCKETS.filter((bucket) => bucket !== 'fund_unit')
 
 const weight = (vector: Vector, bucket: Bucket): number => (vector[bucket] ?? 0) + (bucket === 'other' ? (vector.fund_unit ?? 0) : 0)
 
-export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void }) {
+interface FundDetailProps {
+  row: FundRow
+  fundReturn: FundReturn | undefined
+  yearly: AnnualReturns | null
+  asOn: string
+  onClose: () => void
+}
+
+export function FundDetail({ row, fundReturn, yearly, asOn, onClose }: FundDetailProps) {
   const { t, language } = useI18n()
   const { view } = usePortfolio()
   const [zoom, setZoom] = useState<Bucket | null>(null)
@@ -45,6 +56,10 @@ export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void
               : formatPercent(row.share)}
           </span>
         </p>
+
+        {fundReturn && (
+          <ReturnFigures invested={fundReturn.invested} gain={fundReturn.gain} absoluteReturn={fundReturn.absoluteReturn} yearly={yearly} isin={row.isin} asOn={asOn} />
+        )}
 
         {category && (
           <p className="fund-detail__category">

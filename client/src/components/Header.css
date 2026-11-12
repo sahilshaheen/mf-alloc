@@ -30,33 +30,47 @@
   font-size: 15px;
 }
 
-.site-header nav a {
+.site-header nav > a,
+.site-header nav .menu__button {
   padding: 10px 12px;
   text-decoration: none;
   color: var(--ink2);
+  font-size: inherit;
 }
 
 :lang(ml) .site-header nav {
   font-size: 13.5px;
 }
 
-:lang(ml) .site-header nav a {
+:lang(ml) .site-header nav > a,
+:lang(ml) .site-header nav .menu__button {
   padding: 10px 6px;
 }
 
-.site-header nav a {
+.site-header nav > a,
+.site-header nav .menu__button {
   border-radius: 6px 6px 0 0;
 }
 
-.site-header nav a:hover,
+.site-header nav > a:hover,
+.site-header .menu__button:hover,
 .stamp:hover {
   background: var(--hover);
 }
 
-.site-header nav a.active {
+.site-header nav > a.active,
+.site-header nav .menu__button.active {
   color: var(--ink);
   font-weight: 600;
   box-shadow: inset 0 -2px 0 var(--ink);
+}
+
+.site-header__tools .menu__button {
+  height: 32px;
+  padding: 0 10px;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--ink2);
 }
 
 .site-header__tools {
@@ -98,9 +112,15 @@
     margin: 0 -8px;
   }
 
-  .site-header nav a {
+  .site-header nav > a {
     flex: none;
     white-space: nowrap;
+  }
+
+  /* A scrolling strip would clip the About menu, and three links and a menu fit without one. */
+  .site-header nav.site-header__nav--short {
+    flex-wrap: wrap;
+    overflow-x: visible;
   }
 }
 
@@ -118,6 +138,11 @@
 
   .site-header__tools {
     display: contents;
+  }
+
+  .site-header nav .menu__items {
+    left: auto;
+    right: 0;
   }
 
   .site-header__tools .stamp {

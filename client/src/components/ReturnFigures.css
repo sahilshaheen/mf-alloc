@@ -1,0 +1,28 @@
+.figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+  gap: 16px 24px;
+  margin: 0;
+  padding: 20px 0;
+  border-block: 1px solid var(--edge);
+}
+
+.figures dt {
+  font-size: 13px;
+  color: var(--ink2);
+}
+
+.figures dd {
+  margin: 4px 0 0;
+  font-size: 28px;
+}
+
+.figures dt .info-tip {
+  vertical-align: 0;
+}
+
+@media (max-width: 600px) {
+  .figures dd {
+    font-size: 24px;
+  }
+}
