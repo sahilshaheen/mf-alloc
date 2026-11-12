@@ -10,6 +10,7 @@ export interface FundRow {
   scheme: BundleScheme | null
   vector: Vector
   hedged: boolean
+  hedgeSizeUnknown: boolean
   partialLookThrough: boolean
   unmatched: boolean
   stale: boolean
@@ -17,6 +18,7 @@ export interface FundRow {
 
 const NOT_IN_DATA: Vector = { other: 1 }
 const MIN_HEDGED_SHARE = 0.005
+const MIN_UNRESOLVED_SHARE = 0.005
 const STALE_AFTER_MONTHS = 2
 
 export function fundRows(portfolio: Portfolio, view: ExposureView, statementDate: string): FundRow[] {
@@ -37,7 +39,8 @@ export function fundRows(portfolio: Portfolio, view: ExposureView, statementDate
       scheme,
       vector: scheme?.[view] ?? NOT_IN_DATA,
       hedged: scheme !== null && (scheme.gross.equity_domestic ?? 0) - (scheme.net.equity_domestic ?? 0) > MIN_HEDGED_SHARE,
-      partialLookThrough: scheme?.flags.includes('unresolved_fund_units') ?? false,
+      hedgeSizeUnknown: scheme?.flags.includes('hedge_notional_missing') ?? false,
+      partialLookThrough: (scheme?.gross.fund_unit ?? 0) > MIN_UNRESOLVED_SHARE,
       unmatched: scheme === null,
       stale: scheme !== null && scheme.as_of < staleBefore,
     }))

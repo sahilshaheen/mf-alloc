@@ -102,6 +102,7 @@ export const en = {
   'funds.colLookThrough': 'Look-through',
   'funds.colFlags': 'Flags',
   'funds.flagHedged': 'Hedged with futures',
+  'funds.flagHedgeSizeUnknown': 'Hedged with futures of unpublished size, so Net shows the same as Gross',
   'funds.flagPartial': 'Look-through incomplete: some units of other funds could not be traced',
   'funds.flagUnmatched': 'Not in our data',
   'funds.flagStale': 'Holdings data older than 2 months',

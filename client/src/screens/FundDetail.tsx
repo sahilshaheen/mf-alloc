@@ -3,7 +3,7 @@ import { SidePanel } from '../components/SidePanel'
 import { formatDate, formatInr, formatPercent } from '../format'
 import { useI18n } from '../i18n/useI18n'
 import type { TranslationKey } from '../i18n/translator'
-import { fundCategory } from '../portfolio/fundCategory'
+import { categoryLabel, fundCategory } from '../portfolio/fundCategory'
 import type { FundRow } from '../portfolio/fundsModel'
 import { BUCKETS, type Bucket, type Vector } from '../portfolio/types'
 import { usePortfolio } from '../portfolio/usePortfolio'
@@ -35,7 +35,7 @@ export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void
       <div className="fund-detail">
         <p className="num fund-detail__meta" lang="en">
           {row.isin}
-          {scheme?.category ? ` · ${scheme.category}` : ''}
+          {scheme?.category ? ` · ${categoryLabel(scheme.category)}` : ''}
         </p>
         <p className="num fund-detail__value">
           <span className="serif">{formatInr(row.value)}</span>
@@ -78,6 +78,7 @@ export function FundDetail({ row, onClose }: { row: FundRow; onClose: () => void
               </tbody>
             </table>
             {row.hedged && <p className="fund-detail__note">{view === 'net' ? t('funds.calcNote') : t('funds.calcNoteGross')}</p>}
+            {row.hedgeSizeUnknown && <p className="fund-detail__note">{t('funds.flagHedgeSizeUnknown')}</p>}
             {row.partialLookThrough && <p className="fund-detail__note">{t('funds.flagPartial')}</p>}
             <p className="fund-detail__note">{t('funds.source', { date: formatDate(scheme.as_of, language) })}</p>
           </>

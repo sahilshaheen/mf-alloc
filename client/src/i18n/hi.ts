@@ -104,6 +104,7 @@ export const hi: Dictionary = {
   'funds.colLookThrough': 'अंदर क्या है',
   'funds.colFlags': 'चिह्न',
   'funds.flagHedged': 'फ़्यूचर्स से हेज किया हुआ',
+  'funds.flagHedgeSizeUnknown': 'फ़्यूचर्स से हेज है, पर उनका आकार प्रकाशित नहीं, इसलिए नेट और ग्रॉस एक जैसे दिखते हैं',
   'funds.flagPartial': 'अंदर की जाँच अधूरी: दूसरे फ़ंड की कुछ यूनिट का पता नहीं लग सका',
   'funds.flagUnmatched': 'हमारे डेटा में नहीं',
   'funds.flagStale': 'होल्डिंग डेटा 2 महीने से पुराना',

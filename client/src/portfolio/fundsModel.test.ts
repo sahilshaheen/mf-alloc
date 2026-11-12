@@ -24,11 +24,11 @@ const position = (isin: string, schemeName: string, marketValue: number, matched
 const portfolio = {
   total: 1000,
   positions: [
-    position('INF1', 'raw small', 100, scheme('Small Fund')),
-    position('INF2', 'raw hedged', 500, scheme('Hedged Fund', { net: { equity_domestic: 0.1, cash_like: 0.9 }, gross: { equity_domestic: 0.8, cash_like: 0.2 } })),
+    position('INF1', 'raw small', 100, scheme('Small Fund', { gross: { equity_domestic: 0.999, fund_unit: 0.001 }, flags: ['unresolved_fund_units'] })),
+    position('INF2', 'raw hedged', 500, scheme('Hedged Fund', { net: { equity_domestic: 0.1, cash_like: 0.9 }, gross: { equity_domestic: 0.8, cash_like: 0.2 }, flags: ['hedge_notional_missing'] })),
     position('INF1', 'raw small', 150, scheme('Small Fund')),
     position('INF3', 'Quant Unknown', 200, null),
-    position('INF4', 'raw fof', 50, scheme('Old FoF', { as_of: '2026-06-30', flags: ['unresolved_fund_units'] })),
+    position('INF4', 'raw fof', 50, scheme('Old FoF', { as_of: '2026-06-30', gross: { equity_domestic: 0.8, fund_unit: 0.2 }, flags: ['unresolved_fund_units'] })),
   ],
 } as Portfolio
 
@@ -50,12 +50,12 @@ describe('fundRows', () => {
     expect(rows[2]).toMatchObject({ name: 'Quant Unknown', vector: { other: 1 }, unmatched: true })
   })
 
-  it('flags hedged funds, partial look-through, and holdings more than two months old', () => {
-    expect(rows.map((row) => [row.isin, row.hedged, row.partialLookThrough, row.stale])).toEqual([
-      ['INF2', true, false, false],
-      ['INF1', false, false, false],
-      ['INF3', false, false, false],
-      ['INF4', false, true, true],
+  it('flags hedges, hedges of unpublished size, look-through gaps above half a percent, and holdings more than two months old', () => {
+    expect(rows.map((row) => [row.isin, row.hedged, row.hedgeSizeUnknown, row.partialLookThrough, row.stale])).toEqual([
+      ['INF2', true, true, false, false],
+      ['INF1', false, false, false, false],
+      ['INF3', false, false, false, false],
+      ['INF4', false, false, true, true],
     ])
   })
 })

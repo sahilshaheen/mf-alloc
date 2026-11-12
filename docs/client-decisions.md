@@ -31,6 +31,23 @@ Malayalam (longest strings), with the redacted statement.
 - `.github/`, `deploy/` and `docs/fetching-statements.md` belong to someone else; leave them untracked and untouched.
 - Say plainly when something was not verified, and do not claim a number is right without a source.
 
+## Agreed plan (12 Nov 2026)
+
+In order. Phase 1 is done; the rest is not started.
+
+1. **Pipeline correctness** (done): overseas funds as foreign equity, sector fallback for quant, CDMDF as debt,
+   category plausibility checks, override candidates. Still open: run October 2026 and add a month-over-month diff.
+2. **Information architecture.** Nav becomes Overview, Allocation, Funds, plus an About dropdown (Get your
+   statement, Data and method, Privacy); Save and Open another move to a statement menu in the header.
+   Overview becomes a true overview (value, invested, gain, return or XIRR; look-through bar; equity makeup; top
+   funds and contributors; data-quality line). Allocation is Breakdowns renamed and takes Level 1 and the full
+   asset-class table. Returns merges into Funds as a Holdings/Returns column switch; `/returns` redirects.
+3. **Data visualisation** with d3 (added with `npm install`; d3 computes scales and shapes, React renders):
+   interactive strata bar, Net/Gross morph with a callout, contribution chart, in-cell bars.
+4. **Motion**: staged progress while reading, bundle skeleton, first-render grow-in, route cross-fades, all under
+   the reduced-motion rule.
+5. Checking the Detailed parser on a real statement is the owner's job, not part of this plan.
+
 ## Decisions
 
 **Stack.** Vite, React 19, TypeScript, `react-router`, plain React state. No UI or i18n library.
@@ -105,6 +122,7 @@ clause 2.6.3 (sources on the Data and method screen). Implemented in `client/src
   survives hedging or allocation, so they count as 0.
 - Index funds and ETFs must hold 95% in their index. Vague AMFI categories are read by fund name.
 - Fund-of-funds and overseas funds are "Other Schemes" with no equity floor.
+- A fund whose name says gold, silver, bond and the like gets no equity floor even under an equity index category: AMFI files ABSL's gold and silver ETFs under "Equity ETF".
 - Mapping uses AMFI's category text, not each scheme's offer document. A few funds may sit in a
   different SEBI category than AMFI shows.
 
@@ -137,8 +155,8 @@ look-through says" bar is replaced by the SEBI category line and its stated equi
 minimum"), then the look-through bar and a table by asset class for the selected view only (the panel follows the Net/Gross
 toggle; it never shows both at once). The bundle has no per-holding
 data, so the calculation shows only what the gross and net vectors support. Flags: hedged (gross equity
-exceeds net by more than 0.5% of the fund), partial look-through (`unresolved_fund_units`), not in our data,
-and holdings more than two months older than the statement date.
+exceeds net by more than 0.5% of the fund), hedge of unpublished size (`hedge_notional_missing`: Net equals Gross for that fund), partial look-through (more than 0.5% of the fund left in `fund_unit`; the pipeline's flag is not used because it fires on any amount), not in our data,
+and holdings more than two months older than the statement date. Categories are shown without AMFI's scheme-family prefix (`categoryLabel`), since AMFI spells it two ways.
 Per-fund breakdown in the panel: the look-through bar is interactive. Selecting an asset-class segment zooms it
 (the segment grows to fill the bar and the others collapse, 200 ms, with the parts fading in; "← All asset
 classes" reverses it). Domestic equity offers market cap or sector, shown as shares of the equity the fund holds

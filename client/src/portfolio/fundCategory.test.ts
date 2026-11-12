@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { fundCategory, type LabelGroup } from './fundCategory'
+import { categoryLabel, fundCategory, type LabelGroup } from './fundCategory'
 import type { BundleScheme } from './types'
 
 const scheme = (category: string, name = 'Some Fund'): BundleScheme => ({
@@ -54,7 +54,26 @@ describe('fundCategory', () => {
     expect(fundCategory(scheme('Other Scheme - Index Funds', name))).toEqual({ group: 'other', minEquity })
   })
 
+  it('does not give a gold ETF an equity minimum because AMFI files it under Equity ETF', () => {
+    expect(fundCategory(scheme('Exchange Traded Funds (ETFs) - Equity ETF', 'ADITYA BIRLA SUN LIFE GOLD ETF')).minEquity).toBe(0)
+  })
+
   it('has no category for a fund that is not in the data', () => {
     expect(fundCategory(null)).toEqual({ group: 'notMatched', minEquity: 0 })
+  })
+})
+
+describe('categoryLabel', () => {
+  it.each<[string, string]>([
+    ['Equity Scheme - Mid Cap Fund', 'Mid Cap Fund'],
+    ['Equity Schemes - Mid Cap Fund', 'Mid Cap Fund'],
+    ['Income/Debt Oriented Schemes - Liquid Fund', 'Liquid Fund'],
+    ['Solution Oriented Schemes ** - Retirement Fund', 'Retirement Fund'],
+    ['Other Scheme - Other  ETFs', 'Other ETFs'],
+    ['Fund of Funds Scheme (Domestic) - Fund of Funds Scheme (Domestic)', 'Fund of Funds Scheme (Domestic)'],
+    ['Index Funds - Equity Funds', 'Index Funds - Equity Funds'],
+    ['ELSS', 'ELSS'],
+  ])('shows %s as %s', (category, label) => {
+    expect(categoryLabel(category)).toBe(label)
   })
 })

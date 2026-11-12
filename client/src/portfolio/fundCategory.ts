@@ -59,9 +59,19 @@ function minEquity(group: LabelGroup, category: string, name: string): number {
   return 0
 }
 
+// AMFI files some gold and silver ETFs under "Equity ETF", so the name can overrule an equity category.
 function isEquityIndex(category: string, name: string): boolean {
-  if (EQUITY_INDEX_CATEGORY.test(category)) return true
-  return VAGUE_INDEX_CATEGORY.test(category) && !NOT_EQUITY_NAME.test(name) && EQUITY_NAME.test(name)
+  if (NOT_EQUITY_NAME.test(name)) return false
+  return EQUITY_INDEX_CATEGORY.test(category) || (VAGUE_INDEX_CATEGORY.test(category) && EQUITY_NAME.test(name))
+}
+
+const SCHEME_FAMILY_PREFIX = /^(equity|hybrid|debt|income\/debt oriented|solution oriented|other) schemes?( \*\*)? - /i
+
+/** AMFI's category text without the scheme family it repeats in two spellings ("Equity Scheme - ", "Equity Schemes - "). */
+export function categoryLabel(category: string): string {
+  const [family, ...rest] = category.split(' - ')
+  const label = rest.join(' - ') === family ? family : category.replace(SCHEME_FAMILY_PREFIX, '')
+  return label.replace(/\s+/g, ' ')
 }
 
 function floorFor(rules: [RegExp, number][], category: string): number {
