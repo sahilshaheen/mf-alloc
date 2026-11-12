@@ -8,7 +8,7 @@ Your statement is parsed in the browser and never leaves your device. You can op
 
 | Component | State |
 |---|---|
-| `pipeline/` fetch, adapt, classify, compute, publish | Working. 19 AMCs, about 84% of industry average AUM for Jul-Sep 2026 (Sep 2026 disclosures); bundle is 1,369 schemes, about 200 KB gzipped |
+| `pipeline/` fetch, adapt, classify, compute, publish | Working. 20 AMCs, about 86% of industry average AUM for Jul-Sep 2026 (Sep 2026 disclosures); bundle is 1,414 schemes, about 205 KB gzipped |
 | `client/` web app | In progress. Reads a CAMS Consolidated Account Summary or Detailed statement in the browser (Detailed not yet verified on a real file), joins it to the bundle, and renders Overview, Allocation, Funds (with returns), Data and method, Privacy and a guide to getting a statement (English, Hindi, Malayalam; Hindi and Malayalam are drafts awaiting native review). The PWA shell is still a placeholder. Status and design decisions: [docs/client-decisions.md](docs/client-decisions.md) |
 
 ## How it works
@@ -141,7 +141,7 @@ The site is static and deploys to Cloudflare Pages from GitHub Actions on every 
 
 ## Data sources and coverage
 
-Covered for 2026-09, each scheme reconciling to its own grand total: Nippon, UTI, Motilal Oswal, The Wealth Company, SBI, ICICI Prudential, Aditya Birla Sun Life, DSP, PPFAS, Mirae Asset, Tata, HDFC, Kotak, Mahindra Manulife, WhiteOak Capital, ITI, Axis, quant, Union. Together about 84% of the industry's average AUM for Jul-Sep 2026 (AMFI's fund-house-wise average AUM, as tabulated by Cafemutual, 6 Oct 2026). Some are fetched from a real browser session or by hand; [pipeline/README.md](pipeline/README.md) says which.
+Covered for 2026-09, each scheme reconciling to its own grand total: Nippon, UTI, Motilal Oswal, The Wealth Company, SBI, ICICI Prudential, Aditya Birla Sun Life, DSP, PPFAS, Mirae Asset, Tata, HDFC, Kotak, Mahindra Manulife, WhiteOak Capital, ITI, Axis, quant, Union, HSBC. Together about 86% of the industry's average AUM for Jul-Sep 2026 (AMFI's fund-house-wise average AUM, as tabulated by Cafemutual, 6 Oct 2026). Some are fetched from a real browser session or by hand; [pipeline/README.md](pipeline/README.md) says which.
 
 Not covered: Edelweiss, Canara Robeco and Bandhan. Their sites block non-browser clients or use token-based APIs, and the pipeline does not try to get around bot protection. Option positions are not parsed (files report only expired or exercised hedging activity).
 

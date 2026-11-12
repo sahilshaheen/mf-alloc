@@ -3,6 +3,7 @@ from . import (
     axis,
     dsp,
     hdfc,
+    hsbc,
     icici,
     iti,
     kotak,
@@ -42,5 +43,6 @@ ADAPTERS = {
         axis,
         quant,
         union,
+        hsbc,
     )
 }

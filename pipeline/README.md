@@ -3,7 +3,7 @@
 Fetches AMC monthly portfolio disclosures and builds the exposure bundle.
 
 ```
-uv run pipeline fetch <uti|motilal|nippon|wealth|sbi|icici|absl|dsp|ppfas|mirae|tata|quant|union|amfi|all> --period YYYY-MM [--list] [--force]
+uv run pipeline fetch <uti|motilal|nippon|wealth|sbi|icici|absl|dsp|ppfas|mirae|tata|quant|union|hsbc|amfi|all> --period YYYY-MM [--list] [--force]
 ```
 
 Raw files land in `data/raw/<amc>/<YYYY-MM>/` with a `manifest.json` (URL, status, size, sha256, fetch time). Re-runs skip files already fetched. `--period` is the portfolio as-of month.
@@ -73,7 +73,7 @@ fetcher, and its entry in `sources.toml`.
 
 ## Coverage
 
-Parsed and reconciled against each scheme's own grand total: Nippon, UTI, Motilal Oswal, The Wealth Company, SBI, ICICI Prudential, Aditya Birla Sun Life, DSP, PPFAS, Mirae Asset, Tata, HDFC, Kotak, Mahindra Manulife, WhiteOak Capital, ITI, Axis, quant, Union. `sources.toml` says how each one's files are obtained.
+Parsed and reconciled against each scheme's own grand total: Nippon, UTI, Motilal Oswal, The Wealth Company, SBI, ICICI Prudential, Aditya Birla Sun Life, DSP, PPFAS, Mirae Asset, Tata, HDFC, Kotak, Mahindra Manulife, WhiteOak Capital, ITI, Axis, quant, Union, HSBC. `sources.toml` says how each one's files are obtained.
 
 SBI, ICICI and ABSL share a SEBI-style template (`adapters/template.py`): columns come from the header text, the percent-vs-fraction scale is read from the GRAND TOTAL row, and futures are read wherever the AMC puts them (a DERIVATIVES block, a futures table after the total, or an "Underlying | Long/Short | % to Net Assets" table).
 

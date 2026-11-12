@@ -16,6 +16,7 @@ AMFI_HEADINGS = {
     "axis": "Axis Mutual Fund",
     "dsp": "DSP Mutual Fund",
     "hdfc": "HDFC Mutual Fund",
+    "hsbc": "HSBC Mutual Fund",
     "icici": "ICICI Prudential Mutual Fund",
     "iti": "ITI Mutual Fund",
     "kotak": "Kotak Mahindra Mutual Fund",
