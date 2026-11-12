@@ -1,8 +1,6 @@
 import type { BundleScheme } from './types'
 
-export type LabelGroup = 'equity' | 'hybrid' | 'debt' | 'other' | 'notMatched'
-
-export const LABEL_GROUPS: readonly LabelGroup[] = ['equity', 'hybrid', 'debt', 'other', 'notMatched']
+export type LabelGroup = 'equity' | 'hybrid' | 'debt' | 'other'
 
 export interface FundCategory {
   group: LabelGroup
@@ -45,8 +43,7 @@ const VAGUE_INDEX_CATEGORY = /^other scheme - (index funds|other\s+etfs)/i
 const NOT_EQUITY_NAME = /gold|silver|gilt|bond|sdl|g-sec|liquid|debt|treasury|money market|overnight|t-bill|maturity|income|credit/i
 const EQUITY_NAME = /nifty|sensex|bse|equity|midcap|smallcap|momentum|quality|low volatility|dividend/i
 
-export function fundCategory(scheme: BundleScheme | null): FundCategory {
-  if (!scheme) return { group: 'notMatched', minEquity: 0 }
+export function fundCategory(scheme: BundleScheme): FundCategory {
   const category = scheme.category ?? ''
   const group = GROUP_RULES.find(([pattern]) => pattern.test(category))?.[1] ?? 'other'
   return { group, minEquity: minEquity(group, category, scheme.name) }

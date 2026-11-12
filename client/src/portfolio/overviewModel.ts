@@ -12,7 +12,6 @@ export interface Segment {
 export interface OverviewModel {
   segments: Segment[]
   equityShare: number
-  guaranteedEquityShare: number
   hedgedEquity: number
   unmatchedCount: number
 }
@@ -31,7 +30,6 @@ export function overviewModel(portfolio: Portfolio, view: ExposureView): Overvie
   return {
     segments,
     equityShare,
-    guaranteedEquityShare: portfolio.guaranteedEquity / total,
     hedgedEquity: Math.max(0, portfolio.gross.equity_domestic - portfolio.net.equity_domestic),
     unmatchedCount: portfolio.positions.filter((position) => !position.scheme).length,
   }

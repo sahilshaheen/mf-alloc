@@ -57,10 +57,6 @@ describe('fundCategory', () => {
   it('does not give a gold ETF an equity minimum because AMFI files it under Equity ETF', () => {
     expect(fundCategory(scheme('Exchange Traded Funds (ETFs) - Equity ETF', 'ADITYA BIRLA SUN LIFE GOLD ETF')).minEquity).toBe(0)
   })
-
-  it('has no category for a fund that is not in the data', () => {
-    expect(fundCategory(null)).toEqual({ group: 'notMatched', minEquity: 0 })
-  })
 })
 
 describe('categoryLabel', () => {

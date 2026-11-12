@@ -98,8 +98,7 @@ date, matched share); the portfolio value with invested, gain, return and XIRR (
 as one 28 px segmented bar with the asset classes listed beside it and the three largest funds behind the chosen
 class; then two summaries, domestic equity (market-cap bar, five largest sectors) and the five largest funds with
 the funds that gained most and least. Each block links to its detail screen. Asset classes that would print as
-0.0% are left out here; Allocation lists all of them. Level 1 (fund categories) moved to the foot of Allocation
-(`CategoryLevels`); the Overview shows only the look-through.
+0.0% are left out here; Allocation lists all of them.
 
 **Charts.** `d3-scale` and `d3-array` compute layouts; React renders plain elements (`SegmentedBar`, `GainBar`).
 Rules followed, from the dataviz guidance: a 2 px gap between parts, no opacity fade, a share printed inside a
@@ -109,16 +108,14 @@ dark and kept. The portfolio value stays in the serif face, a house choice.
 
 **Net and gross.** Net counts hedged equity as cash-like. Gross is as reported. Funds missing from the
 bundle sit in the "Not classified" asset class (internally the `other` bucket, which also holds anything
-the pipeline could not classify) and as "Not in our data" under Level 1. They are never called "Other",
-because we do not know what they hold.
+the pipeline could not classify). They are never called "Other", because we do not know what they hold.
 
 **No comparison narrative.** We do not compare "what labels say" with "what funds hold". The labels give
 only floors, so the comparison depended on an arbitrary choice of which labels count as equity. The
-Overview has two separate levels:
-
-- **Level 1, fund categories:** how SEBI files each fund, plus the equity those categories require at
-  least (the floors below).
-- **Level 2, look-through:** what the funds actually hold. This is the headline.
+portfolio screens show only the look-through: what the funds actually hold. A portfolio-wide category
+breakdown (with the summed equity floor) was removed on 12 Nov 2026: it was a weaker restatement of the
+look-through and invited the comparison above. Categories appear per fund only, in the Funds table and on
+each fund's page with its equity floor.
 
 **Fund categories and floors.** Source: SEBI circular HO/24/13/15(2)2026-IMD-RAC4/I/5764/2026, 26 Feb 2026,
 clause 2.6.3 (sources on the Data and method screen). Implemented in `client/src/portfolio/fundCategory.ts`.
@@ -140,11 +137,11 @@ InvITs (clause 2.6.3.3). Cash and REIT lines inside equity funds were traced to 
 are real, not pipeline bugs. Whether REITs count as equity-related from 1 Jan 2026 comes from secondary
 summaries only. It is not confirmed against SEBI's own circular.
 
-**Naming.** "Level 1" and "Level 2" are client terms: Level 1 is fund categories, Level 2 is look-through.
-The pipeline's per-holding labels are called asset-class buckets, so the two do not clash.
+**Naming.** The pipeline's per-holding labels are called asset-class buckets; "category" always means the
+SEBI/AMFI fund category.
 
 **Data and method.** Follows the design board: hero with the calendar scene, worked net-versus-gross example, the
-category explanation (Level 1), a data-sources table, a table of fund houses covered, known limits, a Terms entry
+category explanation, a data-sources table, a table of fund houses covered, known limits, a Terms entry
 (Regular and Direct plans, stated neutrally), numbered sources with links, and the data-bundle version and hash
 with Copy. Every claim must have a source in the list or be checkable in the repository; add a source whenever a
 new rule is added. Differences from the board, on purpose: the board's month-by-month freshness strip is a

@@ -11,7 +11,6 @@ import { BUCKETS, type Bucket } from '../portfolio/types'
 import { usePortfolio } from '../portfolio/usePortfolio'
 import type { Portfolio } from '../portfolio/analysePortfolio'
 import { bucketFill, capFill } from './bucketStyle'
-import { CategoryLevels } from './CategoryLevels'
 import './Allocation.css'
 
 const TABS: readonly Bucket[] = BUCKETS.filter((bucket) => bucket !== 'fund_unit')
@@ -141,7 +140,6 @@ export function Allocation() {
           {value > 0 && bucket !== 'equity_domestic' && <p className="bd__note">{t('bd.noDetail')}</p>}
         </section>
 
-        <CategoryLevels portfolio={portfolio} />
       </main>
 
       {panel && (
