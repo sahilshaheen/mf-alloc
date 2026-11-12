@@ -9,5 +9,7 @@ const lan = process.env.LAN === '1'
 export default defineConfig({
   plugins: [react(), ...(lan ? [basicSsl()] : [])],
   server: lan ? { host: true } : undefined,
+  // The deployed CSP has no font-src, so a font inlined as a data: URI is blocked; serve fonts as files.
+  build: { assetsInlineLimit: (filePath) => (/\.woff2?$/.test(filePath) ? false : undefined) },
   test: { environment: 'jsdom' },
 })
