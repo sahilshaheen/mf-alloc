@@ -29,8 +29,8 @@ jobs:
         run: |
           cd client/public/data
           jq -r '.periods[] | "\(.sha256)  \(.file)"' manifest.json | sha256sum --check --strict
-      - name: Add headers and redirects
-        run: cp deploy/_headers deploy/_redirects client/dist/
+      - name: Add headers
+        run: cp deploy/_headers client/dist/
       - uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
